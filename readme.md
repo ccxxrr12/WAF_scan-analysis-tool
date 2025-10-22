@@ -42,13 +42,13 @@
 
 #### 相关GitHub库与资源
 
-*   **核心参考项目（必看）**:
-    *   **https://github.com/EnableSecurity/wafw00f  **业界标准**的WAF指纹识别工具。其源码是学习被动和主动探测方法的**最佳教材**。你可以直接研究它的指纹库（`plugins/`目录）和探测逻辑。
-    *   **https://github.com/projectdiscovery/nuclei** 虽然是一个漏洞扫描器，但其模板中包含大量WAF检测规则，可以参考其YAML模板的编写方式。
+*   **核心参考项目**:
+    *   **https://github.com/EnableSecurity/wafw00f  **业界标准**的WAF指纹识别工具。其源码是学习被动和主动探测方法的**  
+    *   **https://github.com/projectdiscovery/nuclei** 
 
 *   **辅助库**:
     *   **Python HTTP库**： https://github.com/psf/requests 或性能更好的 https://github.com/encode/httpx，用于发送HTTP请求。
-    *   **差异比较**： Python标准库 `difflib` 可用于比较响应体的差异。
+
 
 ---
 
@@ -60,7 +60,7 @@
 
 1.  **语法解析器开发**
     *   **原理**：这是一个典型的编译原理问题。你需要为ModSecurity规则语言定义一套**语法规则**。
-    *   **实现路径（由易到难）**：
+    *   **实现路径**：
         *   **路径A（快速实现）**：使用**正则表达式**。ModSecurity规则（如 `SecRule ARGS "@rx <script>" "id:1,block"`）有相对固定的模式，可以用正则提取出指令、变量、操作符和动作。
         *   **路径B（标准方法）**：使用**解析器生成器**。这是最强大和准确的方法。
             *   定义词法规则（识别关键字如 `SecRule`、字符串、逗号等）。
@@ -75,16 +75,16 @@
 #### 相关GitHub库与资源
 
 *   **核心参考项目**:
-    *   **https://github.com/coreruleset/coreruleset**： ModSecurity的官方规则集。这是你最好的**测试数据源**。里面有成千上万条真实规则供你解析。
-    *   **https://github.com/SpiderLabs/ModSecurity**： 官方引擎源码。如果想深入理解规则语义，阅读其解析逻辑是终极途径。
+    *   https://github.com/coreruleset/coreruleset ModSecurity的官方规则集。(**测试数据源**)
+    *   https://github.com/SpiderLabs/ModSecurity  官方引擎源码
 
 *   **解析器开发工具**:
-    *   **https://github.com/dabeaz/ply**： Python Lex-Yacc，纯Python实现的解析器生成工具，非常易于上手。
-    *   **https://github.com/antlr/antlr4**： 功能更强大的解析器生成器，支持多种目标语言（包括Python）。社区可能有现成的ModSecurity语法文件。
+    *   https://github.com/dabeaz/ply Python Lex-Yacc，纯Python实现的解析器生成工具
+    *   https://github.com/antlr/antlr4 功能更强大的解析器生成器，支持多种目标语言
 
 *   **可视化工具**:
-    *   **https://github.com/pydot/pydot**： Graphviz的Python接口，用于创建图形。
-    *   **https://github.com/matplotlib/matplotlib**： 强大的绘图库，也可用于绘制简单的树状图。
+    *   https://github.com/pydot/pydot Graphviz的Python接口，用于创建图形。
+    *   https://github.com/matplotlib/matplotlib 绘图库
 
 ---
 
@@ -114,26 +114,22 @@
 #### 相关GitHub库与资源
 
 *   **机器学习框架**:
-    *   **https://github.com/scikit-learn/scikit-learn**： 实现传统机器学习模型的标配。
-    *   **https://github.com/xgboost/xgboost**： 强大的梯度提升库。
-    *   **https://github.com/pytorch/pytorch** 或 **https://github.com/tensorflow/tensorflow**： 深度学习框架。
+    *   https://github.com/scikit-learn/scikit-learn 传统机器学习模型
+    *   https://github.com/xgboost/xgboost 梯度提升库。
+    *   https://github.com/pytorch/pytorch 或 https://github.com/tensorflow/tensorflow 深度学习框架。
 
 *   **NLP与文本处理**:
-    *   **https://github.com/keras-team/keras**： 深度学习的高级API，可以快速搭建CNN/LSTM文本分类模型。
-    *   **https://github.com/explosion/spaCy**： 工业级NLP库，用于文本处理。
+    *   https://github.com/keras-team/keras 深度学习的高级API，可以快速搭建CNN/LSTM文本分类模型。
+    *   https://github.com/explosion/spaCy 工业级NLP库，用于文本处理。
 
-*   **相关研究参考**:
-    *   在GitHub搜索关键词 `WAF machine learning`， `bypass waf ml`， `http request classification` 等，可以找到许多相关的研究项目和代码。
 
-### 总结与项目架构建议
 
-这是一个庞大的项目，建议采用**模块化开发**，三个部分可以相对独立地进行。
+### 总结与项目架构
 
-1.  **技术栈推荐**： **Python** 是首选，因为它在这三个领域（网络爬虫、编译原理、机器学习）都有极其丰富的库支持。
-2.  **开发顺序**：
-    *   **第一阶段**：实现指纹识别引擎（参考wafw00f），打造工具的第一个可用功能。
-    *   **第二阶段**：攻克规则解析器（使用PLY），实现规则可视化，这是技术的制高点。
-    *   **第三阶段**：收集数据，训练和集成机器学习模型，这是项目的创新点。
-3.  **最终形态**：一个命令行或带Web界面的工具，用户输入一个URL，工具能自动识别WAF、解析其规则（如果可能）、并利用AI模型预测攻击载荷的绕过概率。
+作为一个庞大的项目，本组采用**模块化开发**，三个部分相对独立地进行。
 
-这个课题极具挑战性，但完成后的价值也非常高，祝您成功！
+1.  **开发顺序**：
+    *   **第一阶段**：实现指纹识别引擎，打造工具的第一个可用功能。
+    *   **第二阶段**：攻克规则解析器（使用PLY），实现规则可视化。
+    *   **第三阶段**：收集数据，训练和集成机器学习模型。
+2.  **最终形态**：一个命令行或带Web界面的工具，用户输入一个URL，工具能自动识别WAF、解析其规则（如果可能）、并利用AI模型预测攻击载荷的绕过概率。
