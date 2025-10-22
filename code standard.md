@@ -1,6 +1,6 @@
 # REPOSITORY STANDARD
 ## 1.文件架构组织方式
-* 项目分为三个模块，每个模块单独建立一个文件夹，命名为pn
+* 项目分为三个模块，每个模块单独建立一个文件夹，命名为`Partn_name`
     * 数据文件名`data_type_name`
     * 模块目录必须包含目录： `bin`，必要的依赖关系 `lib`，`plugins`
     * 模块目录必须包含文件：项目说明文档`readme.md`，开源协议文档`LICENSE`
