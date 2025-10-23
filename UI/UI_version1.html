@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>WAF规则智能识别与分析工具</title>
+	<script src="https://cdn.tailwindcss.com"></script>
+	<link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+	<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+	
+	<script>
+		tailwind.config = {
+			theme: {
+				extend: {
+					colors: {
+						primary: '#1e40af',
+						secondary: '#64748b',
+						accent: '#3b82f6',
+						success: '#10b981',
+						danger: '#ef4444',
+						warning: '#f59e0b',
+						info: '#3b82f6',
+						light: '#f8fafc',
+						dark: '#1e293b',
+						cyber: {
+							blue: '#3b82f6',
+							green: '#10b981',
+							purple: '#8b5cf6',
+							teal: '#06b6d4',
+							indigo: '#6366f1'
+						}
+					},
+					fontFamily: {
+						sans: ['Inter', 'system-ui', 'sans-serif'],
+					},
+					animation: {
+						'fade-in': 'fadeIn 0.5s ease-in-out',
+						'slide-up': 'slideUp 0.3s ease-out',
+						'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+						'float': 'float 6s ease-in-out infinite',
+						'glow': 'glow 2s ease-in-out infinite alternate',
+						'shimmer': 'shimmer 2s infinite linear',
+						'wave': 'wave 8s ease-in-out infinite',
+					},
+					backgroundImage: {
+						'tech-pattern': "url('data:image/svg+xml,%3Csvg width=\"60\" height=\"60\" viewBox=\"0 0 60 60\" xmlns=\"http://www.w3.org/2000/svg\"%3E%3Cg fill=\"none\" fill-rule=\"evenodd\"%3E%3Cg fill=\"%239C92AC\" fill-opacity=\"0.05\"%3E%3Cpath d=\"M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\"/%3E%3C/g%3E%3C/g%3E%3C/svg%3E')",
+						'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+					}
+				}
+			}
+		}
+	</script>
+	
+	<style type="text/tailwindcss">
+		@layer utilities {
+			.content-auto {
+				content-visibility: auto;
+			}
+			.glass-effect {
+				background: rgba(255, 255, 255, 0.95);
+				backdrop-filter: blur(12px);
+				border: 1px solid rgba(255, 255, 255, 0.8);
+				box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+			}
+			.security-gradient {
+				background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+			}
+			.cyber-card {
+				position: relative;
+				overflow: hidden;
+				transition: all 0.3s ease;
+			}
+			.cyber-card::before {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+				transition: left 0.5s;
+			}
+			.cyber-card:hover::before {
+				left: 100%;
+			}
+			.shimmer-effect {
+				position: relative;
+				overflow: hidden;
+			}
+			.shimmer-effect::after {
+				content: '';
+				position: absolute;
+				top: 0;
+				left: -100%;
+				width: 100%;
+				height: 100%;
+				background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
+				animation: shimmer 2s infinite;
+			}
+			.security-pattern {
+				background-image: 
+					radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 20%),
+					radial-gradient(circle at 90% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 20%),
+					radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 20%);
+			}
+			.protection-shield {
+				position: relative;
+				overflow: hidden;
+			}
+			.protection-shield::before {
+				content: '';
+				position: absolute;
+				top: -50%;
+				left: -50%;
+				width: 200%;
+				height: 200%;
+				background: conic-gradient(
+					transparent,
+					rgba(59, 130, 246, 0.1),
+					transparent 30%
+				);
+				animation: rotate 4s linear infinite;
+			}
+		}
+		
+		@keyframes fadeIn {
+			from { opacity: 0; }
+			to { opacity: 1; }
+		}
+		
+		@keyframes slideUp {
+			from { transform: translateY(20px); opacity: 0; }
+			to { transform: translateY(0); opacity: 1; }
+		}
+		
+		@keyframes float {
+			0%, 100% { transform: translateY(0); }
+			50% { transform: translateY(-10px); }
+		}
+		
+		@keyframes glow {
+			from { box-shadow: 0 0 5px rgba(59, 130, 246, 0.5); }
+			to { box-shadow: 0 0 20px rgba(59, 130, 246, 0.8); }
+		}
+		
+		@keyframes scan {
+			0% { left: -100%; }
+			100% { left: 100%; }
+		}
+		
+		@keyframes shimmer {
+			0% { left: -100%; }
+			100% { left: 100%; }
+		}
+		
+		@keyframes wave {
+			0%, 100% { transform: translateY(0); }
+			50% { transform: translateY(-10px); }
+		}
+		
+		@keyframes rotate {
+			100% {
+				transform: rotate(360deg);
+			}
+		}
+		
+		.sidebar-item {
+			transition: all 0.3s ease;
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.sidebar-item::before {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+			transition: left 0.5s;
+		}
+		
+		.sidebar-item:hover::before {
+			left: 100%;
+		}
+		
+		.sidebar-item:hover {
+			background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+			transform: translateX(4px);
+		}
+		
+		.sidebar-item.active {
+			background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+			border-left: 4px solid #3b82f6;
+		}
+		
+		.card-hover {
+			transition: all 0.3s ease;
+		}
+		
+		.card-hover:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+		}
+		
+		.loading-spinner {
+			border: 3px solid #f3f4f6;
+			border-top: 3px solid #3b82f6;
+			border-radius: 50%;
+			width: 24px;
+			height: 24px;
+			animation: spin 1s linear infinite;
+		}
+		
+		@keyframes spin {
+			0% { transform: rotate(0deg); }
+			100% { transform: rotate(360deg); }
+		}
+		
+		.tech-bg {
+			background-image: 
+				radial-gradient(circle at 10% 20%, rgba(59, 130, 246, 0.05) 0%, transparent 20%),
+				radial-gradient(circle at 90% 80%, rgba(99, 102, 241, 0.05) 0%, transparent 20%),
+				radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.05) 0%, transparent 20%);
+		}
+		
+		.pulse-dot {
+			animation: pulse 2s infinite;
+		}
+		
+		.neon-text {
+			text-shadow: 0 0 5px rgba(59, 130, 246, 0.7);
+		}
+		
+		.data-flow {
+			position: relative;
+			overflow: hidden;
+		}
+		
+		.data-flow::after {
+			content: '';
+			position: absolute;
+			top: 0;
+			left: -100%;
+			width: 100%;
+			height: 100%;
+			background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.1), transparent);
+			animation: dataFlow 3s linear infinite;
+		}
+		
+		@keyframes dataFlow {
+			0% { left: -100%; }
+			100% { left: 100%; }
+		}
+		
+		.cyber-grid {
+			background-image: 
+				linear-gradient(rgba(59, 130, 246, 0.1) 1px, transparent 1px),
+				linear-gradient(90deg, rgba(59, 130, 246, 0.1) 1px, transparent 1px);
+			background-size: 20px 20px;
+		}
+		
+		.progress-ring {
+			transition: stroke-dashoffset 0.35s;
+			transform: rotate(-90deg);
+			transform-origin: 50% 50%;
+		}
+	</style>
+</head>
+<body class="bg-white font-sans security-pattern transition-colors duration-300">
+	<!-- 主容器 -->
+	<div class="flex h-screen overflow-hidden">
+		<!-- 侧边栏 -->
+		<div class="w-64 glass-effect border-r border-gray-200 shadow-lg z-10 transition-all duration-300">
+			<div class="flex items-center justify-center h-16 border-b border-gray-200">
+				<div class="flex items-center space-x-3">
+					<div class="w-10 h-10 security-gradient rounded-lg flex items-center justify-center shadow-lg protection-shield">
+						<i class="fa fa-shield text-primary text-lg"></i>
+					</div>
+					<div>
+						<h1 class="text-xl font-bold text-gray-900 neon-text">WAF智能分析</h1>
+						<p class="text-xs text-gray-500">v2.0.0</p>
+					</div>
+				</div>
+			</div>
+			
+			<div class="p-4">
+				<nav class="space-y-1">
+					<!-- 仪表盘 -->
+					<div class="sidebar-item active p-3 rounded-lg cursor-pointer" onclick="showPage('dashboard')">
+						<div class="flex items-center space-x-3">
+							<i class="fa fa-tachometer text-blue-600"></i>
+							<span class="text-gray-700 font-medium">仪表盘</span>
+						</div>
+					</div>
+					
+					<!-- WAF识别 -->
+					<div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showPage('waf-detection')">
+						<div class="flex items-center space-x-3">
+							<i class="fa fa-search text-blue-600"></i>
+							<span class="text-gray-700 font-medium">WAF识别</span>
+						</div>
+					</div>
+					
+					<!-- 规则分析 -->
+					<div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showPage('rule-analysis')">
+						<div class="flex items-center space-x-3">
+							<i class="fa fa-code text-blue-600"></i>
+							<span class="text-gray-700 font-medium">规则分析</span>
+						</div>
+					</div>
+					
+					<!-- 机器学习 -->
+					<div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showPage('machine-learning')">
+						<div class="flex items-center space-x-3">
+							<i class="fa fa-bullseye text-blue-600"></i>
+							<span class="text-gray-700 font-medium">机器学习</span>
+						</div>
+					</div>
+					
+					<!-- 设置 -->
+					<div class="sidebar-item p-3 rounded-lg cursor-pointer" onclick="showPage('settings')">
+						<div class="flex items-center space-x-3">
+							<i class="fa fa-cog text-blue-600"></i>
+							<span class="text-gray-700 font-medium">设置</span>
+						</div>
+					</div>
+				</nav>
+			</div>
+			
+			<!-- 系统信息 -->
+			<div class="absolute bottom-0 w-64 p-4 border-t border-gray-200">
+				<div class="text-center">
+					<div class="w-12 h-12 bg-gray-100 rounded-full mx-auto mb-2 flex items-center justify-center shadow-inner">
+						<i class="fa fa-user text-gray-600"></i>
+					</div>
+					<p class="text-sm font-medium text-gray-700">管理员</p>
+					<p class="text-xs text-gray-500">admin@waf-analyzer.com</p>
+				</div>
+			</div>
+		</div>
+		
+		<!-- 主内容区 -->
+		<div class="flex-1 flex flex-col overflow-hidden">
+			<!-- 顶部导航 -->
+			<div class="h-16 glass-effect border-b border-gray-200 flex items-center justify-between px-6 transition-all duration-300">
+				<div class="flex items-center space-x-4">
+					<button class="lg:hidden p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="toggleSidebar()">
+						<i class="fa fa-bars text-gray-600"></i>
+					</button>
+					<div class="flex items-center space-x-2">
+						<h2 id="page-title" class="text-xl font-bold text-gray-900">仪表盘</h2>
+						<span id="page-subtitle" class="text-sm text-gray-500"></span>
+					</div>
+				</div>
+				
+				<div class="flex items-center space-x-4">
+					<!-- 通知 -->
+					<button class="p-2 rounded-lg hover:bg-gray-100 transition-colors relative" onclick="toggleNotifications()">
+						<i class="fa fa-bell text-gray-600"></i>
+						<span class="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full pulse-dot"></span>
+					</button>
+					
+					<!-- 帮助 -->
+					<button class="p-2 rounded-lg hover:bg-gray-100 transition-colors" onclick="showHelp()">
+						<i class="fa fa-question-circle text-gray-600"></i>
+					</button>
+				</div>
+			</div>
+			
+			<!-- 内容区域 -->
+			<div class="flex-1 overflow-y-auto p-6 cyber-grid">
+				<!-- 仪表盘页面 -->
+				<div id="dashboard-page" class="page-content animate-fade-in">
+					<!-- 统计卡片 -->
+					<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+						<div class="glass-effect rounded-xl p-6 card-hover border border-gray-100 cyber-card">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="text-sm font-medium text-gray-600">WAF识别准确率</p>
+									<p class="text-2xl font-bold text-gray-900 mt-2">96.8%</p>
+									<p class="text-xs text-green-600 mt-1">
+										<i class="fa fa-arrow-up"></i> +2.1% 较上月
+									</p>
+								</div>
+								<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center shadow-md">
+									<i class="fa fa-check-circle text-blue-600"></i>
+								</div>
+							</div>
+						</div>
+						
+						<div class="glass-effect rounded-xl p-6 card-hover border border-gray-100 cyber-card">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="text-sm font-medium text-gray-600">规则分析数量</p>
+									<p class="text-2xl font-bold text-gray-900 mt-2">1,247</p>
+									<p class="text-xs text-green-600 mt-1">
+										<i class="fa fa-arrow-up"></i> +127 本周
+									</p>
+								</div>
+								<div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center shadow-md">
+									<i class="fa fa-code text-green-600"></i>
+								</div>
+							</div>
+						</div>
+						
+						<div class="glass-effect rounded-xl p-6 card-hover border border-gray-100 cyber-card">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="text-sm font-medium text-gray-600">模型检测精度</p>
+									<p class="text-2xl font-bold text-gray-900 mt-2">94.3%</p>
+									<p class="text-xs text-yellow-600 mt-1">
+										<i class="fa fa-minus"></i> 持平
+									</p>
+								</div>
+								<div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center shadow-md">
+									<i class="fa fa-bullseye text-yellow-600"></i>
+								</div>
+							</div>
+						</div>
+						
+						<div class="glass-effect rounded-xl p-6 card-hover border border-gray-100 cyber-card">
+							<div class="flex items-center justify-between">
+								<div>
+									<p class="text-sm font-medium text-gray-600">检测任务数</p>
+									<p class="text-2xl font-bold text-gray-900 mt-2">892</p>
+									<p class="text-xs text-red-600 mt-1">
+										<i class="fa fa-arrow-down"></i> -12 今日
+									</p>
+								</div>
+								<div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center shadow-md">
+									<i class="fa fa-tasks text-purple-600"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+					
+					<!-- 图表区域 -->
+					<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+						<div class="glass-effect rounded-xl p-6 border border-gray-100">
+							<div class="flex items-center justify-between mb-6">
+								<h3 class="text-lg font-semibold text-gray-900">WAF类型分布</h3>
+								<div class="flex space-x-2">
+									<button class="text-xs px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">本周</button>
+									<button class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full transition-colors">本月</button>
+								</div>
+							</div>
+							<canvas id="wafDistributionChart" width="400" height="300"></canvas>
+						</div>
+						
+						<div class="glass-effect rounded-xl p-6 border border-gray-100">
+							<div class="flex items-center justify-between mb-6">
+								<h3 class="text-lg font-semibold text-gray-900">检测趋势</h3>
+								<div class="flex space-x-2">
+									<button class="text-xs px-3 py-1 bg-blue-100 text-blue-700 rounded-full transition-colors">日</button>
+									<button class="text-xs px-3 py-1 bg-gray-100 rounded-full hover:bg-gray-200 transition-colors">周</button>
+								</div>
+							</div>
+							<canvas id="detectionTrendChart" width="400" height="300"></canvas>
+						</div>
+					</div>
+					
+					<!-- 最近任务 -->
+					<div class="glass-effect rounded-xl p-6 border border-gray-100">
+						<div class="flex items-center justify-between mb-6">
+							<h3 class="text-lg font-semibold text-gray-900">最近检测任务</h3>
+							<button class="text-sm text-blue-600 hover:text-blue-800 transition-colors" onclick="viewAllTasks()">查看全部</button>
+						</div>
+						<div class="overflow-x-auto">
+							<table class="w-full">
+								<thead>
+									<tr class="border-b border-gray-200">
+										<th class="text-left py-3 px-4 text-sm font-medium text-gray-600">任务ID</th>
+										<th class="text-left py-3 px-4 text-sm font-medium text-gray-600">目标</th>
+										<th class="text-left py-3 px-4 text-sm font-medium text-gray-600">类型</th>
+										<th class="text-left py-3 px-4 text-sm font-medium text-gray-600">状态</th>
+										<th class="text-left py-3 px-4 text-sm font-medium text-gray-600">结果</th>
+										<th class="text-left py-3 px-4 text-sm font-medium text-gray-600">时间</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+										<td class="py-3 px-4 text-sm text-gray-900">T20240520001</td>
+										<td class="py-3 px-4 text-sm text-gray-900">example.com</td>
+										<td class="py-3 px-4 text-sm text-gray-600">WAF识别</td>
+										<td class="py-3 px-4">
+											<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">完成</span>
+										</td>
+										<td class="py-3 px-4 text-sm text-gray-600">Cloudflare</td>
+										<td class="py-3 px-4 text-sm text-gray-500">2分钟前</td>
+									</tr>
+									<tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+										<td class="py-3 px-4 text-sm text-gray-900">T20240520002</td>
+										<td class="py-3 px-4 text-sm text-gray-900">rules.conf</td>
+										<td class="py-3 px-4 text-sm text-gray-600">规则分析</td>
+										<td class="py-3 px-4">
+											<span class="px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">完成</span>
+										</td>
+										<td class="py-3 px-4 text-sm text-gray-600">127条规则</td>
+										<td class="py-3 px-4 text-sm text-gray-500">15分钟前</td>
+									</tr>
+									<tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors">
+										<td class="py-3 px-4 text-sm text-gray-900">T20240520003</td>
+										<td class="py-3 px-4 text-sm text-gray-900">test.com</td>
+										<td class="py-3 px-4 text-sm text-gray-600">智能检测</td>
+										<td class="py-3 px-4">
+											<span class="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded-full">进行中</span>
+										</td>
+										<td class="py-3 px-4 text-sm text-gray-600">-</td>
+										<td class="py-3 px-4 text-sm text-gray-500">正在执行</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				
+				<!-- WAF识别页面 -->
+				<div id="waf-detection-page" class="page-content hidden animate-fade-in">
+					<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						<!-- 左侧：输入区域 -->
+						<div class="lg:col-span-2 space-y-6">
+							<!-- 被动检测 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-6">
+									<h3 class="text-lg font-semibold text-gray-900">被动检测</h3>
+									<span class="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full">推荐</span>
+								</div>
+								
+								<div class="space-y-4">
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-2">目标URL</label>
+										<div class="flex space-x-2">
+											<input type="url" id="passive-url" placeholder="https://example.com" 
+												   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+											<button onclick="startPassiveDetection()" 
+													class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg flex items-center">
+												<i class="fa fa-search mr-2"></i>检测
+											</button>
+										</div>
+									</div>
+									
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-2">或者上传HTTP数据</label>
+										<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('http-file').click()">
+											<input type="file" id="http-file" accept=".txt,.log,.har,.pcap" class="hidden" onchange="handleFileUpload(event)">
+											<div>
+												<i class="fa fa-cloud-upload text-3xl text-gray-400 mb-2"></i>
+												<p class="text-sm text-gray-600">拖拽文件到此处或点击上传</p>
+												<p class="text-xs text-gray-400 mt-1">支持 .txt, .log, .har, .pcap 格式</p>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 主动探测 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-6">
+									<h3 class="text-lg font-semibold text-gray-900">主动探测</h3>
+									<span class="text-xs px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full">可能被拦截</span>
+								</div>
+								
+								<div class="space-y-4">
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-2">目标URL</label>
+										<input type="url" id="active-url" placeholder="https://example.com" 
+											   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+									</div>
+									
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">探测类型</label>
+											<select id="detection-type" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												<option value="sql">SQL注入探测</option>
+												<option value="xss">XSS探测</option>
+												<option value="cmd">命令注入探测</option>
+												<option value="all">综合探测</option>
+											</select>
+										</div>
+										
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">并发数</label>
+											<select id="concurrency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												<option value="1">1 (安全)</option>
+												<option value="5" selected>5 (平衡)</option>
+												<option value="10">10 (快速)</option>
+											</select>
+										</div>
+									</div>
+									
+									<button onclick="startActiveDetection()" 
+											class="w-full px-6 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors shadow-md hover:shadow-lg flex items-center justify-center">
+										<i class="fa fa-rocket mr-2"></i>开始主动探测
+									</button>
+								</div>
+							</div>
+						</div>
+						
+						<!-- 右侧：结果区域 -->
+						<div class="space-y-6">
+							<!-- 检测结果 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<h3 class="text-lg font-semibold text-gray-900 mb-4">检测结果</h3>
+								<div id="detection-result" class="space-y-4">
+									<div class="text-center py-8 text-gray-500">
+										<i class="fa fa-search text-4xl mb-3"></i>
+										<p class="text-sm">请开始检测以查看结果</p>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 快速工具 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<h3 class="text-lg font-semibold text-gray-900 mb-4">快速工具</h3>
+								<div class="space-y-3">
+									<button onclick="loadSampleData()" class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+										<span class="text-sm text-gray-700">加载示例数据</span>
+										<i class="fa fa-file-text-o text-gray-400"></i>
+									</button>
+									<button onclick="clearResults()" class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+										<span class="text-sm text-gray-700">清空结果</span>
+										<i class="fa fa-trash text-gray-400"></i>
+									</button>
+									<button onclick="exportResults()" class="w-full flex items-center justify-between p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+										<span class="text-sm text-gray-700">导出报告</span>
+										<i class="fa fa-download text-gray-400"></i>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 规则分析页面 -->
+				<div id="rule-analysis-page" class="page-content hidden animate-fade-in">
+					<div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+						<!-- 左侧：规则文件上传 -->
+						<div class="lg:col-span-1 space-y-6">
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<h3 class="text-lg font-semibold text-gray-900 mb-4">规则文件</h3>
+								
+								<div class="space-y-4">
+									<div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('rule-file').click()">
+										<input type="file" id="rule-file" accept=".conf,.rules" class="hidden" onchange="handleRuleFileUpload(event)">
+										<div>
+											<i class="fa fa-upload text-2xl text-gray-400 mb-2"></i>
+											<p class="text-sm text-gray-600">上传规则文件</p>
+											<p class="text-xs text-gray-400 mt-1">.conf, .rules</p>
+										</div>
+									</div>
+									
+									<div id="file-info" class="hidden">
+										<div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+											<div class="flex items-center space-x-2">
+												<i class="fa fa-file-code-o text-blue-600"></i>
+												<span id="file-name" class="text-sm text-gray-700 truncate"></span>
+											</div>
+											<button onclick="removeFile()" class="text-gray-400 hover:text-red-500 transition-colors">
+												<i class="fa fa-times"></i>
+											</button>
+										</div>
+									</div>
+									
+									<button onclick="analyzeRules()" id="analyze-btn" disabled
+											class="w-full px-4 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed transition-colors flex items-center justify-center">
+										<i class="fa fa-play mr-2"></i>开始分析
+									</button>
+								</div>
+							</div>
+							
+							<!-- 分析选项 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<h3 class="text-lg font-semibold text-gray-900 mb-4">分析选项</h3>
+								
+								<div class="space-y-4">
+									<div class="flex items-center justify-between">
+										<span class="text-sm text-gray-700">语法解析</span>
+										<input type="checkbox" id="parse-syntax" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+									</div>
+									
+									<div class="flex items-center justify-between">
+										<span class="text-sm text-gray-700">依赖关系检测</span>
+										<input type="checkbox" id="detect-dependencies" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+									</div>
+									
+									<div class="flex items-center justify-between">
+										<span class="text-sm text-gray-700">冲突检查</span>
+										<input type="checkbox" id="check-conflicts" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+									</div>
+									
+									<div class="flex items-center justify-between">
+										<span class="text-sm text-gray-700">语义分析</span>
+										<input type="checkbox" id="semantic-analysis" class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						<!-- 右侧：分析结果 -->
+						<div class="lg:col-span-3 space-y-6">
+							<!-- 规则概览 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-6">
+									<h3 class="text-lg font-semibold text-gray-900">规则概览</h3>
+									<div class="flex space-x-2">
+										<button onclick="exportRuleAnalysis()" class="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center">
+											<i class="fa fa-download mr-1"></i>导出
+										</button>
+									</div>
+								</div>
+								
+								<div id="rule-overview" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+									<div class="text-center p-4 bg-gray-50 rounded-lg">
+										<p class="text-2xl font-bold text-gray-900" id="total-rules">0</p>
+										<p class="text-sm text-gray-600">总规则数</p>
+									</div>
+									<div class="text-center p-4 bg-gray-50 rounded-lg">
+										<p class="text-2xl font-bold text-gray-900" id="sec-rules">0</p>
+										<p class="text-sm text-gray-600">SecRule</p>
+									</div>
+									<div class="text-center p-4 bg-gray-50 rounded-lg">
+										<p class="text-2xl font-bold text-gray-900" id="conflicts">0</p>
+										<p class="text-sm text-gray-600">冲突规则</p>
+									</div>
+									<div class="text-center p-4 bg-gray-50 rounded-lg">
+										<p class="text-2xl font-bold text-gray-900" id="errors">0</p>
+										<p class="text-sm text-gray-600">语法错误</p>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 规则列表 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-6">
+									<h3 class="text-lg font-semibold text-gray-900">规则列表</h3>
+									<div class="flex space-x-2">
+										<input type="text" placeholder="搜索规则..." class="px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+									</div>
+								</div>
+								
+								<div id="rules-list" class="space-y-3 max-h-96 overflow-y-auto">
+									<div class="text-center py-8 text-gray-500">
+										<i class="fa fa-file-code-o text-4xl mb-3"></i>
+										<p class="text-sm">请上传规则文件进行分析</p>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 机器学习页面 -->
+				<div id="machine-learning-page" class="page-content hidden animate-fade-in">
+					<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						<!-- 左侧：数据集管理 -->
+						<div class="lg:col-span-2 space-y-6">
+							<!-- 数据集上传 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-6">
+									<h3 class="text-lg font-semibold text-gray-900">数据集管理</h3>
+									<button class="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center" onclick="createNewDataset()">
+										<i class="fa fa-plus mr-1"></i>新建数据集
+									</button>
+								</div>
+								
+								<div class="space-y-4">
+									<div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer" onclick="document.getElementById('dataset-file').click()">
+										<input type="file" id="dataset-file" accept=".csv,.json,.txt" class="hidden" onchange="handleDatasetUpload(event)">
+										<div>
+											<i class="fa fa-database text-3xl text-gray-400 mb-2"></i>
+											<p class="text-sm text-gray-600">上传数据集文件</p>
+											<p class="text-xs text-gray-400 mt-1">支持 .csv, .json, .txt 格式</p>
+										</div>
+									</div>
+									
+									<div id="dataset-info" class="hidden">
+										<div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+											<div class="flex items-center space-x-3">
+												<div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+													<i class="fa fa-file-text text-blue-600"></i>
+												</div>
+												<div>
+													<p id="dataset-name" class="font-medium text-gray-900"></p>
+													<p id="dataset-size" class="text-sm text-gray-600"></p>
+												</div>
+											</div>
+											<div class="flex items-center space-x-2">
+												<button onclick="preprocessDataset()" class="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center">
+													<i class="fa fa-cogs mr-1"></i>预处理
+												</button>
+												<button onclick="removeDataset()" class="text-sm text-red-600 hover:text-red-800 transition-colors">
+													<i class="fa fa-trash"></i>
+												</button>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 模型训练 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-6">
+									<h3 class="text-lg font-semibold text-gray-900">模型训练</h3>
+									<span class="text-xs px-2 py-1 bg-gray-100 text-gray-800 rounded-full">需要数据集</span>
+								</div>
+								
+								<div class="space-y-4">
+									<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">算法选择</label>
+											<select id="algorithm" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												<option value="logistic">逻辑回归</option>
+												<option value="random_forest">随机森林</option>
+												<option value="xgboost" selected>XGBoost</option>
+												<option value="cnn">CNN</option>
+												<option value="bilstm">BiLSTM</option>
+											</select>
+										</div>
+										
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">训练轮数</label>
+											<input type="number" id="epochs" value="50" min="1" max="1000"
+												   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+										</div>
+									</div>
+									
+									<div>
+										<label class="block text-sm font-medium text-gray-700 mb-2">训练参数</label>
+										<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+											<div>
+												<label class="block text-xs text-gray-500 mb-1">学习率</label>
+												<input type="number" id="learning-rate" value="0.01" step="0.001" min="0.001" max="1"
+													   class="w-full px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+											</div>
+											<div>
+												<label class="block text-xs text-gray-500 mb-1">批大小</label>
+												<input type="number" id="batch-size" value="32" min="1" max="1024"
+													   class="w-full px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+											</div>
+											<div>
+												<label class="block text-xs text-gray-500 mb-1">测试集比例</label>
+												<input type="number" id="test-size" value="0.2" step="0.01" min="0.1" max="0.5"
+													   class="w-full px-3 py-1 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+											</div>
+										</div>
+									</div>
+									
+									<button onclick="startTraining()" id="train-btn" disabled
+											class="w-full px-6 py-2 bg-gray-400 text-white rounded-lg cursor-not-allowed transition-colors flex items-center justify-center">
+										<i class="fa fa-play mr-2"></i>开始训练
+									</button>
+								</div>
+							</div>
+						</div>
+						
+						<!-- 右侧：模型管理 -->
+						<div class="space-y-6">
+							<!-- 模型列表 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<div class="flex items-center justify-between mb-4">
+									<h3 class="text-lg font-semibold text-gray-900">模型列表</h3>
+									<button class="text-sm text-blue-600 hover:text-blue-800 transition-colors flex items-center" onclick="refreshModels()">
+										<i class="fa fa-refresh mr-1"></i>刷新
+									</button>
+								</div>
+								
+								<div id="models-list" class="space-y-3">
+									<div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer">
+										<div class="flex items-center justify-between mb-2">
+											<h4 class="font-medium text-gray-900">WAF识别模型 v2.1</h4>
+											<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">已训练</span>
+										</div>
+										<div class="text-xs text-gray-600 space-y-1">
+											<p>算法: XGBoost</p>
+											<p>准确率: 96.8%</p>
+											<p>更新时间: 2024-05-18</p>
+										</div>
+										<div class="flex items-center justify-between mt-3">
+											<button class="text-xs text-blue-600 hover:text-blue-800 transition-colors" onclick="useModel('waf-v2.1')">使用</button>
+											<button class="text-xs text-gray-600 hover:text-gray-800 transition-colors" onclick="showModelDetails('waf-v2.1')">详情</button>
+										</div>
+									</div>
+									
+									<div class="border border-gray-200 rounded-lg p-4 hover:border-blue-300 transition-colors cursor-pointer">
+										<div class="flex items-center justify-between mb-2">
+											<h4 class="font-medium text-gray-900">规则分析模型 v1.5</h4>
+											<span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full">已训练</span>
+										</div>
+										<div class="text-xs text-gray-600 space-y-1">
+											<p>算法: BiLSTM</p>
+											<p>准确率: 94.3%</p>
+											<p>更新时间: 2024-05-15</p>
+										</div>
+										<div class="flex items-center justify-between mt-3">
+											<button class="text-xs text-blue-600 hover:text-blue-800 transition-colors" onclick="useModel('rule-v1.5')">使用</button>
+											<button class="text-xs text-gray-600 hover:text-gray-800 transition-colors" onclick="showModelDetails('rule-v1.5')">详情</button>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 训练状态 -->
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<h3 class="text-lg font-semibold text-gray-900 mb-4">训练状态</h3>
+								<div id="training-status" class="text-center py-8 text-gray-500">
+									<i class="fa fa-play-circle text-4xl mb-3"></i>
+									<p class="text-sm">未开始训练</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- 设置页面 -->
+				<div id="settings-page" class="page-content hidden animate-fade-in">
+					<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+						<!-- 左侧：设置菜单 -->
+						<div class="lg:col-span-1 space-y-6">
+							<div class="glass-effect rounded-xl p-6 border border-gray-100">
+								<h3 class="text-lg font-semibold text-gray-900 mb-4">设置分类</h3>
+								<nav class="space-y-2">
+									<button onclick="showSettingsTab('general')" class="settings-tab w-full text-left p-3 rounded-lg bg-blue-50 text-blue-700 font-medium transition-colors">
+										通用设置
+									</button>
+									<button onclick="showSettingsTab('detection')" class="settings-tab w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+										检测设置
+									</button>
+									<button onclick="showSettingsTab('analysis')" class="settings-tab w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+										分析设置
+									</button>
+									<button onclick="showSettingsTab('ml')" class="settings-tab w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+										机器学习设置
+									</button>
+									<button onclick="showSettingsTab('system')" class="settings-tab w-full text-left p-3 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+										系统设置
+									</button>
+								</nav>
+							</div>
+						</div>
+						
+						<!-- 右侧：设置内容 -->
+						<div class="lg:col-span-2 space-y-6">
+							<!-- 通用设置 -->
+							<div id="general-settings" class="settings-content">
+								<div class="glass-effect rounded-xl p-6 border border-gray-100">
+									<div class="flex items-center justify-between mb-6">
+										<h3 class="text-lg font-semibold text-gray-900">通用设置</h3>
+										<button onclick="saveSettings('general')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+											保存设置
+										</button>
+									</div>
+									
+									<div class="space-y-6">
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">语言设置</label>
+											<select id="language" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												<option value="zh-CN">简体中文</option>
+												<option value="en-US">English</option>
+											</select>
+										</div>
+										
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">主题设置</label>
+											<div class="grid grid-cols-3 gap-4">
+												<button onclick="setTheme('light')" class="theme-btn p-4 border-2 border-blue-500 bg-white rounded-lg text-center transition-all">
+													<i class="fa fa-sun-o text-2xl text-yellow-500 mb-2"></i>
+													<p class="text-sm font-medium text-gray-900">浅色主题</p>
+												</button>
+												<button onclick="setTheme('dark')" class="theme-btn p-4 border-2 border-gray-300 bg-gray-900 text-white rounded-lg text-center hover:border-blue-500 transition-all">
+													<i class="fa fa-moon-o text-2xl text-blue-400 mb-2"></i>
+													<p class="text-sm font-medium">深色主题</p>
+												</button>
+												<button onclick="setTheme('auto')" class="theme-btn p-4 border-2 border-gray-300 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg text-center hover:border-blue-500 transition-all">
+													<i class="fa fa-magic text-2xl mb-2"></i>
+													<p class="text-sm font-medium">自动切换</p>
+												</button>
+											</div>
+										</div>
+										
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">通知设置</label>
+											<div class="space-y-3">
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-700">检测完成通知</span>
+													<input type="checkbox" id="notification-detection" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+												</div>
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-700">模型训练通知</span>
+													<input type="checkbox" id="notification-training" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+												</div>
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-700">系统更新通知</span>
+													<input type="checkbox" id="notification-updates" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 检测设置 -->
+							<div id="detection-settings" class="settings-content hidden">
+								<div class="glass-effect rounded-xl p-6 border border-gray-100">
+									<div class="flex items-center justify-between mb-6">
+										<h3 class="text-lg font-semibold text-gray-900">检测设置</h3>
+										<button onclick="saveSettings('detection')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+											保存设置
+										</button>
+									</div>
+									
+									<div class="space-y-6">
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">被动检测设置</label>
+											<div class="space-y-4">
+												<div>
+													<label class="block text-xs text-gray-500 mb-1">置信度阈值 (%)</label>
+													<input type="number" id="passive-confidence" value="70" min="1" max="100"
+														   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												</div>
+												<div>
+													<label class="block text-xs text-gray-500 mb-1">超时时间 (秒)</label>
+													<input type="number" id="passive-timeout" value="30" min="5" max="120"
+														   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												</div>
+											</div>
+										</div>
+										
+										<div>
+											<label class="block text-sm font-medium text-gray-700 mb-2">主动探测设置</label>
+											<div class="space-y-4">
+												<div>
+													<label class="block text-xs text-gray-500 mb-1">默认并发数</label>
+													<select id="active-concurrency" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+														<option value="1">1 (安全)</option>
+														<option value="5" selected>5 (平衡)</option>
+														<option value="10">10 (快速)</option>
+													</select>
+												</div>
+												<div>
+													<label class="block text-xs text-gray-500 mb-1">请求间隔 (毫秒)</label>
+													<input type="number" id="request-interval" value="1000" min="100" max="5000"
+														   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+												</div>
+												<div class="flex items-center justify-between">
+													<span class="text-sm text-gray-700">使用随机User-Agent</span>
+													<input type="checkbox" id="random-user-agent" checked class="form-checkbox h-4 w-4 text-blue-600 rounded transition-colors">
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							
+							<!-- 其他设置标签页内容 -->
+							<div id="analysis-settings" class="settings-content hidden">
+								<div class="glass-effect rounded-xl p-6 border border-gray-100">
+									<div class="flex items-center justify-between mb-6">
+										<h3 class="text-lg font-semibold text-gray-900">分析设置</h3>
+										<button onclick="saveSettings('analysis')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+											保存设置
+										</button>
+									</div>
+									<p class="text-gray-500">分析设置内容</p>
+								</div>
+							</div>
+							
+							<div id="ml-settings" class="settings-content hidden">
+								<div class="glass-effect rounded-xl p-6 border border-gray-100">
+									<div class="flex items-center justify-between mb-6">
+										<h3 class="text-lg font-semibold text-gray-900">机器学习设置</h3>
+										<button onclick="saveSettings('ml')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+											保存设置
+										</button>
+									</div>
+									<p class="text-gray-500">机器学习设置内容</p>
+								</div>
+							</div>
+							
+							<div id="system-settings" class="settings-content hidden">
+								<div class="glass-effect rounded-xl p-6 border border-gray-100">
+									<div class="flex items-center justify-between mb-6">
+										<h3 class="text-lg font-semibold text-gray-900">系统设置</h3>
+										<button onclick="saveSettings('system')" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg">
+											保存设置
+										</button>
+									</div>
+									<p class="text-gray-500">系统设置内容</p>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<!-- 加载中模态框 -->
+	<div id="loading-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden transition-opacity duration-300">
+		<div class="glass-effect rounded-xl p-8 text-center max-w-sm w-full mx-4 animate-pulse">
+			<div class="loading-spinner mx-auto mb-4"></div>
+			<p class="text-lg font-medium text-gray-900" id="loading-text">正在处理...</p>
+			<p class="text-sm text-gray-500 mt-2" id="loading-subtext">请稍候</p>
+		</div>
+	</div>
+	
+	<!-- 成功提示 -->
+	<div id="success-toast" class="fixed top-4 right-4 bg-green-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+		<div class="flex items-center space-x-2">
+			<i class="fa fa-check-circle"></i>
+			<span id="success-message">操作成功</span>
+		</div>
+	</div>
+	
+	<!-- 错误提示 -->
+	<div id="error-toast" class="fixed top-4 right-4 bg-red-500 text-white px-6 py-3 rounded-lg shadow-lg transform translate-x-full transition-transform duration-300 z-50">
+		<div class="flex items-center space-x-2">
+			<i class="fa fa-exclamation-circle"></i>
+			<span id="error-message">操作失败</span>
+		</div>
+	</div>
+
+	<script>
+		// 全局变量
+		let currentPage = 'dashboard';
+		let currentSettingsTab = 'general';
+		let isSidebarOpen = true;
+		
+		// 页面加载完成后初始化
+		document.addEventListener('DOMContentLoaded', function() {
+			initializeCharts();
+			initializeEventListeners();
+			loadSettings();
+		});
+		
+		// 初始化图表
+		function initializeCharts() {
+			// WAF分布图表
+			const wafCtx = document.getElementById('wafDistributionChart').getContext('2d');
+			new Chart(wafCtx, {
+				type: 'doughnut',
+				data: {
+					labels: ['Cloudflare', 'AWS WAF', 'Imperva', 'Akamai', '其他'],
+					datasets: [{
+						data: [35, 25, 15, 10, 15],
+						backgroundColor: [
+							'#3b82f6',
+							'#10b981',
+							'#f59e0b',
+							'#8b5cf6',
+							'#ef4444'
+						],
+						borderWidth: 0
+					}]
+				},
+				options: {
+					responsive: true,
+					plugins: {
+						legend: {
+							position: 'bottom',
+							labels: {
+								padding: 20,
+								usePointStyle: true
+							}
+						}
+					}
+				}
+			});
+			
+			// 检测趋势图表
+			const trendCtx = document.getElementById('detectionTrendChart').getContext('2d');
+			new Chart(trendCtx, {
+				type: 'line',
+				data: {
+					labels: ['1月', '2月', '3月', '4月', '5月', '6月'],
+					datasets: [{
+						label: 'WAF识别',
+						data: [120, 190, 160, 210, 250, 320],
+						borderColor: '#3b82f6',
+						backgroundColor: 'rgba(59, 130, 246, 0.1)',
+						tension: 0.4,
+						fill: true
+					}, {
+						label: '规则分析',
+						data: [80, 120, 150, 180, 220, 280],
+						borderColor: '#10b981',
+						backgroundColor: 'rgba(16, 185, 129, 0.1)',
+						tension: 0.4,
+						fill: true
+					}]
+				},
+				options: {
+					responsive: true,
+					plugins: {
+						legend: {
+							position: 'top',
+						}
+					},
+					scales: {
+						y: {
+							beginAtZero: true,
+							grid: {
+								color: 'rgba(0, 0, 0, 0.1)'
+							}
+						},
+						x: {
+							grid: {
+								color: 'rgba(0, 0, 0, 0.1)'
+							}
+						}
+					}
+				}
+			});
+		}
+		
+		// 初始化事件监听器
+		function initializeEventListeners() {
+			// 文件上传事件
+			document.getElementById('http-file').addEventListener('change', handleFileUpload);
+			document.getElementById('rule-file').addEventListener('change', handleRuleFileUpload);
+			document.getElementById('dataset-file').addEventListener('change', handleDatasetUpload);
+			
+			// 快捷键支持
+			document.addEventListener('keydown', function(e) {
+				if (e.ctrlKey || e.metaKey) {
+					switch(e.key) {
+						case 's':
+							e.preventDefault();
+							saveCurrentSettings();
+							break;
+						case 'f':
+							e.preventDefault();
+							focusSearch();
+							break;
+					}
+				}
+			});
+		}
+		
+		// 显示页面
+		function showPage(pageName) {
+			// 隐藏所有页面
+			document.querySelectorAll('.page-content').forEach(page => {
+				page.classList.add('hidden');
+			});
+			
+			// 显示目标页面
+			document.getElementById(pageName + '-page').classList.remove('hidden');
+			
+			// 更新侧边栏选中状态
+			document.querySelectorAll('.sidebar-item').forEach(item => {
+				item.classList.remove('active');
+			});
+			event.target.closest('.sidebar-item').classList.add('active');
+			
+			// 更新页面标题
+			const titles = {
+				'dashboard': '仪表盘',
+				'waf-detection': 'WAF识别',
+				'rule-analysis': '规则分析',
+				'machine-learning': '机器学习',
+				'settings': '设置'
+			};
+			
+			document.getElementById('page-title').textContent = titles[pageName];
+			currentPage = pageName;
+			
+			// 添加动画效果
+			document.getElementById(pageName + '-page').classList.add('animate-fade-in');
+		}
+		
+		// 显示设置标签页
+		function showSettingsTab(tabName) {
+			// 隐藏所有设置内容
+			document.querySelectorAll('.settings-content').forEach(tab => {
+				tab.classList.add('hidden');
+			});
+			
+			// 显示目标标签页
+			document.getElementById(tabName + '-settings').classList.remove('hidden');
+			
+			// 更新设置菜单选中状态
+			document.querySelectorAll('.settings-tab').forEach(tab => {
+				tab.classList.remove('bg-blue-50', 'text-blue-700');
+				tab.classList.add('text-gray-700', 'hover:bg-gray-50');
+			});
+			event.target.classList.add('bg-blue-50', 'text-blue-700');
+			event.target.classList.remove('text-gray-700', 'hover:bg-gray-50');
+			
+			currentSettingsTab = tabName;
+		}
+		
+		// 切换侧边栏
+		function toggleSidebar() {
+			const sidebar = document.querySelector('.w-64');
+			const mainContent = document.querySelector('.flex-1');
+			
+			if (isSidebarOpen) {
+				sidebar.classList.add('hidden');
+				mainContent.classList.add('lg:ml-0');
+			} else {
+				sidebar.classList.remove('hidden');
+				mainContent.classList.remove('lg:ml-0');
+			}
+			
+			isSidebarOpen = !isSidebarOpen;
+		}
+		
+		// 设置主题
+		function setTheme(theme) {
+			// 更新主题按钮状态
+			document.querySelectorAll('.theme-btn').forEach(btn => {
+				btn.classList.remove('border-blue-500');
+				btn.classList.add('border-gray-300');
+			});
+			
+			// 应用主题
+			if (theme === 'dark') {
+				event.target.closest('.theme-btn').classList.add('border-blue-500');
+			} else if (theme === 'light') {
+				event.target.closest('.theme-btn').classList.add('border-blue-500');
+			} else {
+				// 自动主题
+				event.target.closest('.theme-btn').classList.add('border-blue-500');
+			}
+			
+			localStorage.setItem('theme', theme);
+		}
+		
+		// 显示加载中
+		function showLoading(text = '正在处理...', subtext = '请稍候') {
+			document.getElementById('loading-modal').classList.remove('hidden');
+			document.getElementById('loading-text').textContent = text;
+			document.getElementById('loading-subtext').textContent = subtext;
+		}
+		
+		// 隐藏加载中
+		function hideLoading() {
+			document.getElementById('loading-modal').classList.add('hidden');
+		}
+		
+		// 显示成功提示
+		function showSuccess(message) {
+			const toast = document.getElementById('success-toast');
+			document.getElementById('success-message').textContent = message;
+			toast.classList.remove('translate-x-full');
+			
+			setTimeout(() => {
+				toast.classList.add('translate-x-full');
+			}, 3000);
+		}
+		
+		// 显示错误提示
+		function showError(message) {
+			const toast = document.getElementById('error-toast');
+			document.getElementById('error-message').textContent = message;
+			toast.classList.remove('translate-x-full');
+			
+			setTimeout(() => {
+				toast.classList.add('translate-x-full');
+			}, 3000);
+		}
+		
+		// 保存设置
+		function saveSettings(category) {
+			showLoading('保存设置中...');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				showSuccess('设置保存成功');
+				
+				// 实际项目中这里会调用后端API
+				// API: POST /api/settings/{category}
+				console.log('保存设置到后端:', category);
+			}, 1000);
+		}
+		
+		// 保存当前设置
+		function saveCurrentSettings() {
+			if (currentPage === 'settings') {
+				saveSettings(currentSettingsTab);
+			}
+		}
+		
+		// 聚焦搜索框
+		function focusSearch() {
+			const searchInput = document.querySelector('input[placeholder*="搜索"]');
+			if (searchInput) {
+				searchInput.focus();
+			}
+		}
+		
+		// 加载设置
+		function loadSettings() {
+			// 模拟加载设置 - 实际项目中需要从后端获取
+			// 设置主题为浅色（安全主题）
+			setTheme('light');
+		}
+		
+		// 切换通知面板
+		function toggleNotifications() {
+			// 实际项目中这里会显示通知面板
+			showSuccess('通知功能开发中');
+		}
+		
+		// 显示帮助
+		function showHelp() {
+			// 实际项目中这里会显示帮助文档或模态框
+			showSuccess('帮助功能开发中');
+		}
+		
+		// 查看所有任务
+		function viewAllTasks() {
+			// 实际项目中这里会跳转到任务列表页面
+			showSuccess('跳转到任务列表');
+		}
+		
+		// WAF识别相关功能
+		function startPassiveDetection() {
+			const url = document.getElementById('passive-url').value;
+			
+			if (!url) {
+				showError('请输入目标URL');
+				return;
+			}
+			
+			showLoading('正在进行被动检测...', '分析HTTP响应特征');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				
+				const result = {
+					waf: 'Cloudflare',
+					confidence: 98,
+					features: [
+						'CF-RAY头部存在',
+						'Cloudflare服务器标识',
+						'特定Cookie存在',
+						'TLS证书特征匹配'
+					],
+					timestamp: new Date().toLocaleString()
+				};
+				
+				displayDetectionResult(result);
+				showSuccess('被动检测完成');
+				
+				// 实际项目中这里会调用后端API
+				// API: POST /api/waf/detect/passive
+				// 参数: { url: url }
+				console.log('调用被动检测API:', url);
+			}, 2000);
+		}
+		
+		function startActiveDetection() {
+			const url = document.getElementById('active-url').value;
+			const type = document.getElementById('detection-type').value;
+			const concurrency = document.getElementById('concurrency').value;
+			
+			if (!url) {
+				showError('请输入目标URL');
+				return;
+			}
+			
+			showLoading('正在进行主动探测...', '投递测试载荷中');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				
+				const result = {
+					waf: 'Cloudflare',
+					confidence: 95,
+					detectionType: type,
+					payloads: 25,
+					blocked: 18,
+					timestamp: new Date().toLocaleString()
+				};
+				
+				displayDetectionResult(result);
+				showSuccess('主动探测完成');
+				
+				// 实际项目中这里会调用后端API
+				// API: POST /api/waf/detect/active
+				// 参数: { url, type, concurrency }
+				console.log('调用主动探测API:', { url, type, concurrency });
+			}, 3000);
+		}
+		
+		function displayDetectionResult(result) {
+			const resultDiv = document.getElementById('detection-result');
+			
+			let featuresHtml = '';
+			if (result.features) {
+				featuresHtml = result.features.map(feature => 
+					`<div class="flex items-center space-x-2 mb-1">
+						<i class="fa fa-check text-green-500 text-xs"></i>
+						<span class="text-sm text-gray-600">${feature}</span>
+					</div>`
+				).join('');
+			}
+			
+			resultDiv.innerHTML = `
+				<div class="border border-gray-200 rounded-lg p-4">
+					<div class="flex items-center justify-between mb-4">
+						<div>
+							<h4 class="text-lg font-semibold text-gray-900">${result.waf}</h4>
+							<p class="text-sm text-gray-600">置信度: ${result.confidence}%</p>
+						</div>
+						<span class="px-3 py-1 text-xs bg-green-100 text-green-800 rounded-full">已识别</span>
+					</div>
+					
+					${featuresHtml}
+					
+					${result.detectionType ? `<p class="text-sm text-gray-600 mt-2">探测类型: ${result.detectionType}</p>` : ''}
+					${result.payloads ? `<p class="text-sm text-gray-600">测试载荷: ${result.payloads}个</p>` : ''}
+					${result.blocked ? `<p class="text-sm text-gray-600">被拦截: ${result.blocked}个</p>` : ''}
+					
+					<div class="mt-4 pt-4 border-t border-gray-200">
+						<p class="text-xs text-gray-500">检测时间: ${result.timestamp}</p>
+					</div>
+				</div>
+			`;
+		}
+		
+		function handleFileUpload(event) {
+			const file = event.target.files[0];
+			if (file) {
+				showLoading('正在解析文件...');
+				
+				// 模拟文件处理 - 实际项目中需要上传文件到后端
+				setTimeout(() => {
+					hideLoading();
+					showSuccess(`文件 ${file.name} 上传成功`);
+					
+					// 实际项目中这里会处理文件并调用API
+					// API: POST /api/upload/http
+					// 参数: FormData包含文件
+					console.log('上传HTTP文件:', file.name);
+				}, 1000);
+			}
+		}
+		
+		function loadSampleData() {
+			showLoading('正在加载示例数据...');
+			
+			setTimeout(() => {
+				hideLoading();
+				document.getElementById('passive-url').value = 'https://example.com';
+				
+				const sampleResult = {
+					waf: 'AWS WAF',
+					confidence: 92,
+					features: [
+						'X-Amzn-Waf-Result头部',
+						'特定403响应页面',
+						'AWS WAF标识'
+					],
+					timestamp: new Date().toLocaleString()
+				};
+				
+				displayDetectionResult(sampleResult);
+				showSuccess('示例数据加载完成');
+			}, 1000);
+		}
+		
+		function clearResults() {
+			document.getElementById('detection-result').innerHTML = `
+				<div class="text-center py-8 text-gray-500">
+					<i class="fa fa-search text-4xl mb-3"></i>
+					<p class="text-sm">请开始检测以查看结果</p>
+				</div>
+			`;
+			document.getElementById('passive-url').value = '';
+			document.getElementById('active-url').value = '';
+		}
+		
+		function exportResults() {
+			showLoading('正在生成报告...');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				showSuccess('报告导出成功');
+				
+				// 实际项目中这里会调用API生成并下载报告
+				// API: GET /api/reports/export
+				console.log('导出检测报告');
+			}, 1000);
+		}
+		
+		// 规则分析相关功能
+		function handleRuleFileUpload(event) {
+			const file = event.target.files[0];
+			if (file) {
+				document.getElementById('file-name').textContent = file.name;
+				document.getElementById('file-info').classList.remove('hidden');
+				document.getElementById('analyze-btn').disabled = false;
+				document.getElementById('analyze-btn').classList.remove('bg-gray-400', 'cursor-not-allowed');
+				document.getElementById('analyze-btn').classList.add('bg-blue-600', 'hover:bg-blue-700');
+			}
+		}
+		
+		function removeFile() {
+			document.getElementById('rule-file').value = '';
+			document.getElementById('file-info').classList.add('hidden');
+			document.getElementById('analyze-btn').disabled = true;
+			document.getElementById('analyze-btn').classList.add('bg-gray-400', 'cursor-not-allowed');
+			document.getElementById('analyze-btn').classList.remove('bg-blue-600', 'hover:bg-blue-700');
+		}
+		
+		function analyzeRules() {
+			showLoading('正在分析规则文件...', '解析语法结构和依赖关系');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				
+				// 更新统计信息
+				document.getElementById('total-rules').textContent = '127';
+				document.getElementById('sec-rules').textContent = '98';
+				document.getElementById('conflicts').textContent = '3';
+				document.getElementById('errors').textContent = '1';
+				
+				// 显示规则列表
+				displayRulesList();
+				
+				showSuccess('规则分析完成');
+				
+				// 实际项目中这里会调用后端API
+				// API: POST /api/rules/analyze
+				// 参数: FormData包含规则文件和分析选项
+				console.log('分析规则文件');
+			}, 2000);
+		}
+		
+		function displayRulesList() {
+			const rulesList = document.getElementById('rules-list');
+			
+			const rules = [
+				{ id: '1001', phase: 1, action: 'deny', description: '拦截SQL注入攻击', severity: 'high' },
+				{ id: '1002', phase: 2, action: 'deny', description: '拦截XSS攻击', severity: 'high' },
+				{ id: '1003', phase: 1, action: 'allow', description: '允许特定User-Agent', severity: 'low' },
+				{ id: '1004', phase: 3, action: 'log', description: '记录异常请求', severity: 'medium' }
+			];
+			
+			rulesList.innerHTML = rules.map(rule => `
+				<div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+					<div class="flex-1">
+						<div class="flex items-center justify-between mb-1">
+							<h4 class="font-medium text-gray-900">规则 #${rule.id}</h4>
+							<span class="text-xs px-2 py-1 rounded-full ${getSeverityColor(rule.severity)}">
+								${getSeverityText(rule.severity)}
+							</span>
+						</div>
+						<p class="text-sm text-gray-600 mb-1">${rule.description}</p>
+						<div class="flex items-center space-x-4 text-xs text-gray-500">
+							<span>阶段: ${rule.phase}</span>
+							<span>动作: ${rule.action}</span>
+						</div>
+					</div>
+					<div class="flex items-center space-x-2 ml-4">
+						<button class="text-blue-600 hover:text-blue-800 transition-colors">
+							<i class="fa fa-eye"></i>
+						</button>
+						<button class="text-gray-600 hover:text-gray-800 transition-colors">
+							<i class="fa fa-ellipsis-v"></i>
+						</button>
+					</div>
+				</div>
+			`).join('');
+		}
+		
+		function getSeverityColor(severity) {
+			const colors = {
+				'high': 'bg-red-100 text-red-800',
+				'medium': 'bg-yellow-100 text-yellow-800',
+				'low': 'bg-green-100 text-green-800'
+			};
+			return colors[severity] || 'bg-gray-100 text-gray-800';
+		}
+		
+		function getSeverityText(severity) {
+			const texts = {
+				'high': '高',
+				'medium': '中',
+				'low': '低'
+			};
+			return texts[severity] || '未知';
+		}
+		
+		function exportRuleAnalysis() {
+			showLoading('正在生成分析报告...');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				showSuccess('规则分析报告导出成功');
+				
+				// 实际项目中这里会调用API生成并下载报告
+				// API: GET /api/rules/export
+				console.log('导出规则分析报告');
+			}, 1000);
+		}
+		
+		// 机器学习相关功能
+		function handleDatasetUpload(event) {
+			const file = event.target.files[0];
+			if (file) {
+				document.getElementById('dataset-name').textContent = file.name;
+				document.getElementById('dataset-size').textContent = formatFileSize(file.size);
+				document.getElementById('dataset-info').classList.remove('hidden');
+				document.getElementById('train-btn').disabled = false;
+				document.getElementById('train-btn').classList.remove('bg-gray-400', 'cursor-not-allowed');
+				document.getElementById('train-btn').classList.add('bg-blue-600', 'hover:bg-blue-700');
+			}
+		}
+		
+		function removeDataset() {
+			document.getElementById('dataset-file').value = '';
+			document.getElementById('dataset-info').classList.add('hidden');
+			document.getElementById('train-btn').disabled = true;
+			document.getElementById('train-btn').classList.add('bg-gray-400', 'cursor-not-allowed');
+			document.getElementById('train-btn').classList.remove('bg-blue-600', 'hover:bg-blue-700');
+		}
+		
+		function preprocessDataset() {
+			showLoading('正在预处理数据集...', '清洗和标准化数据');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				showSuccess('数据集预处理完成');
+				
+				// 实际项目中这里会调用后端API
+				// API: POST /api/dataset/preprocess
+				console.log('预处理数据集');
+			}, 2000);
+		}
+		
+		function createNewDataset() {
+			// 实际项目中这里会打开创建数据集的模态框
+			showSuccess('创建数据集功能开发中');
+		}
+		
+		function refreshModels() {
+			// 实际项目中这里会从后端获取模型列表
+			showSuccess('模型列表已刷新');
+		}
+		
+		function useModel(modelId) {
+			// 实际项目中这里会调用后端API使用指定模型
+			showSuccess(`已切换到模型: ${modelId}`);
+		}
+		
+		function showModelDetails(modelId) {
+			// 实际项目中这里会显示模型详情
+			showSuccess(`显示模型详情: ${modelId}`);
+		}
+		
+		function startTraining() {
+			const algorithm = document.getElementById('algorithm').value;
+			const epochs = document.getElementById('epochs').value;
+			const learningRate = document.getElementById('learning-rate').value;
+			const batchSize = document.getElementById('batch-size').value;
+			const testSize = document.getElementById('test-size').value;
+			
+			showLoading('正在训练模型...', '请耐心等待');
+			
+			// 模拟训练进度 - 实际项目中需要通过WebSocket或轮询获取训练进度
+			let progress = 0;
+			const interval = setInterval(() => {
+				progress += Math.random() * 10;
+				if (progress >= 100) {
+					progress = 100;
+					clearInterval(interval);
+					
+					setTimeout(() => {
+						hideLoading();
+						showTrainingResult();
+						showSuccess('模型训练完成');
+						
+						// 实际项目中这里会调用后端API
+						// API: POST /api/model/train
+						// 参数: { algorithm, epochs, learningRate, batchSize, testSize }
+						console.log('开始模型训练:', { algorithm, epochs, learningRate, batchSize, testSize });
+					}, 500);
+				}
+				
+				updateTrainingStatus(progress);
+			}, 500);
+		}
+		
+		function updateTrainingStatus(progress) {
+			const statusDiv = document.getElementById('training-status');
+			statusDiv.innerHTML = `
+				<div class="space-y-4">
+					<div class="w-full bg-gray-200 rounded-full h-2">
+						<div class="bg-blue-600 h-2 rounded-full transition-all duration-300" style="width: ${progress}%"></div>
+					</div>
+					<p class="text-sm text-gray-600">训练进度: ${Math.round(progress)}%</p>
+					<p class="text-xs text-gray-500">正在训练模型参数...</p>
+				</div>
+			`;
+		}
+		
+		function showTrainingResult() {
+			const statusDiv = document.getElementById('training-status');
+			statusDiv.innerHTML = `
+				<div class="text-center">
+					<i class="fa fa-check-circle text-4xl text-green-500 mb-3"></i>
+					<p class="text-lg font-medium text-gray-900">训练完成</p>
+					<div class="mt-4 space-y-2 text-sm">
+						<div class="flex justify-between">
+							<span class="text-gray-600">准确率:</span>
+							<span class="font-medium">96.8%</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">召回率:</span>
+							<span class="font-medium">94.2%</span>
+						</div>
+						<div class="flex justify-between">
+							<span class="text-gray-600">F1分数:</span>
+							<span class="font-medium">95.5%</span>
+						</div>
+					</div>
+					<button onclick="deployModel()" class="mt-4 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+						部署模型
+					</button>
+				</div>
+			`;
+		}
+		
+		function deployModel() {
+			showLoading('正在部署模型...');
+			
+			// 模拟API调用 - 实际项目中需要替换为真实API调用
+			setTimeout(() => {
+				hideLoading();
+				showSuccess('模型部署成功');
+				
+				// 实际项目中这里会调用后端API
+				// API: POST /api/model/deploy
+				console.log('部署模型');
+			}, 1000);
+		}
+		
+		function formatFileSize(bytes) {
+			if (bytes === 0) return '0 Bytes';
+			const k = 1024;
+			const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+			const i = Math.floor(Math.log(bytes) / Math.log(k));
+			return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+		}
+		
+		// 平滑滚动
+		document.documentElement.style.scrollBehavior = 'smooth';
+	</script>
+</body>
+</html>
