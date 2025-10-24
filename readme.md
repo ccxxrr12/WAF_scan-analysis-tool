@@ -1,138 +1,138 @@
-**¿ÆÄ¿20£ºWAF¹æÔòÖÇÄÜÊ¶±ðÓë·ÖÎö¹¤¾ßÉè¼Æ**
+**ç§‘ç›®20ï¼šWAFè§„åˆ™æ™ºèƒ½è¯†åˆ«ä¸Žåˆ†æžå·¥å…·è®¾è®¡**
 
-### ¿ÆÄ¿ºËÐÄÄ¿±ê²ð½â
+### ç§‘ç›®æ ¸å¿ƒç›®æ ‡æ‹†è§£
 
-¸Ã¿ÆÄ¿ÒªÇó¿ª·¢Ò»¸öÈýºÏÒ»µÄ×¨Òµ¹¤¾ß£¬±¾ÏîÄ¿½«Æä·Ö½âÎª£º
-1.  **Ê¶±ðÄ¿±êÍøÕ¾Ê¹ÓÃÁËÄÄÖÖWAF**£¨Ö¸ÎÆÊ¶±ð£©¡£
-2.  **½âÎö²¢Àí½â¸ÃWAFµÄ¹æÔò¼¯**£¨¹æÔò·ÖÎö£©¡£
-3.  **ÖÇÄÜµØÅÐ¶ÏÒ»¸öÇëÇóÊÇ·ñ»á±»WAFÀ¹½Ø**£¨ÖÇÄÜ¼ì²â£©¡£
+è¯¥ç§‘ç›®è¦æ±‚å¼€å‘ä¸€ä¸ªä¸‰åˆä¸€çš„ä¸“ä¸šå·¥å…·ï¼Œæœ¬é¡¹ç›®å°†å…¶åˆ†è§£ä¸ºï¼š
+1.  **è¯†åˆ«ç›®æ ‡ç½‘ç«™ä½¿ç”¨äº†å“ªç§WAF**ï¼ˆæŒ‡çº¹è¯†åˆ«ï¼‰ã€‚
+2.  **è§£æžå¹¶ç†è§£è¯¥WAFçš„è§„åˆ™é›†**ï¼ˆè§„åˆ™åˆ†æžï¼‰ã€‚
+3.  **æ™ºèƒ½åœ°åˆ¤æ–­ä¸€ä¸ªè¯·æ±‚æ˜¯å¦ä¼šè¢«WAFæ‹¦æˆª**ï¼ˆæ™ºèƒ½æ£€æµ‹ï¼‰ã€‚
 
 
 
 ---
 
-### µÚÒ»²¿·Ö£ºWAFÖ¸ÎÆÊ¶±ðÒýÇæ¿ª·¢
+### ç¬¬ä¸€éƒ¨åˆ†ï¼šWAFæŒ‡çº¹è¯†åˆ«å¼•æ“Žå¼€å‘
 
-**Ä¿±ê**£º±»¶¯»òÖ÷¶¯µØÌ½²âÒ»¸öWebÓ¦ÓÃ£¬ÅÐ¶ÏÆä±³ºóÊÇ·ñÓÐWAF£¬²¢Ê¶±ð³ö¾ßÌåµÄWAF²úÆ·£¨ÈçCloudflare, AWS WAF, ModSecurityµÈ£©¡£
+**ç›®æ ‡**ï¼šè¢«åŠ¨æˆ–ä¸»åŠ¨åœ°æŽ¢æµ‹ä¸€ä¸ªWebåº”ç”¨ï¼Œåˆ¤æ–­å…¶èƒŒåŽæ˜¯å¦æœ‰WAFï¼Œå¹¶è¯†åˆ«å‡ºå…·ä½“çš„WAFäº§å“ï¼ˆå¦‚Cloudflare, AWS WAF, ModSecurityç­‰ï¼‰ã€‚
 
-#### ³õ²½Ë¼Â·
+#### åˆæ­¥æ€è·¯
 
-1.  **±»¶¯¼ì²â**
-    *   **Ô­Àí**£ºÐí¶àWAF»áÔÚHTTPÏìÓ¦Í·¡¢Cookie»ò´íÎóÒ³ÃæÖÐÁôÏÂ¶ÀÌØµÄ¡°Ö¸ÎÆ¡±¡£
-    *   **ÊµÏÖ**£º
-        *   **Ö¸ÎÆ¿â¹¹½¨**£ºÊÕ¼¯Ö÷Á÷WAFµÄ¶ÀÌØ±êÊ¶¡£ÀýÈç£º
-            *   **Cloudflare**£º `__cfduid` Cookie£¬ `cf-ray` ÏìÓ¦Í·£¬ `server: cloudflare` Í·¡£
-            *   **AWS WAF**£º `x-amz-id-2`, `x-amz-request-id` Í·£¨µ±ÓëAWS·þÎñ¼¯³ÉÊ±£©¡£
-            *   **Imperva (Incapsula)**£º `visid_incap_` Cookie£¬ `X-CDN: Incapsula` Í·¡£
-            *   **ModSecurity**£º ¿ÉÄÜ·µ»Ø `406 Not Acceptable` ×´Ì¬Âë£¬»òÔÚÏìÓ¦ÌåÖÐ°üº¬ÌØ¶¨×Ö·û´®¡£
-        *   **¼ì²âÒýÇæ**£º·¢ËÍÒ»¸öÕý³£µÄHTTPÇëÇó£¨ÈçGET /£©£¬È»ºó¼ì²éÏìÓ¦Í·/ÌåÊÇ·ñÓëÖ¸ÎÆ¿âÖÐµÄÌõÄ¿Æ¥Åä¡£Õâ¿ÉÒÔÓÃ¼òµ¥µÄ×Ö·û´®Æ¥Åä»òÕýÔò±í´ïÊ½ÊµÏÖ¡£
+1.  **è¢«åŠ¨æ£€æµ‹**
+    *   **åŽŸç†**ï¼šè®¸å¤šWAFä¼šåœ¨HTTPå“åº”å¤´ã€Cookieæˆ–é”™è¯¯é¡µé¢ä¸­ç•™ä¸‹ç‹¬ç‰¹çš„â€œæŒ‡çº¹â€ã€‚
+    *   **å®žçŽ°**ï¼š
+        *   **æŒ‡çº¹åº“æž„å»º**ï¼šæ”¶é›†ä¸»æµWAFçš„ç‹¬ç‰¹æ ‡è¯†ã€‚ä¾‹å¦‚ï¼š
+            *   **Cloudflare**ï¼š `__cfduid` Cookieï¼Œ `cf-ray` å“åº”å¤´ï¼Œ `server: cloudflare` å¤´ã€‚
+            *   **AWS WAF**ï¼š `x-amz-id-2`, `x-amz-request-id` å¤´ï¼ˆå½“ä¸ŽAWSæœåŠ¡é›†æˆæ—¶ï¼‰ã€‚
+            *   **Imperva (Incapsula)**ï¼š `visid_incap_` Cookieï¼Œ `X-CDN: Incapsula` å¤´ã€‚
+            *   **ModSecurity**ï¼š å¯èƒ½è¿”å›ž `406 Not Acceptable` çŠ¶æ€ç ï¼Œæˆ–åœ¨å“åº”ä½“ä¸­åŒ…å«ç‰¹å®šå­—ç¬¦ä¸²ã€‚
+        *   **æ£€æµ‹å¼•æ“Ž**ï¼šå‘é€ä¸€ä¸ªæ­£å¸¸çš„HTTPè¯·æ±‚ï¼ˆå¦‚GET /ï¼‰ï¼Œç„¶åŽæ£€æŸ¥å“åº”å¤´/ä½“æ˜¯å¦ä¸ŽæŒ‡çº¹åº“ä¸­çš„æ¡ç›®åŒ¹é…ã€‚è¿™å¯ä»¥ç”¨ç®€å•çš„å­—ç¬¦ä¸²åŒ¹é…æˆ–æ­£åˆ™è¡¨è¾¾å¼å®žçŽ°ã€‚
 
-2.  **Ö÷¶¯Ì½²â**
-    *   **Ô­Àí**£º¹ÊÒâ·¢ËÍÒ»Ð©¿´ËÆ¶ñÒâ»òÒì³£µÄHTTPÇëÇó£¬¹Û²ìWAFµÄÏìÓ¦ÓëÕý³£Web·þÎñÆ÷µÄ²îÒì¡£
-    *   **ÊµÏÖ**£º
-        *   **¶ñÒâÔØºÉ¿â**£º¹¹½¨Ò»¸ö°üº¬³£¼û¹¥»÷Æ¬¶ÎµÄÔØºÉ¿â£¬Èç `' OR 1=1--` (SQLi), `<script>alert(1)</script>` (XSS)¡£
-        *   **²îÒì·ÖÎö**£º
-            *   ÏòÄ¿±ê·¢ËÍÒ»¸öÕý³£ÇëÇó£¬¼ÇÂ¼ÏìÓ¦£¨×´Ì¬Âë¡¢ÏìÓ¦Ìå³¤¶ÈµÈ£©¡£
-            *   ·¢ËÍÒ»¸ö¶ñÒâÔØºÉ£¬ÔÙ´Î¼ÇÂ¼ÏìÓ¦¡£
-            *   **WAF´æÔÚÖ¸±ê**£º
-                *   **×´Ì¬Âë²îÒì**£ºÕý³£ÇëÇó·µ»Ø200£¬¶ñÒâÇëÇó·µ»Ø403/406/501µÈ¡£
-                *   **ÏìÓ¦Ìå²îÒì**£º³öÏÖÌØ¶¨µÄWAFÀ¹½ØÒ³Ãæ£¨ÈçCloudflareµÄÌôÕ½Ò³Ãæ£©¡£
-                *   **ÏìÓ¦Ê±¼ä²îÒì**£ºWAFµÄ¼ì²âÂß¼­¿ÉÄÜµ¼ÖÂÇëÇó´¦Àí±äÂý¡£
-        *   **Ö¸ÎÆ¾«Ï¸Ê¶±ð**£º²»Í¬µÄWAF¶ÔÍ¬Ò»¹¥»÷µÄÀ¹½ØÒ³ÃæºÍÏìÓ¦Í·²»Í¬£¬Í¨¹ý·ÖÎöÕâÐ©²îÒì¿ÉÒÔ¾«È·¶¨Î»WAFÀàÐÍ¡£
+2.  **ä¸»åŠ¨æŽ¢æµ‹**
+    *   **åŽŸç†**ï¼šæ•…æ„å‘é€ä¸€äº›çœ‹ä¼¼æ¶æ„æˆ–å¼‚å¸¸çš„HTTPè¯·æ±‚ï¼Œè§‚å¯ŸWAFçš„å“åº”ä¸Žæ­£å¸¸WebæœåŠ¡å™¨çš„å·®å¼‚ã€‚
+    *   **å®žçŽ°**ï¼š
+        *   **æ¶æ„è½½è·åº“**ï¼šæž„å»ºä¸€ä¸ªåŒ…å«å¸¸è§æ”»å‡»ç‰‡æ®µçš„è½½è·åº“ï¼Œå¦‚ `' OR 1=1--` (SQLi), `<script>alert(1)</script>` (XSS)ã€‚
+        *   **å·®å¼‚åˆ†æž**ï¼š
+            *   å‘ç›®æ ‡å‘é€ä¸€ä¸ªæ­£å¸¸è¯·æ±‚ï¼Œè®°å½•å“åº”ï¼ˆçŠ¶æ€ç ã€å“åº”ä½“é•¿åº¦ç­‰ï¼‰ã€‚
+            *   å‘é€ä¸€ä¸ªæ¶æ„è½½è·ï¼Œå†æ¬¡è®°å½•å“åº”ã€‚
+            *   **WAFå­˜åœ¨æŒ‡æ ‡**ï¼š
+                *   **çŠ¶æ€ç å·®å¼‚**ï¼šæ­£å¸¸è¯·æ±‚è¿”å›ž200ï¼Œæ¶æ„è¯·æ±‚è¿”å›ž403/406/501ç­‰ã€‚
+                *   **å“åº”ä½“å·®å¼‚**ï¼šå‡ºçŽ°ç‰¹å®šçš„WAFæ‹¦æˆªé¡µé¢ï¼ˆå¦‚Cloudflareçš„æŒ‘æˆ˜é¡µé¢ï¼‰ã€‚
+                *   **å“åº”æ—¶é—´å·®å¼‚**ï¼šWAFçš„æ£€æµ‹é€»è¾‘å¯èƒ½å¯¼è‡´è¯·æ±‚å¤„ç†å˜æ…¢ã€‚
+        *   **æŒ‡çº¹ç²¾ç»†è¯†åˆ«**ï¼šä¸åŒçš„WAFå¯¹åŒä¸€æ”»å‡»çš„æ‹¦æˆªé¡µé¢å’Œå“åº”å¤´ä¸åŒï¼Œé€šè¿‡åˆ†æžè¿™äº›å·®å¼‚å¯ä»¥ç²¾ç¡®å®šä½WAFç±»åž‹ã€‚
 
-#### Ïà¹Ø¿âÓë×ÊÔ´
+#### ç›¸å…³åº“ä¸Žèµ„æº
 
-*   **ºËÐÄ²Î¿¼ÏîÄ¿**:
-    *   **https://github.com/EnableSecurity/wafw00f  **Òµ½ç±ê×¼**µÄWAFÖ¸ÎÆÊ¶±ð¹¤¾ß¡£ÆäÔ´ÂëÊÇÑ§Ï°±»¶¯ºÍÖ÷¶¯Ì½²â·½·¨µÄ**  
+*   **æ ¸å¿ƒå‚è€ƒé¡¹ç›®**:
+    *   **https://github.com/EnableSecurity/wafw00f  **ä¸šç•Œæ ‡å‡†**çš„WAFæŒ‡çº¹è¯†åˆ«å·¥å…·ã€‚å…¶æºç æ˜¯å­¦ä¹ è¢«åŠ¨å’Œä¸»åŠ¨æŽ¢æµ‹æ–¹æ³•çš„**  
     *   **https://github.com/projectdiscovery/nuclei** 
 
-*   **¸¨Öú¿â**:
-    *   **Python HTTP¿â**£º https://github.com/psf/requests »òÐÔÄÜ¸üºÃµÄ https://github.com/encode/httpx£¬ÓÃÓÚ·¢ËÍHTTPÇëÇó¡£
+*   **è¾…åŠ©åº“**:
+    *   **Python HTTPåº“**ï¼š https://github.com/psf/requests æˆ–æ€§èƒ½æ›´å¥½çš„ https://github.com/encode/httpxï¼Œç”¨äºŽå‘é€HTTPè¯·æ±‚ã€‚
 
 
 ---
 
-### µÚ¶þ²¿·Ö£º¹æÔò½âÎöÓëÓï·¨·ÖÎö
+### ç¬¬äºŒéƒ¨åˆ†ï¼šè§„åˆ™è§£æžä¸Žè¯­æ³•åˆ†æž
 
-**Ä¿±ê**£ºÊµÏÖ¶ÔModSecurityµÈWAF¹æÔòÎÄ¼þµÄ½âÎö£¬Àí½âÆäÓï·¨½á¹¹£¬²¢ÄÜ½øÐÐ¸ß¼¶·ÖÎö£¨ÈçÒÀÀµ¡¢³åÍ»¼ì²â£©ºÍ¿ÉÊÓ»¯¡£
+**ç›®æ ‡**ï¼šå®žçŽ°å¯¹ModSecurityç­‰WAFè§„åˆ™æ–‡ä»¶çš„è§£æžï¼Œç†è§£å…¶è¯­æ³•ç»“æž„ï¼Œå¹¶èƒ½è¿›è¡Œé«˜çº§åˆ†æžï¼ˆå¦‚ä¾èµ–ã€å†²çªæ£€æµ‹ï¼‰å’Œå¯è§†åŒ–ã€‚
 
-#### ³õ²½Ë¼Â·
+#### åˆæ­¥æ€è·¯
 
-1.  **Óï·¨½âÎöÆ÷¿ª·¢**
-    *   **Ô­Àí**£ºÕâÊÇÒ»¸öµäÐÍµÄ±àÒëÔ­ÀíÎÊÌâ¡£ÄãÐèÒªÎªModSecurity¹æÔòÓïÑÔ¶¨ÒåÒ»Ì×**Óï·¨¹æÔò**¡£
-    *   **ÊµÏÖÂ·¾¶**£º
-        *   **Â·¾¶A£¨¿ìËÙÊµÏÖ£©**£ºÊ¹ÓÃ**ÕýÔò±í´ïÊ½**¡£ModSecurity¹æÔò£¨Èç `SecRule ARGS "@rx <script>" "id:1,block"`£©ÓÐÏà¶Ô¹Ì¶¨µÄÄ£Ê½£¬¿ÉÒÔÓÃÕýÔòÌáÈ¡³öÖ¸Áî¡¢±äÁ¿¡¢²Ù×÷·ûºÍ¶¯×÷¡£
-        *   **Â·¾¶B£¨±ê×¼·½·¨£©**£ºÊ¹ÓÃ**½âÎöÆ÷Éú³ÉÆ÷**¡£ÕâÊÇ×îÇ¿´óºÍ×¼È·µÄ·½·¨¡£
-            *   ¶¨Òå´Ê·¨¹æÔò£¨Ê¶±ð¹Ø¼ü×ÖÈç `SecRule`¡¢×Ö·û´®¡¢¶ººÅµÈ£©¡£
-            *   ¶¨ÒåÓï·¨¹æÔò£¨BNF·¶Ê½£©£¬ÃèÊöÒ»Ìõ¹æÔòÓÉÄÄÐ©²¿·Ö°´Ê²Ã´Ë³Ðò¹¹³É¡£
-            *   Ê¹ÓÃ¹¤¾ßÈç **https://www.antlr.org/** »ò PythonµÄ **https://github.com/dabeaz/ply** Éú³É½âÎöÆ÷¡£Õâ½«ÎªÄãÉú³ÉÒ»¸ö¿ÉÒÔ±éÀúµÄ**³éÏóÓï·¨Ê÷**¡£
+1.  **è¯­æ³•è§£æžå™¨å¼€å‘**
+    *   **åŽŸç†**ï¼šè¿™æ˜¯ä¸€ä¸ªå…¸åž‹çš„ç¼–è¯‘åŽŸç†é—®é¢˜ã€‚ä½ éœ€è¦ä¸ºModSecurityè§„åˆ™è¯­è¨€å®šä¹‰ä¸€å¥—**è¯­æ³•è§„åˆ™**ã€‚
+    *   **å®žçŽ°è·¯å¾„**ï¼š
+        *   **è·¯å¾„Aï¼ˆå¿«é€Ÿå®žçŽ°ï¼‰**ï¼šä½¿ç”¨**æ­£åˆ™è¡¨è¾¾å¼**ã€‚ModSecurityè§„åˆ™ï¼ˆå¦‚ `SecRule ARGS "@rx <script>" "id:1,block"`ï¼‰æœ‰ç›¸å¯¹å›ºå®šçš„æ¨¡å¼ï¼Œå¯ä»¥ç”¨æ­£åˆ™æå–å‡ºæŒ‡ä»¤ã€å˜é‡ã€æ“ä½œç¬¦å’ŒåŠ¨ä½œã€‚
+        *   **è·¯å¾„Bï¼ˆæ ‡å‡†æ–¹æ³•ï¼‰**ï¼šä½¿ç”¨**è§£æžå™¨ç”Ÿæˆå™¨**ã€‚è¿™æ˜¯æœ€å¼ºå¤§å’Œå‡†ç¡®çš„æ–¹æ³•ã€‚
+            *   å®šä¹‰è¯æ³•è§„åˆ™ï¼ˆè¯†åˆ«å…³é”®å­—å¦‚ `SecRule`ã€å­—ç¬¦ä¸²ã€é€—å·ç­‰ï¼‰ã€‚
+            *   å®šä¹‰è¯­æ³•è§„åˆ™ï¼ˆBNFèŒƒå¼ï¼‰ï¼Œæè¿°ä¸€æ¡è§„åˆ™ç”±å“ªäº›éƒ¨åˆ†æŒ‰ä»€ä¹ˆé¡ºåºæž„æˆã€‚
+            *   ä½¿ç”¨å·¥å…·å¦‚ **https://www.antlr.org/** æˆ– Pythonçš„ **https://github.com/dabeaz/ply** ç”Ÿæˆè§£æžå™¨ã€‚è¿™å°†ä¸ºä½ ç”Ÿæˆä¸€ä¸ªå¯ä»¥éåŽ†çš„**æŠ½è±¡è¯­æ³•æ ‘**ã€‚
 
-2.  **ÓïÒå·ÖÎöÓë¸ß¼¶¹¦ÄÜ**
-    *   **ÒÀÀµ¹ØÏµ¼ì²â**£º¹æÔò¿ÉÒÔÍ¨¹ý `chain` ¶¯×÷Á´½Ó¡£½âÎöÆ÷ÐèÒªÄÜÊ¶±ð³öÕâÐ©Á´Ê½¹æÔò£¬²¢½«ÆäÊÓÎªÒ»¸öÂß¼­ÕûÌå¡£
-    *   **³åÍ»¼ì²é**£º¼ì²éÊÇ·ñÓÐÁ½Ìõ¹æÔòIDÏàÍ¬£¬»òÊÇ·ñ´æÔÚÂß¼­ÉÏ¿ÉÄÜÃ¬¶ÜµÄ¹æÔò£¨ÕâÐèÒª¸üÉîµÄÓïÒåÀí½â£©¡£
-    *   **¿ÉÊÓ»¯£¨AST£©**£º½«½âÎöºóµÄ¹æÔò½á¹¹ÓÃÊ÷ÐÎÍ¼Õ¹Ê¾¡£¿ÉÒÔÊ¹ÓÃ **https://graphviz.org/** µÄPython½Ó¿Ú£¨https://github.com/pydot/pydot£©À´Éú³É¹æÔòÂß¼­µÄÁ÷³ÌÍ¼¡£
+2.  **è¯­ä¹‰åˆ†æžä¸Žé«˜çº§åŠŸèƒ½**
+    *   **ä¾èµ–å…³ç³»æ£€æµ‹**ï¼šè§„åˆ™å¯ä»¥é€šè¿‡ `chain` åŠ¨ä½œé“¾æŽ¥ã€‚è§£æžå™¨éœ€è¦èƒ½è¯†åˆ«å‡ºè¿™äº›é“¾å¼è§„åˆ™ï¼Œå¹¶å°†å…¶è§†ä¸ºä¸€ä¸ªé€»è¾‘æ•´ä½“ã€‚
+    *   **å†²çªæ£€æŸ¥**ï¼šæ£€æŸ¥æ˜¯å¦æœ‰ä¸¤æ¡è§„åˆ™IDç›¸åŒï¼Œæˆ–æ˜¯å¦å­˜åœ¨é€»è¾‘ä¸Šå¯èƒ½çŸ›ç›¾çš„è§„åˆ™ï¼ˆè¿™éœ€è¦æ›´æ·±çš„è¯­ä¹‰ç†è§£ï¼‰ã€‚
+    *   **å¯è§†åŒ–ï¼ˆASTï¼‰**ï¼šå°†è§£æžåŽçš„è§„åˆ™ç»“æž„ç”¨æ ‘å½¢å›¾å±•ç¤ºã€‚å¯ä»¥ä½¿ç”¨ **https://graphviz.org/** çš„PythonæŽ¥å£ï¼ˆhttps://github.com/pydot/pydotï¼‰æ¥ç”Ÿæˆè§„åˆ™é€»è¾‘çš„æµç¨‹å›¾ã€‚
 
-#### Ïà¹Ø¿âÓë×ÊÔ´
+#### ç›¸å…³åº“ä¸Žèµ„æº
 
-*   **ºËÐÄ²Î¿¼ÏîÄ¿**:
-    *   https://github.com/coreruleset/coreruleset ModSecurityµÄ¹Ù·½¹æÔò¼¯¡£(**²âÊÔÊý¾ÝÔ´**)
-    *   https://github.com/SpiderLabs/ModSecurity  ¹Ù·½ÒýÇæÔ´Âë
+*   **æ ¸å¿ƒå‚è€ƒé¡¹ç›®**:
+    *   https://github.com/coreruleset/coreruleset ModSecurityçš„å®˜æ–¹è§„åˆ™é›†ã€‚(**æµ‹è¯•æ•°æ®æº**)
+    *   https://github.com/SpiderLabs/ModSecurity  å®˜æ–¹å¼•æ“Žæºç 
 
-*   **½âÎöÆ÷¿ª·¢¹¤¾ß**:
-    *   https://github.com/dabeaz/ply Python Lex-Yacc£¬´¿PythonÊµÏÖµÄ½âÎöÆ÷Éú³É¹¤¾ß
-    *   https://github.com/antlr/antlr4 ¹¦ÄÜ¸üÇ¿´óµÄ½âÎöÆ÷Éú³ÉÆ÷£¬Ö§³Ö¶àÖÖÄ¿±êÓïÑÔ
+*   **è§£æžå™¨å¼€å‘å·¥å…·**:
+    *   https://github.com/dabeaz/ply Python Lex-Yaccï¼Œçº¯Pythonå®žçŽ°çš„è§£æžå™¨ç”Ÿæˆå·¥å…·
+    *   https://github.com/antlr/antlr4 åŠŸèƒ½æ›´å¼ºå¤§çš„è§£æžå™¨ç”Ÿæˆå™¨ï¼Œæ”¯æŒå¤šç§ç›®æ ‡è¯­è¨€
 
-*   **¿ÉÊÓ»¯¹¤¾ß**:
-    *   https://github.com/pydot/pydot GraphvizµÄPython½Ó¿Ú£¬ÓÃÓÚ´´½¨Í¼ÐÎ¡£
-    *   https://github.com/matplotlib/matplotlib »æÍ¼¿â
+*   **å¯è§†åŒ–å·¥å…·**:
+    *   https://github.com/pydot/pydot Graphvizçš„PythonæŽ¥å£ï¼Œç”¨äºŽåˆ›å»ºå›¾å½¢ã€‚
+    *   https://github.com/matplotlib/matplotlib ç»˜å›¾åº“
 
 ---
 
-### µÚÈý²¿·Ö£ºÖÇÄÜ¼ì²âÓë»úÆ÷Ñ§Ï°¼¯³É
+### ç¬¬ä¸‰éƒ¨åˆ†ï¼šæ™ºèƒ½æ£€æµ‹ä¸Žæœºå™¨å­¦ä¹ é›†æˆ
 
-**Ä¿±ê**£ºÊÕ¼¯WAFµÄÀ¹½ØÑù±¾£¬ÑµÁ·Ò»¸öAIÄ£ÐÍ£¬Ê¹ÆäÄÜ¹»Ö±½ÓÅÐ¶ÏÒ»¸öHTTPÇëÇóÊÇ·ñ¡°¿´ÆðÀ´¡±»á±»WAFÀ¹½Ø¡£
+**ç›®æ ‡**ï¼šæ”¶é›†WAFçš„æ‹¦æˆªæ ·æœ¬ï¼Œè®­ç»ƒä¸€ä¸ªAIæ¨¡åž‹ï¼Œä½¿å…¶èƒ½å¤Ÿç›´æŽ¥åˆ¤æ–­ä¸€ä¸ªHTTPè¯·æ±‚æ˜¯å¦â€œçœ‹èµ·æ¥â€ä¼šè¢«WAFæ‹¦æˆªã€‚
 
-#### ³õ²½Ë¼Â·
+#### åˆæ­¥æ€è·¯
 
-1.  **Êý¾Ý¼¯¹¹½¨**
-    *   **Êý¾ÝÊÕ¼¯**£ºÊ¹ÓÃÄ£¿éÒ»£¨WAFÌ½²âÒýÇæ£©ºÍÄ£¿é¶þ£¨¹æÔò½âÎöÆ÷£©¡£
-        *   **·½·¨Ò»£¨»ùÓÚ¹æÔò£©**£º½âÎöCRS¹æÔò£¬×Ô¶¯Éú³É´óÁ¿ÄÜ´¥·¢Ã¿Ìõ¹æÔòµÄ¶ñÒâÇëÇóºÍÕý³£µÄÇëÇó¡£
-        *   **·½·¨¶þ£¨»ùÓÚÁ÷Á¿£©**£º¶ÔÒ»¸öÊÜWAF±£»¤µÄÍøÕ¾½øÐÐÉ¨ÃèºÍ¹¥»÷£¬²¶»ñËùÓÐÇëÇóºÍÏìÓ¦£¬ÈË¹¤»ò»ùÓÚ×´Ì¬Âë±ê¼ÇÄÄÐ©±»À¹½Ø¡£
-    *   **Êý¾Ý±ê×¢**£ºÃ¿¸öHTTPÇëÇóÑù±¾¶¼ÐèÒªÒ»¸ö±êÇ©£¬ÀýÈç `0`£¨·ÅÐÐ£©»ò `1`£¨À¹½Ø£©£¬»òÕß¸üÏ¸Á£¶ÈµÄ±êÇ©£¨ÈçSQLiÀ¹½Ø¡¢XSSÀ¹½Ø£©¡£
-    *   **ÌØÕ÷¹¤³Ì**£ºÈçÏÂÔ¤´¦ÀíÄÚÈÝ
-        *   **URLºÍ²ÎÊýÌØÕ÷**£ºURL³¤¶È¡¢²ÎÊý¸öÊý¡¢²ÎÊýÖµµÄ³¤¶È¡¢ÊÇ·ñ°üº¬ÌØÊâ×Ö·û£¨Èç `'`, `<`, `&`£©µÈ¡£
-        *   **ÇëÇóÍ·ÌØÕ÷**£ºUser-AgentÊÇ·ñ·Ç³£¼û¡¢Content-TypeÊÇ·ñÒì³£¡¢Í·²¿µÄÊýÁ¿µÈ¡£
-        *   **PayloadÎÄ±¾ÌØÕ÷**£º½«Õû¸öÇëÇóÌå»ò²ÎÊýÖµÊÓÎªÎÄ±¾£¬Ê¹ÓÃNLP¼¼ÊõÌáÈ¡ÌØÕ÷£¨Èç´Ê´üÄ£ÐÍ¡¢n-gram£©¡£»òÕßÖ±½ÓÊ¹ÓÃÔ¤ÑµÁ·Ä£ÐÍ½øÐÐ´ÊÇ¶Èë¡£
+1.  **æ•°æ®é›†æž„å»º**
+    *   **æ•°æ®æ”¶é›†**ï¼šä½¿ç”¨æ¨¡å—ä¸€ï¼ˆWAFæŽ¢æµ‹å¼•æ“Žï¼‰å’Œæ¨¡å—äºŒï¼ˆè§„åˆ™è§£æžå™¨ï¼‰ã€‚
+        *   **æ–¹æ³•ä¸€ï¼ˆåŸºäºŽè§„åˆ™ï¼‰**ï¼šè§£æžCRSè§„åˆ™ï¼Œè‡ªåŠ¨ç”Ÿæˆå¤§é‡èƒ½è§¦å‘æ¯æ¡è§„åˆ™çš„æ¶æ„è¯·æ±‚å’Œæ­£å¸¸çš„è¯·æ±‚ã€‚
+        *   **æ–¹æ³•äºŒï¼ˆåŸºäºŽæµé‡ï¼‰**ï¼šå¯¹ä¸€ä¸ªå—WAFä¿æŠ¤çš„ç½‘ç«™è¿›è¡Œæ‰«æå’Œæ”»å‡»ï¼Œæ•èŽ·æ‰€æœ‰è¯·æ±‚å’Œå“åº”ï¼Œäººå·¥æˆ–åŸºäºŽçŠ¶æ€ç æ ‡è®°å“ªäº›è¢«æ‹¦æˆªã€‚
+    *   **æ•°æ®æ ‡æ³¨**ï¼šæ¯ä¸ªHTTPè¯·æ±‚æ ·æœ¬éƒ½éœ€è¦ä¸€ä¸ªæ ‡ç­¾ï¼Œä¾‹å¦‚ `0`ï¼ˆæ”¾è¡Œï¼‰æˆ– `1`ï¼ˆæ‹¦æˆªï¼‰ï¼Œæˆ–è€…æ›´ç»†ç²’åº¦çš„æ ‡ç­¾ï¼ˆå¦‚SQLiæ‹¦æˆªã€XSSæ‹¦æˆªï¼‰ã€‚
+    *   **ç‰¹å¾å·¥ç¨‹**ï¼šå¦‚ä¸‹é¢„å¤„ç†å†…å®¹
+        *   **URLå’Œå‚æ•°ç‰¹å¾**ï¼šURLé•¿åº¦ã€å‚æ•°ä¸ªæ•°ã€å‚æ•°å€¼çš„é•¿åº¦ã€æ˜¯å¦åŒ…å«ç‰¹æ®Šå­—ç¬¦ï¼ˆå¦‚ `'`, `<`, `&`ï¼‰ç­‰ã€‚
+        *   **è¯·æ±‚å¤´ç‰¹å¾**ï¼šUser-Agentæ˜¯å¦éžå¸¸è§ã€Content-Typeæ˜¯å¦å¼‚å¸¸ã€å¤´éƒ¨çš„æ•°é‡ç­‰ã€‚
+        *   **Payloadæ–‡æœ¬ç‰¹å¾**ï¼šå°†æ•´ä¸ªè¯·æ±‚ä½“æˆ–å‚æ•°å€¼è§†ä¸ºæ–‡æœ¬ï¼Œä½¿ç”¨NLPæŠ€æœ¯æå–ç‰¹å¾ï¼ˆå¦‚è¯è¢‹æ¨¡åž‹ã€n-gramï¼‰ã€‚æˆ–è€…ç›´æŽ¥ä½¿ç”¨é¢„è®­ç»ƒæ¨¡åž‹è¿›è¡Œè¯åµŒå…¥ã€‚
 
-2.  **Ä£ÐÍÑ¡ÔñÓëÑµÁ·**
-    *   **»ùÏßÄ£ÐÍ**£ºÏÈ´Ó¼òµ¥µÄÄ£ÐÍ¿ªÊ¼£¬ÈçÂß¼­»Ø¹é¡¢Ëæ»úÉ­ÁÖ£¬ÒÔÆÀ¹ÀÌØÕ÷µÄÓÐÐ§ÐÔ¡£
-    *   **Éî¶ÈÑ§Ï°Ä£ÐÍ**£º
-        *   **ÎÄ±¾·ÖÀàÄ£ÐÍ**£º½«HTTPÇëÇóÊÓÎªÒ»¶ÎÎÄ±¾£¬Ê¹ÓÃCNN»òRNN£¨LSTM£©½øÐÐ·ÖÀà¡£
-        *   **½á¹¹»¯Êý¾ÝÄ£ÐÍ**£ºÈôÓÃÊÖ¹¤ÌáÈ¡ÌØÕ÷£¬¿ÉÒÔÊ¹ÓÃÈ«Á¬½ÓÉñ¾­ÍøÂç»òÌÝ¶ÈÌáÉýÊ÷£¨ÈçXGBoost£©¡£
-    *   **ÑµÁ·**£º½«Êý¾Ý¼¯·ÖÎªÑµÁ·¼¯¡¢ÑéÖ¤¼¯ºÍ²âÊÔ¼¯£¬Ê¹ÓÃÑéÖ¤¼¯µ÷Õû³¬²ÎÊý£¬×îÖÕÔÚ²âÊÔ¼¯ÉÏÆÀ¹À×¼È·ÂÊ¡¢ÕÙ»ØÂÊµÈÐÔÄÜÖ¸±ê¡£
+2.  **æ¨¡åž‹é€‰æ‹©ä¸Žè®­ç»ƒ**
+    *   **åŸºçº¿æ¨¡åž‹**ï¼šå…ˆä»Žç®€å•çš„æ¨¡åž‹å¼€å§‹ï¼Œå¦‚é€»è¾‘å›žå½’ã€éšæœºæ£®æž—ï¼Œä»¥è¯„ä¼°ç‰¹å¾çš„æœ‰æ•ˆæ€§ã€‚
+    *   **æ·±åº¦å­¦ä¹ æ¨¡åž‹**ï¼š
+        *   **æ–‡æœ¬åˆ†ç±»æ¨¡åž‹**ï¼šå°†HTTPè¯·æ±‚è§†ä¸ºä¸€æ®µæ–‡æœ¬ï¼Œä½¿ç”¨CNNæˆ–RNNï¼ˆLSTMï¼‰è¿›è¡Œåˆ†ç±»ã€‚
+        *   **ç»“æž„åŒ–æ•°æ®æ¨¡åž‹**ï¼šè‹¥ç”¨æ‰‹å·¥æå–ç‰¹å¾ï¼Œå¯ä»¥ä½¿ç”¨å…¨è¿žæŽ¥ç¥žç»ç½‘ç»œæˆ–æ¢¯åº¦æå‡æ ‘ï¼ˆå¦‚XGBoostï¼‰ã€‚
+    *   **è®­ç»ƒ**ï¼šå°†æ•°æ®é›†åˆ†ä¸ºè®­ç»ƒé›†ã€éªŒè¯é›†å’Œæµ‹è¯•é›†ï¼Œä½¿ç”¨éªŒè¯é›†è°ƒæ•´è¶…å‚æ•°ï¼Œæœ€ç»ˆåœ¨æµ‹è¯•é›†ä¸Šè¯„ä¼°å‡†ç¡®çŽ‡ã€å¬å›žçŽ‡ç­‰æ€§èƒ½æŒ‡æ ‡ã€‚
 
-#### Ïà¹Ø¿âÓë×ÊÔ´
+#### ç›¸å…³åº“ä¸Žèµ„æº
 
-*   **»úÆ÷Ñ§Ï°¿ò¼Ü**:
-    *   https://github.com/scikit-learn/scikit-learn ´«Í³»úÆ÷Ñ§Ï°Ä£ÐÍ
-    *   https://github.com/xgboost/xgboost ÌÝ¶ÈÌáÉý¿â¡£
-    *   https://github.com/pytorch/pytorch »ò https://github.com/tensorflow/tensorflow Éî¶ÈÑ§Ï°¿ò¼Ü¡£
+*   **æœºå™¨å­¦ä¹ æ¡†æž¶**:
+    *   https://github.com/scikit-learn/scikit-learn ä¼ ç»Ÿæœºå™¨å­¦ä¹ æ¨¡åž‹
+    *   https://github.com/xgboost/xgboost æ¢¯åº¦æå‡åº“ã€‚
+    *   https://github.com/pytorch/pytorch æˆ– https://github.com/tensorflow/tensorflow æ·±åº¦å­¦ä¹ æ¡†æž¶ã€‚
 
-*   **NLPÓëÎÄ±¾´¦Àí**:
-    *   https://github.com/keras-team/keras Éî¶ÈÑ§Ï°µÄ¸ß¼¶API£¬¿ÉÒÔ¿ìËÙ´î½¨CNN/LSTMÎÄ±¾·ÖÀàÄ£ÐÍ¡£
-    *   https://github.com/explosion/spaCy ¹¤Òµ¼¶NLP¿â£¬ÓÃÓÚÎÄ±¾´¦Àí¡£
+*   **NLPä¸Žæ–‡æœ¬å¤„ç†**:
+    *   https://github.com/keras-team/keras æ·±åº¦å­¦ä¹ çš„é«˜çº§APIï¼Œå¯ä»¥å¿«é€Ÿæ­å»ºCNN/LSTMæ–‡æœ¬åˆ†ç±»æ¨¡åž‹ã€‚
+    *   https://github.com/explosion/spaCy å·¥ä¸šçº§NLPåº“ï¼Œç”¨äºŽæ–‡æœ¬å¤„ç†ã€‚
 
 
 
-### ×Ü½áÓëÏîÄ¿¼Ü¹¹
+### æ€»ç»“ä¸Žé¡¹ç›®æž¶æž„
 
-×÷ÎªÒ»¸öÅÓ´óµÄÏîÄ¿£¬±¾×é²ÉÓÃ**Ä£¿é»¯¿ª·¢**£¬Èý¸ö²¿·ÖÏà¶Ô¶ÀÁ¢µØ½øÐÐ¡£
+ä½œä¸ºä¸€ä¸ªåºžå¤§çš„é¡¹ç›®ï¼Œæœ¬ç»„é‡‡ç”¨**æ¨¡å—åŒ–å¼€å‘**ï¼Œä¸‰ä¸ªéƒ¨åˆ†ç›¸å¯¹ç‹¬ç«‹åœ°è¿›è¡Œã€‚
 
-1.  **Ä£¿é&&·Ö¹¤**£º
-    *   **Ä£¿éÒ»**£ºÊµÏÖÖ¸ÎÆÊ¶±ðÒýÇæ£¬´òÔì¹¤¾ßµÄµÚÒ»¸ö¿ÉÓÃ¹¦ÄÜ¡£
-        * ³ÂÑ§î£ 
-    *   **µÚ¶þ½×¶Î**£º¹¥¿Ë¹æÔò½âÎöÆ÷£¨Ê¹ÓÃPLY£©£¬ÊµÏÖ¹æÔò¿ÉÊÓ»¯¡£
-        * ºØ¿¡½Ü Ðí¼Î¿¡ ÍõÌÕÑô
-    *   **µÚÈý½×¶Î**£ºÊÕ¼¯Êý¾Ý£¬ÑµÁ·ºÍ¼¯³É»úÆ÷Ñ§Ï°Ä£ÐÍ¡£
-        * ³ÂÑ§î£ ÀîîÚ¿­
-2.  **×îÖÕÐÎÌ¬**£ºÒ»¸öÃüÁîÐÐ³ÌÐò»òWeb½çÃæ¹¤¾ß£¬ÓÃ»§ÊäÈëÒ»¸öURL£¬¹¤¾ßÄÜ×Ô¶¯Ê¶±ðWAF¡¢½âÎöÆä¹æÔò£¨Èç¹û¿ÉÄÜ£©¡¢²¢ÀûÓÃAIÄ£ÐÍÔ¤²â¹¥»÷ÔØºÉµÄÈÆ¹ý¸ÅÂÊ¡£
+1.  **æ¨¡å—&&åˆ†å·¥**ï¼š
+    *   **æ¨¡å—ä¸€**ï¼šå®žçŽ°æŒ‡çº¹è¯†åˆ«å¼•æ“Žï¼Œæ‰“é€ å·¥å…·çš„ç¬¬ä¸€ä¸ªå¯ç”¨åŠŸèƒ½ã€‚
+        * é™ˆå­¦ç¿ 
+    *   **ç¬¬äºŒé˜¶æ®µ**ï¼šæ”»å…‹è§„åˆ™è§£æžå™¨ï¼ˆä½¿ç”¨PLYï¼‰ï¼Œå®žçŽ°è§„åˆ™å¯è§†åŒ–ã€‚
+        * è´ºä¿Šæ° è®¸å˜‰ä¿Š çŽ‹é™¶é˜³
+    *   **ç¬¬ä¸‰é˜¶æ®µ**ï¼šæ”¶é›†æ•°æ®ï¼Œè®­ç»ƒå’Œé›†æˆæœºå™¨å­¦ä¹ æ¨¡åž‹ã€‚
+        * é™ˆå­¦ç¿ æŽé’°å‡¯
+2.  **æœ€ç»ˆå½¢æ€**ï¼šä¸€ä¸ªå‘½ä»¤è¡Œç¨‹åºæˆ–Webç•Œé¢å·¥å…·ï¼Œç”¨æˆ·è¾“å…¥ä¸€ä¸ªURLï¼Œå·¥å…·èƒ½è‡ªåŠ¨è¯†åˆ«WAFã€è§£æžå…¶è§„åˆ™ï¼ˆå¦‚æžœå¯èƒ½ï¼‰ã€å¹¶åˆ©ç”¨AIæ¨¡åž‹é¢„æµ‹æ”»å‡»è½½è·çš„ç»•è¿‡æ¦‚çŽ‡ã€‚
