@@ -13,4 +13,4 @@
 * 对于全局变量、函数，使用`UTF-8`提供详细的中文注释
 
 已读列表：
-* 陈学睿 许嘉俊 demonPILLS real_demonPILL.
+* 陈学睿 数学家 demonPILLS real_demonPILL.
