@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WAF规则智能识别与分析工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb',
+                        secondary: '#64748b',
+                        accent: '#06b6d4',
+                        success: '#10b981',
+                        warning: '#f59e0b',
+                        danger: '#ef4444',
+                        dark: '#1e293b',
+                        light: '#f8fafc'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-in-out',
+                        'slide-up': 'slideUp 0.6s ease-out',
+                        'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                        'bounce-slow': 'bounce 2s infinite',
+                        'spin-slow': 'spin 3s linear infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .gradient-bg {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            .card-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .glass-effect {
+                backdrop-filter: blur(10px);
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .progress-bar {
+            transition: width 0.3s ease-in-out;
+        }
+        
+        .hover-scale {
+            transition: transform 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: scale(1.05);
+        }
+        
+        .scrollbar-thin {
+            scrollbar-width: thin;
+            scrollbar-color: #cbd5e1 transparent;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        .scrollbar-thin::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen font-inter">
+    <!-- 顶部导航 -->
+    <nav class="bg-white shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-shield-alt text-2xl text-primary"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold text-gray-900">WAF规则智能识别与分析工具</h1>
+                        <p class="text-xs text-gray-500">Web Application Firewall Analysis Tool</p>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <button id="aboutBtn" class="text-gray-600 hover:text-primary transition-colors">
+                        <i class="fas fa-info-circle mr-1"></i>关于
+                    </button>
+                    <button id="helpBtn" class="text-gray-600 hover:text-primary transition-colors">
+                        <i class="fas fa-question-circle mr-1"></i>帮助
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 主要内容区域 -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- 欢迎面板 -->
+        <div class="gradient-bg rounded-2xl p-8 mb-8 text-white text-center animate-fade-in">
+            <h2 class="text-4xl font-bold mb-4">
+                <i class="fas fa-bullseye mr-3"></i>智能WAF规则分析平台
+            </h2>
+            <p class="text-xl mb-6 opacity-90">
+                基于人工智能和深度学习的WAF规则智能识别、解析与分析工具
+            </p>
+            <div class="flex justify-center space-x-4">
+                <div class="glass-effect rounded-lg px-6 py-3">
+                    <i class="fas fa-search text-2xl mb-2"></i>
+                    <div class="text-sm">WAF指纹识别</div>
+                </div>
+                <div class="glass-effect rounded-lg px-6 py-3">
+                    <i class="fas fa-code text-2xl mb-2"></i>
+                    <div class="text-sm">规则解析分析</div>
+                </div>
+                <div class="glass-effect rounded-lg px-6 py-3">
+                    <i class="fas fa-brain text-2xl mb-2"></i>
+                    <div class="text-sm">智能检测分类</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 功能选择卡片 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- URL分析卡片 -->
+            <div class="bg-white rounded-xl card-shadow p-6 hover-scale cursor-pointer" onclick="showUrlAnalysis()">
+                <div class="flex items-center mb-4">
+                    <div class="bg-blue-100 p-3 rounded-lg mr-4">
+                        <i class="fas fa-globe text-2xl text-blue-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">URL智能分析</h3>
+                        <p class="text-gray-600">输入目标URL，自动识别WAF类型和防护策略</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>WAF指纹识别（Cloudflare、AWS WAF、Imperva等）</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>被动检测与主动探测相结合</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>防护策略智能推断</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 文件上传卡片 -->
+            <div class="bg-white rounded-xl card-shadow p-6 hover-scale cursor-pointer" onclick="showFileUpload()">
+                <div class="flex items-center mb-4">
+                    <div class="bg-green-100 p-3 rounded-lg mr-4">
+                        <i class="fas fa-file-upload text-2xl text-green-600"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900">规则文件分析</h3>
+                        <p class="text-gray-600">上传ModSecurity规则文件，深度解析和分析</p>
+                    </div>
+                </div>
+                <div class="space-y-3">
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>语法解析与语义分析</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>规则依赖关系检测</span>
+                    </div>
+                    <div class="flex items-center text-sm text-gray-600">
+                        <i class="fas fa-check-circle text-green-500 mr-2"></i>
+                        <span>冲突检测与优化建议</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- URL分析面板 -->
+        <div id="urlAnalysisPanel" class="hidden bg-white rounded-xl card-shadow p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-globe mr-2 text-blue-600"></i>URL智能分析
+                </h3>
+                <button onclick="hideUrlAnalysis()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">目标URL</label>
+                    <div class="flex space-x-2">
+                        <input type="url" id="targetUrl" placeholder="https://example.com" 
+                               class="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all">
+                        <button onclick="analyzeUrl()" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+                            <i class="fas fa-search mr-2"></i>分析
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 分析进度 -->
+                <div id="urlAnalysisProgress" class="hidden">
+                    <div class="bg-gray-200 rounded-full h-2">
+                        <div id="urlProgressBar" class="bg-blue-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-2 text-sm text-gray-600">
+                        <span id="urlProgressText">正在分析...</span>
+                        <span id="urlProgressPercent">0%</span>
+                    </div>
+                </div>
+
+                <!-- 分析结果 -->
+                <div id="urlAnalysisResults" class="hidden space-y-6">
+                    <!-- WAF指纹识别结果 -->
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-fingerprint mr-2 text-blue-600"></i>WAF指纹识别结果
+                        </h4>
+                        <div id="fingerprintResults" class="space-y-4">
+                            <!-- 结果将通过JavaScript动态填充 -->
+                        </div>
+                    </div>
+
+                    <!-- 智能检测结果 -->
+                    <div class="border border-gray-200 rounded-lg p-6">
+                        <h4 class="text-lg font-semibold text-gray-900 mb-4">
+                            <i class="fas fa-brain mr-2 text-purple-600"></i>智能检测结果
+                        </h4>
+                        <div id="mlDetectionResults" class="space-y-4">
+                            <!-- 结果将通过JavaScript动态填充 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 文件上传面板 -->
+        <div id="fileUploadPanel" class="hidden bg-white rounded-xl card-shadow p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-file-upload mr-2 text-green-600"></i>规则文件分析
+                </h3>
+                <button onclick="hideFileUpload()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-6">
+                <!-- 文件上传区域 -->
+                <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                     onclick="document.getElementById('fileInput').click()">
+                    <input type="file" id="fileInput" accept=".conf,.rules,.txt" class="hidden" onchange="handleFileSelect(event)">
+                    <i class="fas fa-cloud-upload-alt text-4xl text-gray-400 mb-4"></i>
+                    <h4 class="text-lg font-medium text-gray-700 mb-2">拖拽文件到此处或点击上传</h4>
+                    <p class="text-gray-500 mb-4">支持 .conf, .rules, .txt 格式文件，最大16MB</p>
+                    <div id="fileInfo" class="hidden">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <i class="fas fa-file-alt text-green-500 mr-3"></i>
+                                    <div>
+                                        <div id="fileName" class="font-medium text-gray-900"></div>
+                                        <div id="fileSize" class="text-sm text-gray-500"></div>
+                                    </div>
+                                </div>
+                                <button onclick="removeFile()" class="text-red-500 hover:text-red-700">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分析按钮 -->
+                <div id="analyzeButtonContainer" class="hidden text-center">
+                    <button onclick="startAnalysis()" class="bg-green-600 text-white px-8 py-3 rounded-lg hover:bg-green-700 transition-colors">
+                        <i class="fas fa-play mr-2"></i>开始分析
+                    </button>
+                </div>
+
+                <!-- 分析进度 -->
+                <div id="fileAnalysisProgress" class="hidden">
+                    <div class="bg-gray-200 rounded-full h-2">
+                        <div id="fileProgressBar" class="bg-green-600 h-2 rounded-full progress-bar" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-2 text-sm text-gray-600">
+                        <span id="fileProgressText">正在初始化...</span>
+                        <span id="fileProgressPercent">0%</span>
+                    </div>
+                </div>
+
+                <!-- 分析结果标签页 -->
+                <div id="analysisTabs" class="hidden">
+                    <div class="border-b border-gray-200">
+                        <nav class="-mb-px flex space-x-8">
+                            <button onclick="showTab('summary')" id="tab-summary" class="tab-button border-b-2 border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 text-sm font-medium">
+                                <i class="fas fa-chart-pie mr-2"></i>分析摘要
+                            </button>
+                            <button onclick="showTab('parsing')" id="tab-parsing" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium">
+                                <i class="fas fa-code mr-2"></i>语法解析
+                            </button>
+                            <button onclick="showTab('semantic')" id="tab-semantic" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium">
+                                <i class="fas fa-bullseye mr-2"></i>语义分析
+                            </button>
+                            <button onclick="showTab('dependencies')" id="tab-dependencies" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium">
+                                <i class="fas fa-project-diagram mr-2"></i>依赖分析
+                            </button>
+                            <button onclick="showTab('conflicts')" id="tab-conflicts" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>冲突检测
+                            </button>
+                            <button onclick="showTab('ast')" id="tab-ast" class="tab-button border-b-2 border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 text-sm font-medium">
+                                <i class="fas fa-sitemap mr-2"></i>AST可视化
+                            </button>
+                        </nav>
+                    </div>
+
+                    <!-- 摘要标签页 -->
+                    <div id="summary-tab" class="tab-content pt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            <div class="bg-blue-50 rounded-lg p-6 text-center">
+                                <div class="text-3xl font-bold text-blue-600 mb-2" id="totalRules">0</div>
+                                <div class="text-sm text-blue-700">总规则数</div>
+                            </div>
+                            <div class="bg-green-50 rounded-lg p-6 text-center">
+                                <div class="text-3xl font-bold text-green-600 mb-2" id="parseErrors">0</div>
+                                <div class="text-sm text-green-700">解析错误</div>
+                            </div>
+                            <div class="bg-red-50 rounded-lg p-6 text-center">
+                                <div class="text-3xl font-bold text-red-600 mb-2" id="conflictCount">0</div>
+                                <div class="text-sm text-red-700">冲突规则</div>
+                            </div>
+                            <div class="bg-purple-50 rounded-lg p-6 text-center">
+                                <div class="text-3xl font-bold text-purple-600 mb-2" id="dependencyCount">0</div>
+                                <div class="text-sm text-purple-700">依赖关系</div>
+                            </div>
+                        </div>
+
+                        <!-- 攻击类型分布图表 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">攻击类型分布</h4>
+                                <canvas id="attackTypeChart" width="400" height="300"></canvas>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">规则类型分布</h4>
+                                <canvas id="ruleTypeChart" width="400" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 语法解析标签页 -->
+                    <div id="parsing-tab" class="tab-content pt-6 hidden">
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-lg font-semibold text-gray-900">解析的规则</h4>
+                                <div class="text-sm text-gray-500">显示前20条规则</div>
+                            </div>
+                            <div id="parsedRulesList" class="space-y-4 max-h-96 overflow-y-auto scrollbar-thin">
+                                <!-- 规则列表将通过JavaScript动态填充 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 语义分析标签页 -->
+                    <div id="semantic-tab" class="tab-content pt-6 hidden">
+                        <div class="space-y-6">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">规则分类结果</h4>
+                                <div id="ruleClassification" class="space-y-4">
+                                    <!-- 分类结果将通过JavaScript动态填充 -->
+                                </div>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">安全检查警告</h4>
+                                <div id="securityWarnings" class="space-y-3">
+                                    <!-- 警告信息将通过JavaScript动态填充 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 依赖分析标签页 -->
+                    <div id="dependencies-tab" class="tab-content pt-6 hidden">
+                        <div class="space-y-6">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">依赖关系可视化</h4>
+                                <div class="text-center py-8 text-gray-500" id="dependencyImageContainer">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>正在生成依赖关系图...</p>
+                                </div>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">依赖关系详情</h4>
+                                <div id="dependencyDetails" class="space-y-4">
+                                    <!-- 依赖详情将通过JavaScript动态填充 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 冲突检测标签页 -->
+                    <div id="conflicts-tab" class="tab-content pt-6 hidden">
+                        <div class="space-y-6">
+                            <div class="flex justify-between items-center">
+                                <h4 class="text-lg font-semibold text-gray-900">检测到的冲突</h4>
+                                <div class="flex space-x-2">
+                                    <button onclick="filterConflicts('all')" class="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-sm hover:bg-blue-200 transition-colors">全部</button>
+                                    <button onclick="filterConflicts('error')" class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-sm hover:bg-red-200 transition-colors">错误</button>
+                                    <button onclick="filterConflicts('high')" class="px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm hover:bg-orange-200 transition-colors">高风险</button>
+                                    <button onclick="filterConflicts('medium')" class="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-sm hover:bg-yellow-200 transition-colors">中风险</button>
+                                </div>
+                            </div>
+                            <div id="conflictsList" class="space-y-4 max-h-96 overflow-y-auto scrollbar-thin">
+                                <!-- 冲突列表将通过JavaScript动态填充 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- AST可视化标签页 -->
+                    <div id="ast-tab" class="tab-content pt-6 hidden">
+                        <div class="space-y-6">
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">抽象语法树可视化</h4>
+                                <div class="text-center py-8 text-gray-500" id="astImageContainer">
+                                    <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                    <p>正在生成AST可视化图...</p>
+                                </div>
+                            </div>
+                            <div class="border border-gray-200 rounded-lg p-6">
+                                <h4 class="text-lg font-semibold text-gray-900 mb-4">AST结构（JSON）</h4>
+                                <div class="bg-gray-50 rounded-lg p-4 max-h-64 overflow-y-auto scrollbar-thin">
+                                    <pre id="astJson" class="text-sm text-gray-700"></pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 -->
+    <!-- 关于模态框 -->
+    <div id="aboutModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-2xl w-full max-h-[80vh] overflow-y-auto scrollbar-thin">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-info-circle mr-2 text-blue-600"></i>关于工具
+                    </h3>
+                    <button onclick="closeModal('aboutModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 space-y-4">
+                <div class="bg-blue-50 rounded-lg p-4">
+                    <h4 class="font-semibold text-blue-900 mb-2">WAF规则智能识别与分析工具</h4>
+                    <p class="text-blue-700 text-sm">
+                        这是一个基于人工智能和深度学习的WAF规则智能识别、解析与分析工具，
+                        旨在帮助安全研究人员和开发人员更好地理解和优化WAF防护策略。
+                    </p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-2">主要功能</h4>
+                    <ul class="space-y-1 text-sm text-gray-700">
+                        <li>• WAF指纹识别引擎</li>
+                        <li>• ModSecurity规则解析器</li>
+                        <li>• 规则语义分析与分类</li>
+                        <li>• 依赖关系检测</li>
+                        <li>• 冲突检测与优化建议</li>
+                        <li>• AST可视化</li>
+                        <li>• 智能攻击类型识别</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-2">技术栈</h4>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <div class="font-medium text-gray-800">后端</div>
+                            <div class="text-gray-600">Python, Flask, ANTLR4</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">前端</div>
+                            <div class="text-gray-600">HTML, CSS, JavaScript, Tailwind CSS</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">可视化</div>
+                            <div class="text-gray-600">Chart.js, D3.js</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800">分析</div>
+                            <div class="text-gray-600">NetworkX, Matplotlib</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 帮助模态框 -->
+    <div id="helpModal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl max-w-3xl w-full max-h-[80vh] overflow-y-auto scrollbar-thin">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-2xl font-bold text-gray-900">
+                        <i class="fas fa-question-circle mr-2 text-blue-600"></i>使用帮助
+                    </h3>
+                    <button onclick="closeModal('helpModal')" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="p-6 space-y-6">
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">1. URL智能分析</h4>
+                    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-700">
+                        <p class="mb-2">输入目标URL，工具将自动：</p>
+                        <ul class="space-y-1 ml-4">
+                            <li>• 识别目标网站使用的WAF类型</li>
+                            <li>• 分析HTTP响应头和特征</li>
+                            <li>• 推断可能的防护策略</li>
+                            <li>• 预测可能的攻击类型防护</li>
+                        </ul>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">2. 规则文件分析</h4>
+                    <div class="bg-gray-50 rounded-lg p-4 text-sm text-gray-700">
+                        <p class="mb-2">上传ModSecurity规则文件，工具将进行：</p>
+                        <ul class="space-y-1 ml-4">
+                            <li>• 语法解析和错误检测</li>
+                            <li>• 语义分析和规则分类</li>
+                            <li>• 依赖关系分析</li>
+                            <li>• 冲突检测和优化建议</li>
+                            <li>• AST可视化展示</li>
+                        </ul>
+                        <p class="mt-3 text-yellow-700">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            支持的文件格式：.conf, .rules, .txt，最大文件大小16MB
+                        </p>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-gray-900 mb-3">3. 分析结果解读</h4>
+                    <div class="space-y-4">
+                        <div>
+                            <div class="font-medium text-gray-800 mb-1">WAF指纹识别</div>
+                            <div class="text-sm text-gray-600">显示检测到的WAF类型和置信度</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800 mb-1">规则分类</div>
+                            <div class="text-sm text-gray-600">按攻击类型分类：SQL注入、XSS、路径遍历等</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800 mb-1">冲突检测</div>
+                            <div class="text-sm text-gray-600">检测规则间的逻辑冲突、覆盖冲突等问题</div>
+                        </div>
+                        <div>
+                            <div class="font-medium text-gray-800 mb-1">AST可视化</div>
+                            <div class="text-sm text-gray-600">以树形结构展示规则的抽象语法</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript代码 -->
+    <script>
+        // 全局变量
+        let currentTaskId = null;
+        let currentFile = null;
+        let analysisResults = null;
+
+        // 显示/隐藏面板
+        function showUrlAnalysis() {
+            document.getElementById('urlAnalysisPanel').classList.remove('hidden');
+            document.getElementById('fileUploadPanel').classList.add('hidden');
+            document.getElementById('urlAnalysisPanel').classList.add('animate-slide-up');
+        }
+
+        function hideUrlAnalysis() {
+            document.getElementById('urlAnalysisPanel').classList.add('hidden');
+            document.getElementById('urlAnalysisResults').classList.add('hidden');
+            document.getElementById('urlAnalysisProgress').classList.add('hidden');
+        }
+
+        function showFileUpload() {
+            document.getElementById('fileUploadPanel').classList.remove('hidden');
+            document.getElementById('urlAnalysisPanel').classList.add('hidden');
+            document.getElementById('fileUploadPanel').classList.add('animate-slide-up');
+        }
+
+        function hideFileUpload() {
+            document.getElementById('fileUploadPanel').classList.add('hidden');
+            resetFileUpload();
+        }
+
+        // 文件上传处理
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                currentFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                document.getElementById('fileInfo').classList.remove('hidden');
+                document.getElementById('analyzeButtonContainer').classList.remove('hidden');
+            }
+        }
+
+        function removeFile() {
+            resetFileUpload();
+        }
+
+        function resetFileUpload() {
+            currentFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('fileInfo').classList.add('hidden');
+            document.getElementById('analyzeButtonContainer').classList.add('hidden');
+            document.getElementById('fileAnalysisProgress').classList.add('hidden');
+            document.getElementById('analysisTabs').classList.add('hidden');
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // URL分析
+        async function analyzeUrl() {
+            const url = document.getElementById('targetUrl').value;
+            if (!url) {
+                alert('请输入目标URL');
+                return;
+            }
+
+            try {
+                // 显示进度
+                document.getElementById('urlAnalysisProgress').classList.remove('hidden');
+                document.getElementById('urlAnalysisResults').classList.add('hidden');
+                
+                // 模拟进度
+                await simulateProgress('url', [
+                    { percent: 25, text: '正在检测WAF指纹...' },
+                    { percent: 50, text: '分析HTTP响应头...' },
+                    { percent: 75, text: '智能检测中...' },
+                    { percent: 100, text: '分析完成' }
+                ]);
+
+                // 调用API
+                const response = await fetch('/api/analyze-url', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ url: url }),
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayUrlAnalysisResults(data);
+                } else {
+                    alert('分析失败: ' + (data.error || '未知错误'));
+                }
+
+            } catch (error) {
+                console.error('URL分析失败:', error);
+                alert('分析失败: ' + error.message);
+            } finally {
+                document.getElementById('urlAnalysisProgress').classList.add('hidden');
+            }
+        }
+
+        function displayUrlAnalysisResults(results) {
+            // 显示WAF指纹识别结果
+            const fingerprintHtml = `
+                <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-blue-900">WAF类型</span>
+                        <span class="px-2 py-1 bg-blue-200 text-blue-800 rounded-full text-sm">
+                            ${results.fingerprint.waf_type}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-blue-700">置信度</span>
+                        <span class="font-semibold">${(results.fingerprint.confidence * 100).toFixed(1)}%</span>
+                    </div>
+                    <div class="mt-3">
+                        <div class="text-sm text-blue-700 mb-1">匹配特征:</div>
+                        <ul class="text-xs text-blue-600 space-y-1">
+                            ${results.fingerprint.fingerprint_matches.map(match => 
+                                `<li>• ${match}</li>`
+                            ).join('')}
+                        </ul>
+                    </div>
+                </div>
+                <div class="bg-gray-50 rounded-lg p-4">
+                    <div class="text-sm font-medium text-gray-900 mb-2">HTTP响应头</div>
+                    <div class="text-xs text-gray-600 space-y-1">
+                        ${Object.entries(results.fingerprint.headers).map(([key, value]) => 
+                            `<div><span class="font-medium">${key}:</span> ${value}</div>`
+                        ).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('fingerprintResults').innerHTML = fingerprintHtml;
+
+            // 显示智能检测结果
+            const mlHtml = `
+                <div class="bg-purple-50 rounded-lg p-4 mb-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-purple-900">检测模型</span>
+                        <span class="px-2 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
+                            ${results.ml_detection.detection_model}
+                        </span>
+                    </div>
+                    <div class="flex items-center justify-between mb-4">
+                        <span class="text-purple-700">整体置信度</span>
+                        <span class="font-semibold">${(results.ml_detection.confidence * 100).toFixed(1)}%</span>
+                    </div>
+                </div>
+                <div>
+                    <div class="text-sm font-medium text-gray-900 mb-3">预测攻击类型</div>
+                    <div class="space-y-2">
+                        ${results.ml_detection.predicted_attack_types.map(attack => `
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center">
+                                    <i class="fas fa-shield-alt text-red-500 mr-2"></i>
+                                    <span class="text-gray-800">${attack.type}</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
+                                        <div class="bg-red-500 h-2 rounded-full" style="width: ${(attack.confidence * 100).toFixed(0)}%"></div>
+                                    </div>
+                                    <span class="text-sm text-gray-600">${(attack.confidence * 100).toFixed(1)}%</span>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            document.getElementById('mlDetectionResults').innerHTML = mlHtml;
+
+            document.getElementById('urlAnalysisResults').classList.remove('hidden');
+        }
+
+        // 文件分析
+        async function startAnalysis() {
+            if (!currentFile) {
+                alert('请先选择文件');
+                return;
+            }
+
+            try {
+                // 上传文件
+                const formData = new FormData();
+                formData.append('file', currentFile);
+
+                document.getElementById('analyzeButtonContainer').classList.add('hidden');
+                document.getElementById('fileAnalysisProgress').classList.remove('hidden');
+
+                // 模拟上传进度
+                await simulateProgress('file', [
+                    { percent: 10, text: '正在上传文件...' },
+                    { percent: 20, text: '文件上传完成，开始分析...' }
+                ]);
+
+                // 上传文件
+                const uploadResponse = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const uploadData = await uploadResponse.json();
+                
+                if (!uploadResponse.ok) {
+                    throw new Error(uploadData.error || '文件上传失败');
+                }
+
+                currentTaskId = uploadData.task_id;
+
+                // 继续进度
+                await simulateProgress('file', [
+                    { percent: 30, text: '开始语法解析...' },
+                    { percent: 50, text: '进行语义分析...' },
+                    { percent: 70, text: '检测依赖关系...' },
+                    { percent: 85, text: '检测规则冲突...' },
+                    { percent: 95, text: '生成可视化结果...' }
+                ]);
+
+                // 开始分析
+                const analyzeResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ task_id: currentTaskId }),
+                });
+
+                const analyzeData = await analyzeResponse.json();
+                
+                if (analyzeResponse.ok) {
+                    analysisResults = analyzeData;
+                    displayAnalysisResults(analyzeData);
+                    updateProgress('file', 100, '分析完成');
+                } else {
+                    throw new Error(analyzeData.error || analyzeData.message || '分析失败');
+                }
+
+            } catch (error) {
+                console.error('文件分析失败:', error);
+                alert('分析失败: ' + error.message);
+                resetFileUpload();
+            }
+        }
+
+        function displayAnalysisResults(results) {
+            // 显示标签页
+            document.getElementById('analysisTabs').classList.remove('hidden');
+            
+            // 更新摘要信息
+            document.getElementById('totalRules').textContent = results.summary.total_rules;
+            document.getElementById('parseErrors').textContent = results.summary.parse_errors;
+            document.getElementById('conflictCount').textContent = results.summary.conflicts;
+            document.getElementById('dependencyCount').textContent = results.summary.dependencies;
+
+            // 显示第一个标签页
+            showTab('summary');
+
+            // 生成图表
+            generateCharts(results);
+
+            // 加载可视化图像
+            loadVisualizationImages();
+        }
+
+        function generateCharts(results) {
+            // 攻击类型分布图表
+            const attackCtx = document.getElementById('attackTypeChart').getContext('2d');
+            const attackData = results.semantic.attack_types;
+            
+            new Chart(attackCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(attackData),
+                    datasets: [{
+                        data: Object.values(attackData),
+                        backgroundColor: [
+                            '#ef4444', '#f59e0b', '#10b981', '#3b82f6',
+                            '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                padding: 20,
+                                usePointStyle: true
+                            }
+                        }
+                    }
+                }
+            });
+
+            // 规则类型分布图表
+            const ruleCtx = document.getElementById('ruleTypeChart').getContext('2d');
+            const ruleData = results.semantic.rule_types;
+            
+            new Chart(ruleCtx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ruleData),
+                    datasets: [{
+                        label: '规则数量',
+                        data: Object.values(ruleData),
+                        backgroundColor: '#3b82f6',
+                        borderColor: '#1d4ed8',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function loadVisualizationImages() {
+            try {
+                // 加载AST图像
+                const astImage = new Image();
+                astImage.onload = function() {
+                    document.getElementById('astImageContainer').innerHTML = `
+                        <img src="${this.src}" alt="AST可视化" class="max-w-full h-auto rounded-lg shadow-md">
+                    `;
+                };
+                astImage.src = `/api/visualization/ast/${currentTaskId}?t=${Date.now()}`;
+
+                // 加载依赖关系图
+                const depImage = new Image();
+                depImage.onload = function() {
+                    document.getElementById('dependencyImageContainer').innerHTML = `
+                        <img src="${this.src}" alt="依赖关系图" class="max-w-full h-auto rounded-lg shadow-md">
+                    `;
+                };
+                depImage.src = `/api/visualization/dependencies/${currentTaskId}?t=${Date.now()}`;
+
+            } catch (error) {
+                console.error('加载可视化图像失败:', error);
+            }
+        }
+
+        // 标签页切换
+        function showTab(tabName) {
+            // 隐藏所有标签页内容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.add('hidden');
+            });
+
+            // 重置所有标签按钮
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('border-blue-500', 'text-blue-600');
+                button.classList.add('border-transparent', 'text-gray-500');
+            });
+
+            // 显示选中的标签页
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            
+            // 激活选中的标签按钮
+            const activeButton = document.getElementById('tab-' + tabName);
+            activeButton.classList.remove('border-transparent', 'text-gray-500');
+            activeButton.classList.add('border-blue-500', 'text-blue-600');
+
+            // 根据标签页加载内容
+            switch(tabName) {
+                case 'parsing':
+                    loadParsingTab();
+                    break;
+                case 'semantic':
+                    loadSemanticTab();
+                    break;
+                case 'dependencies':
+                    loadDependenciesTab();
+                    break;
+                case 'conflicts':
+                    loadConflictsTab();
+                    break;
+                case 'ast':
+                    loadASTTab();
+                    break;
+            }
+        }
+
+        function loadParsingTab() {
+            if (!analysisResults) return;
+
+            const rulesList = document.getElementById('parsedRulesList');
+            const rules = analysisResults.parsing.rules || [];
+
+            rulesList.innerHTML = rules.map((rule, index) => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-2">
+                        <h5 class="font-semibold text-gray-900">规则 ${index + 1}</h5>
+                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                            ${rule.type}
+                        </span>
+                    </div>
+                    ${rule.id ? `<div class="text-sm text-gray-600 mb-1">ID: ${rule.id}</div>` : ''}
+                    ${rule.phase ? `<div class="text-sm text-gray-600 mb-1">阶段: ${rule.phase}</div>` : ''}
+                    <div class="text-sm text-gray-600 mb-2">变量: ${rule.variables.join(', ')}</div>
+                    ${rule.operator ? `<div class="text-sm text-gray-600 mb-2">运算符: ${rule.operator}</div>` : ''}
+                    ${rule.pattern ? `
+                        <div class="text-sm mb-2">
+                            <span class="font-medium text-gray-700">模式:</span>
+                            <div class="bg-gray-50 rounded p-2 text-xs text-gray-600 font-mono">
+                                ${escapeHtml(rule.pattern)}
+                            </div>
+                        </div>
+                    ` : ''}
+                    ${rule.actions.length > 0 ? `
+                        <div class="text-sm">
+                            <span class="font-medium text-gray-700">动作:</span>
+                            <div class="flex flex-wrap gap-1 mt-1">
+                                ${rule.actions.map(action => `
+                                    <span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                                        ${action}
+                                    </span>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+
+            // 显示解析错误
+            if (analysisResults.parsing.errors && analysisResults.parsing.errors.length > 0) {
+                rulesList.innerHTML += `
+                    <div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+                        <h5 class="font-semibold text-red-900 mb-2">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>解析错误
+                        </h5>
+                        <div class="space-y-2 text-sm text-red-700">
+                            ${analysisResults.parsing.errors.map(error => `
+                                <div>第${error.line}行: ${error.message}</div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function loadSemanticTab() {
+            if (!analysisResults) return;
+
+            // 规则分类结果
+            const classification = analysisResults.semantic.rule_classification;
+            const classificationHtml = Object.entries(classification)
+                .filter(([_, rules]) => rules.length > 0)
+                .map(([type, rules]) => `
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold text-gray-900">${formatAttackType(type)}</span>
+                            <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
+                                ${rules.length} 条规则
+                            </span>
+                        </div>
+                        <div class="text-sm text-gray-600">
+                            占比: ${((rules.length / analysisResults.summary.total_rules) * 100).toFixed(1)}%
+                        </div>
+                    </div>
+                `).join('');
+
+            document.getElementById('ruleClassification').innerHTML = classificationHtml || 
+                '<div class="text-center text-gray-500 py-4">未分类到任何攻击类型</div>';
+
+            // 安全检查警告
+            const warnings = analysisResults.semantic.warnings || [];
+            const warningsHtml = warnings.map(warning => `
+                <div class="flex items-start space-x-3 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <i class="fas fa-exclamation-circle text-yellow-500 mt-0.5"></i>
+                    <div>
+                        <div class="font-medium text-yellow-900">${warning.message}</div>
+                        <div class="text-sm text-yellow-700 mt-1">
+                            规则ID: ${warning.rule.id || '未知'} (第${warning.rule.line}行)
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('securityWarnings').innerHTML = warningsHtml || 
+                '<div class="text-center text-gray-500 py-4">未发现安全问题</div>';
+        }
+
+        function loadDependenciesTab() {
+            if (!analysisResults) return;
+
+            const dependencies = analysisResults.dependencies;
+            const detailsHtml = `
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-blue-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-600">${dependencies.variable_dependencies.length}</div>
+                        <div class="text-sm text-blue-700">变量依赖</div>
+                    </div>
+                    <div class="bg-green-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-green-600">${dependencies.marker_dependencies.length}</div>
+                        <div class="text-sm text-green-700">标记依赖</div>
+                    </div>
+                    <div class="bg-purple-50 rounded-lg p-4 text-center">
+                        <div class="text-2xl font-bold text-purple-600">${dependencies.include_dependencies.length}</div>
+                        <div class="text-sm text-purple-700">包含依赖</div>
+                    </div>
+                </div>
+                
+                ${dependencies.variable_dependencies.length > 0 ? `
+                    <div class="mt-6">
+                        <h5 class="font-semibold text-gray-900 mb-3">变量依赖详情</h5>
+                        <div class="space-y-2 text-sm">
+                            ${dependencies.variable_dependencies.slice(0, 10).map(dep => `
+                                <div class="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                    <div>
+                                        <span class="font-medium">${dep.source}</span>
+                                        <i class="fas fa-arrow-right mx-2 text-gray-400"></i>
+                                        <span class="text-gray-600">${dep.target}</span>
+                                    </div>
+                                    <span class="px-2 py-0.5 bg-blue-100 text-blue-800 rounded text-xs">
+                                        ${dep.variable}
+                                    </span>
+                                </div>
+                            `).join('')}
+                            ${dependencies.variable_dependencies.length > 10 ? `
+                                <div class="text-center text-gray-500 text-xs">
+                                    ... 还有 ${dependencies.variable_dependencies.length - 10} 个依赖关系
+                                </div>
+                            ` : ''}
+                        </div>
+                    </div>
+                ` : ''}
+            `;
+
+            document.getElementById('dependencyDetails').innerHTML = detailsHtml;
+        }
+
+        function loadConflictsTab() {
+            if (!analysisResults) return;
+
+            const conflicts = analysisResults.conflicts || [];
+            displayConflicts(conflicts);
+        }
+
+        function filterConflicts(severity) {
+            if (!analysisResults) return;
+
+            const conflicts = analysisResults.conflicts || [];
+            let filteredConflicts = conflicts;
+
+            if (severity !== 'all') {
+                filteredConflicts = conflicts.filter(conflict => conflict.severity === severity);
+            }
+
+            displayConflicts(filteredConflicts);
+        }
+
+        function displayConflicts(conflicts) {
+            const conflictsList = document.getElementById('conflictsList');
+
+            if (conflicts.length === 0) {
+                conflictsList.innerHTML = `
+                    <div class="text-center text-gray-500 py-8">
+                        <i class="fas fa-check-circle text-4xl text-green-500 mb-2"></i>
+                        <p>未发现规则冲突</p>
+                    </div>
+                `;
+                return;
+            }
+
+            conflictsList.innerHTML = conflicts.map((conflict, index) => `
+                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex justify-between items-start mb-3">
+                        <h5 class="font-semibold text-gray-900">冲突 ${index + 1}</h5>
+                        <span class="px-2 py-1 ${getSeverityColor(conflict.severity)} rounded-full text-xs">
+                            ${conflict.severity.toUpperCase()}
+                        </span>
+                    </div>
+                    <div class="text-sm text-gray-700 mb-2">
+                        <span class="font-medium">类型:</span> ${formatConflictType(conflict.type)}
+                    </div>
+                    <div class="text-sm text-gray-600 mb-3">
+                        ${conflict.description}
+                    </div>
+                    ${conflict.rule1_id ? `
+                        <div class="text-xs text-gray-500 mb-1">
+                            规则1: ${conflict.rule1_id} (第${conflict.rule1_line}行)
+                        </div>
+                    ` : ''}
+                    ${conflict.rule2_id ? `
+                        <div class="text-xs text-gray-500 mb-3">
+                            规则2: ${conflict.rule2_id} (第${conflict.rule2_line}行)
+                        </div>
+                    ` : ''}
+                    <div class="bg-blue-50 rounded-lg p-3">
+                        <div class="text-sm font-medium text-blue-900 mb-1">建议:</div>
+                        <div class="text-sm text-blue-700">
+                            ${conflict.recommendation}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function loadASTTab() {
+            if (!analysisResults) return;
+
+            // 显示AST JSON
+            const astJson = document.getElementById('astJson');
+            astJson.textContent = JSON.stringify(analysisResults.ast, null, 2);
+        }
+
+        // 辅助函数
+        function getSeverityColor(severity) {
+            const colors = {
+                'error': 'bg-red-100 text-red-800',
+                'high': 'bg-orange-100 text-orange-800',
+                'medium': 'bg-yellow-100 text-yellow-800',
+                'warning': 'bg-blue-100 text-blue-800'
+            };
+            return colors[severity] || 'bg-gray-100 text-gray-800';
+        }
+
+        function formatConflictType(type) {
+            const types = {
+                'logical_conflict': '逻辑冲突',
+                'coverage_conflict': '覆盖冲突',
+                'priority_conflict': '优先级冲突'
+            };
+            return types[type] || type;
+        }
+
+        function formatAttackType(type) {
+            const types = {
+                'sql_injection': 'SQL注入防护',
+                'xss': 'XSS防护',
+                'path_traversal': '路径遍历防护',
+                'command_injection': '命令注入防护',
+                'file_upload': '文件上传防护',
+                'authentication': '身份认证',
+                'authorization': '权限控制',
+                'information_disclosure': '信息泄露防护',
+                'rate_limiting': '速率限制',
+                'other': '其他规则'
+            };
+            return types[type] || type.replace('_', ' ').toUpperCase();
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        async function simulateProgress(type, steps) {
+            for (const step of steps) {
+                await new Promise(resolve => setTimeout(resolve, 800));
+                updateProgress(type, step.percent, step.text);
+            }
+        }
+
+        function updateProgress(type, percent, text) {
+            const progressBar = document.getElementById(type + 'ProgressBar');
+            const progressText = document.getElementById(type + 'ProgressText');
+            const progressPercent = document.getElementById(type + 'ProgressPercent');
+
+            if (progressBar) progressBar.style.width = percent + '%';
+            if (progressText) progressText.textContent = text;
+            if (progressPercent) progressPercent.textContent = percent + '%';
+        }
+
+        // 模态框控制
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        // 事件监听器
+        document.getElementById('aboutBtn').addEventListener('click', function() {
+            document.getElementById('aboutModal').classList.remove('hidden');
+        });
+
+        document.getElementById('helpBtn').addEventListener('click', function() {
+            document.getElementById('helpModal').classList.remove('hidden');
+        });
+
+        // 点击模态框背景关闭
+        document.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal-backdrop')) {
+                event.target.classList.add('hidden');
+            }
+        });
+
+        // 拖拽上传
+        const dropArea = document.querySelector('.border-dashed');
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            dropArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            dropArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight() {
+            dropArea.classList.add('border-blue-500', 'bg-blue-50');
+        }
+
+        function unhighlight() {
+            dropArea.classList.remove('border-blue-500', 'bg-blue-50');
+        }
+
+        dropArea.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const file = dt.files[0];
+            if (file) {
+                currentFile = file;
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('fileSize').textContent = formatFileSize(file.size);
+                document.getElementById('fileInfo').classList.remove('hidden');
+                document.getElementById('analyzeButtonContainer').classList.remove('hidden');
+            }
+        }
+
+        // 页面加载完成后的初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('WAF规则分析工具已加载完成');
+        });
+    </script>
+</body>
+</html>
