@@ -14,15 +14,13 @@ numpy==1.26.2
 pandas==2.1.4
 
 # 可视化
-echarts==5.4.3
-d3==7.8.5
+pyecharts==2.0.0  # 替换原“echarts”（Python中ECharts封装包实际为pyecharts，支持Python 3.8+）
+# 原“d3==7.8.5”为JavaScript库，Python中无直接对应包，若需类似可视化能力，可通过pyecharts或plotly等库实现
 
 # 文件处理和系统操作
 python-dotenv==1.0.0
-pathlib==1.0.1
-
-# 日志和调试
-logging==0.5.1.2
+# pathlib为Python标准库，无需单独安装
+# logging为Python标准库，无需单独安装
 
 # 开发工具
 pytest==7.4.3
