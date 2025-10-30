@@ -35,7 +35,7 @@ class WAFW00F(waftoolsengine):
     xsstring = r'<script>alert("XSS");</script>'  # 跨站脚本 (XSS) 攻击载荷
     sqlistring = r'UNION SELECT ALL FROM information_schema AND " or SLEEP(5) or "'  # SQL 注入 (SQLi) 攻击载荷
     lfistring = r'../../etc/passwd'  # 本地文件包含 (LFI) 攻击载荷
-    rcestring = r'/bin/cat /etc/passwd; ping 127.0.0.1; curl google.com'  # 远程代码执行 (RCE) 攻击载荷
+    rcestring = r'/bin/cat /etc/passwd; ping 127.0.0.1; curl baidu.com'  # 远程代码执行 (RCE) 攻击载荷
     xxestring = r'<!ENTITY xxe SYSTEM "file:///etc/shadow">]><pwn>&hack;</pwn>'  # XML 外部实体 (XXE) 攻击载荷
 
     def __init__(self, target='www.example.com', debuglevel=0, path='/',
