@@ -1,9 +1,7 @@
 #!/usr/bin/env python3
 '''
-版权所有 (C) 2024, WAFW00F 开发者。
-请参阅 LICENSE 文件以了解复制权限。
-
-此文件定义了用于终端输出的 ASCII 艺术图案和颜色。
+Copyright (C) 2024, WAFW00F Developers.
+See the LICENSE file for copying permission.
 '''
 
 from dataclasses import dataclass
@@ -14,22 +12,18 @@ from wafw00f import __version__
 
 @dataclass
 class Color:
-    '''
-    定义 ANSI 颜色。
-    '''
-    W: str = '\033[1;97m'  # 白色
-    Y: str = '\033[1;93m'  # 黄色
-    G: str = '\033[1;92m'  # 绿色
-    R: str = '\033[1;91m'  # 红色
-    B: str = '\033[1;94m'  # 蓝色
-    C: str = '\033[1;96m'  # 青色
-    E: str = '\033[0m'     # 重置颜色
+    """ANSI colors."""
+    W: str = '\033[1;97m'
+    Y: str = '\033[1;93m'
+    G: str = '\033[1;92m'
+    R: str = '\033[1;91m'
+    B: str = '\033[1;94m'
+    C: str = '\033[1;96m'
+    E: str = '\033[0m'
 
     @classmethod
     def disable(cls):
-        '''
-        禁用所有颜色。
-        '''
+        """Disables all colors."""
         cls.W = ''
         cls.Y = ''
         cls.G = ''
@@ -40,11 +34,10 @@ class Color:
 
     @classmethod
     def unpack(cls):
-        '''
-        解包并返回颜色值。
-        示例：
+        """Unpacks and returns the color values.
+        Useful for brevity, e.g.:
         (W,Y,G,R,B,C,E) = Color.unpack()
-        '''
+        """
         return (
             cls.W,
             cls.Y,
@@ -57,12 +50,8 @@ class Color:
 
 
 def randomArt():
-    '''
-    随机返回一个 ASCII 艺术图案。
+    # Colors for terminal
 
-    返回：
-        str: ASCII 艺术图案。
-    '''
     (W,Y,G,R,B,C,E) = Color.unpack()
 
     woof = '''
