@@ -8,11 +8,12 @@ AST可视化器
 import os
 import logging
 import json
-import matplotlib.pyplot as plt
-import matplotlib.patches as patches
-from matplotlib.patches import FancyBboxPatch
 import networkx as nx
-from networkx.drawing.nx_agraph import graphviz_layout
+import html
+try:
+    from pyvis.network import Network
+except Exception:
+    Network = None
 
 class ASTVisualizer:
     """AST可视化器"""
@@ -151,37 +152,182 @@ class ASTVisualizer:
     def save_ast_image(self, ast_root, output_path):
         """保存AST图像"""
         try:
-            plt.figure(figsize=(16, 12))
-            
+            # 使用 networkx 构建图，然后用 pyvis 导出为交互式 HTML
+            if Network is None:
+                raise RuntimeError('pyvis 未安装，请安装 pyvis (pip install pyvis) 以生成交互式可视化')
+
             # 创建有向图
             G = nx.DiGraph()
-            
-            # 递归添加节点和边
+            # 递归添加节点和边（会在 G 的节点属性中保留 label/type）
             self._add_ast_to_graph(G, ast_root)
-            
-            # 使用graphviz布局
-            pos = graphviz_layout(G, prog='dot')
-            
-            # 绘制节点
-            node_colors = self._get_node_colors(G)
-            nx.draw_networkx_nodes(G, pos, node_size=2000, node_color=node_colors, alpha=0.8)
-            
-            # 绘制边
-            nx.draw_networkx_edges(G, pos, edgelist=G.edges(), arrows=True, 
-                                  arrowstyle='->', alpha=0.6, width=1.5)
-            
-            # 绘制标签
-            labels = {node: G.nodes[node]['label'] for node in G.nodes()}
-            nx.draw_networkx_labels(G, pos, labels=labels, font_size=8, font_weight='bold')
-            
-            plt.title('WAF Rule Abstract Syntax Tree (AST)', fontsize=20, fontweight='bold', pad=20)
-            plt.axis('off')
-            plt.tight_layout()
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
-            plt.close()
-            
-            self.logger.info(f"AST图像已保存到: {output_path}")
-            return output_path
+
+            # 创建 pyvis Network
+            # 关闭物理模拟以加快渲染并稳定布局（交互仍然可用）
+            net = Network(height='800px', width='100%', directed=True, notebook=False)
+            try:
+                net.toggle_physics(False)
+            except Exception:
+                # 如果 toggle_physics 不可用，忽略
+                pass
+
+            # 添加节点到 pyvis（保留 label, type, title）
+            for node in G.nodes():
+                ndata = G.nodes[node]
+                label = ndata.get('label', str(node))
+                ntype = ndata.get('type', '')
+                # 构建丰富的 HTML tooltip（title）
+                full_value = ndata.get('full_value', '')
+                line = ndata.get('line', '')
+                col = ndata.get('col', '')
+                children_vals = ndata.get('children_values', []) or []
+
+                # 安全转义
+                esc_type = html.escape(str(ntype))
+                esc_value = html.escape(str(full_value))
+                esc_line = html.escape(str(line))
+                esc_col = html.escape(str(col))
+
+                children_html = ''
+                if children_vals:
+                    # 限制展示数量
+                    max_show = 10
+                    show_list = [html.escape(str(v)) for v in children_vals[:max_show]]
+                    children_html = '<br>'.join(show_list)
+                    if len(children_vals) > max_show:
+                        children_html += f"<br>+{len(children_vals)-max_show} more..."
+
+                title = f"<div style=\"max-width:300px;word-wrap:break-word;\">"
+                title += f"<b>Type:</b> {esc_type}<br>"
+                title += f"<b>Value:</b> {esc_value}<br>"
+                title += f"<b>Position:</b> Line {esc_line}, Col {esc_col}<br>"
+                if children_html:
+                    title += f"<b>Children:</b><br>{children_html}<br>"
+                title += "</div>"
+
+                color = self._get_color_for_type(ntype)
+                # pyvis 接受任意 hashable id
+                net.add_node(node, label=label, title=title, color=color)
+
+            # 添加边
+            for src, dst in G.edges():
+                net.add_edge(src, dst)
+
+            # 保存为 HTML
+            # 如果用户传入的是非 html 扩展名，强制转换为 .html
+            out_path = output_path
+            if not out_path.lower().endswith('.html'):
+                out_path = output_path + '.html'
+
+            # 直接生成 HTML 字符串并写入目标路径，避免 pyvis 的 write_html 对路径的限制
+            # 生成 HTML 时使用 CDN 资源（local=False），避免 pyvis 复制本地 lib 目录并出现 /lib/* 404 问题
+            # 将 name 设为文件名，以便模板内部校验通过
+            html_content = net.generate_html(name=os.path.basename(out_path), local=False)
+
+            # 确保目录存在
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, 'w', encoding='utf-8') as f:
+                                # 在 pyvis 生成的 HTML 末尾追加父子页面通信脚本：
+                                # - 在加载完成后向父窗口发送页面高度
+                                # - 在节点被点击时将节点信息 postMessage 给父窗口
+                                # - 监听父窗口发来的高亮/选择请求
+                                # 改进的通信脚本：
+                                # - 在首次稳定时发送 'pyvis_ready' 和高度
+                                # - 对高度发送做去抖/节流，只有在高度变化较大时才发送，避免和父窗口形成无限调整循环
+                                # - 标记 source='ast'，以便父窗口区分不同可视化
+                                comm_script = """
+                        <script>
+                            (function(){
+                                var lastSentHeight = 0;
+                                var sendTimer = null;
+                                var maxHeight = 8000; // 限制单页最大高度，避免无限膨胀
+
+                                function safePost(msg){
+                                    try{ window.parent.postMessage(msg, '*'); }catch(e){}
+                                }
+
+                                function postHeightDebounced(){
+                                    if(sendTimer) return;
+                                    sendTimer = setTimeout(function(){
+                                        sendTimer = null;
+                                        try{
+                                            var h = Math.min(document.body.scrollHeight || 0, maxHeight);
+                                            // 只有当高度变化超过阈值时才发送
+                                            if(Math.abs(h - lastSentHeight) > 30){
+                                                lastSentHeight = h;
+                                                safePost({type: 'pyvis_height', height: h, source: 'ast'});
+                                            }
+                                        }catch(e){}
+                                    }, 300);
+                                }
+
+                                // 发送 ready 事件，通知父窗口 iframe 已准备好
+                                function postReady(){
+                                    safePost({type: 'pyvis_ready', source: 'ast'});
+                                    postHeightDebounced();
+                                    // 再次发送以覆盖可能的延迟布局
+                                    setTimeout(postHeightDebounced, 700);
+                                    setTimeout(postHeightDebounced, 1500);
+                                }
+
+                                window.addEventListener('load', function(){
+                                    try{ postReady(); }catch(e){}
+                                });
+
+                                // 在内部布局/尺寸变化时节流发送高度
+                                var resizeObserver = null;
+                                try{
+                                    if(window.ResizeObserver){
+                                        resizeObserver = new ResizeObserver(function(){ postHeightDebounced(); });
+                                        resizeObserver.observe(document.body);
+                                    } else {
+                                        window.addEventListener('resize', postHeightDebounced);
+                                    }
+                                }catch(e){ window.addEventListener('resize', postHeightDebounced); }
+
+                                // wait for network variable from pyvis and attach click handler
+                                function attachClick(){
+                                    try{
+                                        if(typeof network !== 'undefined' && typeof nodes !== 'undefined'){
+                                            // notify parent that network is available
+                                            try{ safePost({type: 'pyvis_ready', source: 'ast'}); }catch(e){}
+
+                                            network.on('click', function(params){
+                                                try{
+                                                    if(params.nodes && params.nodes.length > 0){
+                                                        var nodeId = params.nodes[0];
+                                                        var nodeData = null;
+                                                        try{ nodeData = nodes.find(function(n){ return n.id == nodeId; }) || {id: nodeId}; }catch(e){ nodeData = {id: nodeId}; }
+                                                        safePost({type:'pyvis_node_click', node: nodeData, source: 'ast'});
+                                                        // 在节点点击后可能会触发展开/详情，稍后再测量高度并发送
+                                                        setTimeout(postHeightDebounced, 300);
+                                                    }
+                                                }catch(e){ }
+                                            });
+                                        } else {
+                                            setTimeout(attachClick, 200);
+                                        }
+                                    }catch(e){ setTimeout(attachClick, 200); }
+                                }
+                                attachClick();
+
+                                // 监听父窗口消息（高亮等）
+                                window.addEventListener('message', function(event){
+                                    try{
+                                        var data = event.data || {};
+                                        if(data && data.type === 'pyvis_highlight' && typeof network !== 'undefined'){
+                                            try{ network.selectNodes([data.nodeId]); }catch(e){}
+                                        }
+                                    }catch(e){}
+                                });
+                            })();
+                        </script>
+                        """
+
+                                f.write(html_content)
+                                f.write(comm_script)
+
+            self.logger.info(f"AST交互式可视化已保存到: {out_path}")
+            return out_path
             
         except Exception as e:
             self.logger.error(f"保存AST图像失败: {str(e)}", exc_info=True)
@@ -195,9 +341,14 @@ class ASTVisualizer:
         label = f"{node.node_type}\n{node.node_value}"
         if len(label) > 20:
             label = label[:17] + "..."
-        
-        # 添加节点
-        G.add_node(node_id, label=label, type=node.node_type, depth=depth)
+
+        # 准备子节点值列表（用于 tooltip）
+        children_values = [child.node_value for child in node.children]
+
+        # 添加节点（保存短 label 及完整字段）
+        G.add_node(node_id, label=label, type=node.node_type, depth=depth,
+                   full_value=node.node_value, line=node.line_num, col=node.col_num,
+                   children_values=children_values)
         
         # 添加边
         if parent_id:
@@ -237,59 +388,10 @@ class ASTVisualizer:
             colors.append(color_map.get(node_type, '#888888'))
         
         return colors
-    
-    def export_ast_json(self, ast_root, output_path):
-        """导出AST为JSON格式"""
-        try:
-            ast_dict = self._ast_to_dict(ast_root)
-            
-            with open(output_path, 'w', encoding='utf-8') as f:
-                json.dump(ast_dict, f, indent=2, ensure_ascii=False)
-            
-            self.logger.info(f"AST JSON已保存到: {output_path}")
-            return output_path
-            
-        except Exception as e:
-            self.logger.error(f"导出AST JSON失败: {str(e)}", exc_info=True)
-            raise
-    
-    def _ast_to_dict(self, node):
-        """将AST转换为字典"""
-        node_dict = {
-            'type': node.node_type,
-            'value': node.node_value,
-            'line': node.line_num,
-            'col': node.col_num,
-            'children': []
-        }
-        
-        for child in node.children:
-            node_dict['children'].append(self._ast_to_dict(child))
-        
-        return node_dict
-    
-    def create_interactive_ast(self, ast_root, output_path):
-        """创建交互式AST可视化HTML"""
-        try:
-            # 转换AST为字典
-            ast_dict = self._ast_to_dict(ast_root)
-            
-            # 创建HTML内容
-            html_content = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive WAF Rule AST</title>
-    <script src="https:#cdn.tailwindcss.com"></script>
-    <link href="https:#cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
-    <script src="https:#cdn.jsdelivr.net/npm/d3@7"></script>
-    
-    <script>
-        const astData = {json.dumps(ast_dict, indent=2)};
-        
-        # 颜色映射
-        const colorMap = {{
+
+    def _get_color_for_type(self, node_type):
+        """根据节点类型返回颜色"""
+        color_map = {
             'Root': '#2E86AB',
             'SecRule': '#A23B72',
             'SecAction': '#F18F01',
@@ -301,163 +403,45 @@ class ASTVisualizer:
             'Actions': '#F9C74F',
             'Action': '#9D8189',
             'MarkerContent': '#D8E2DC',
-            'IncludePath': '#FFE5D9'
-        }};
-        
-        document.addEventListener('DOMContentLoaded', function() {{
-            createTreeVisualization();
-        }});
-        
-        function createTreeVisualization() {{
-            const width = window.innerWidth - 40;
-            const height = window.innerHeight - 200;
-            
-            const svg = d3.select('#ast-container')
-                .append('svg')
-                .attr('width', width)
-                .attr('height', height);
-            
-            const g = svg.append('g')
-                .attr('transform', `translate(${{width/2}}, 50)`);
-            
-            # 创建树布局
-            const tree = d3.tree()
-                .size([2 * Math.PI, Math.min(width, height) / 2 - 120])
-                .separation((a, b) => (a.parent == b.parent ? 1 : 2) / a.depth);
-            
-            # 转换数据为层次结构
-            const root = d3.hierarchy(astData);
-            
-            # 计算节点位置
-            const nodes = tree(root);
-            const links = nodes.links();
-            
-            # 创建连接线
-            const link = g.selectAll('.link')
-                .data(links)
-                .enter().append('path')
-                .attr('class', 'link')
-                .attr('d', d3.linkRadial()
-                    .angle(d => d.x)
-                    .radius(d => d.y))
-                .style('fill', 'none')
-                .style('stroke', '#ccc')
-                .style('stroke-width', 2);
-            
-            # 创建节点
-            const node = g.selectAll('.node')
-                .data(nodes)
-                .enter().append('g')
-                .attr('class', 'node')
-                .attr('transform', d => `
-                    rotate(${{d.x * 180 / Math.PI - 90}})
-                    translate(${{d.y}},0)
-                `)
-                .on('click', toggleNode);
-            
-            # 添加节点圆圈
-            node.append('circle')
-                .attr('r', 15)
-                .style('fill', d => colorMap[d.data.type] || '#888888')
-                .style('stroke', '#fff')
-                .style('stroke-width', 2)
-                .style('cursor', 'pointer');
-            
-            # 添加节点标签
-            node.append('text')
-                .attr('dy', '.31em')
-                .attr('text-anchor', d => d.x < Math.PI ? 'start' : 'end')
-                .attr('transform', d => d.x < Math.PI ? 'translate(20)' : 'rotate(180) translate(-20)')
-                .style('font-size', '12px')
-                .style('font-weight', 'bold')
-                .style('fill', '#333')
-                .text(d => {{
-                    let label = d.data.type;
-                    if (d.data.value && d.data.value.length > 10) {{
-                        label += '\\n' + d.data.value.substring(0, 10) + '...';
-                    }} else if (d.data.value) {{
-                        label += '\\n' + d.data.value;
-                    }}
-                    return label;
-                }});
-        }}
-        
-        function toggleNode(event, d) {{
-            if (d.children) {{
-                d._children = d.children;
-                d.children = null;
-            }} else {{
-                d.children = d._children;
-                d._children = null;
-            }}
-            
-            # 重新绘制
-            d3.select('#ast-container').select('svg').remove();
-            createTreeVisualization();
-            
-            # 显示节点信息
-            showNodeInfo(d.data);
-        }}
-        
-        function showNodeInfo(nodeData) {{
-            const infoPanel = document.getElementById('node-info');
-            let infoHtml = `
-                <div class="bg-white rounded-lg shadow-md p-4">
-                    <h3 class="text-lg font-bold text-gray-800 mb-2">
-                        <i class="fas fa-info-circle mr-2"></i>Node Information
-                    </h3>
-                    <div class="space-y-2 text-sm">
-                        <div><span class="font-semibold">Type:</span> {{nodeData.type}}</div>
-                        <div><span class="font-semibold">Value:</span> {{nodeData.value || 'N/A'}}</div>
-                        <div><span class="font-semibold">Position:</span> Line {{nodeData.line}}, Column {{nodeData.col}}</div>
-                        <div><span class="font-semibold">Children:</span> {{nodeData.children.length}}</div>
-                    </div>
-                </div>
-            `;
-            
-            # 格式化值显示
-            if (nodeData.value && nodeData.value.length > 50) {{
-                nodeData.value = nodeData.value.substring(0, 50) + '...';
-            }}
-            
-            infoPanel.innerHTML = infoHtml.replace(/{{nodeData\\.(\\w+)}}/g, (match, prop) => {{
-                return nodeData[prop] !== undefined ? nodeData[prop] : 'N/A';
-            }});
-        }}
-    </script>
-</head>
-<body class="bg-gray-50 min-h-screen">
-    <div class="container mx-auto px-4 py-8">
-        <h1 class="text-3xl font-bold text-gray-800 mb-6 text-center">
-            <i class="fas fa-sitemap mr-3"></i>WAF Rule Abstract Syntax Tree
-        </h1>
-        
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            <div class="lg:col-span-3">
-                <div id="ast-container" class="bg-white rounded-lg shadow-lg p-4">
-                    <!-- SVG will be rendered here -->
-                </div>
-            </div>
-            
-            <div class="lg:col-span-1">
-                <div id="node-info" class="bg-white rounded-lg shadow-lg p-4">
-                    <div class="text-center text-gray-500 py-8">
-                        <i class="fas fa-hand-pointer text-4xl mb-2"></i>
-                        <p>Click on a node to see details</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</body>
-</html>"""
+            'IncludePath': '#FFE5D9',
+            'more': '#E5E5E5'
+        }
+        return color_map.get(node_type, '#888888')
+
+    def _ast_to_dict(self, node):
+        """将AST节点递归转为字典（供导出或调用）"""
+        node_dict = {
+            'type': getattr(node, 'node_type', None),
+            'value': getattr(node, 'node_value', None),
+            'line': getattr(node, 'line_num', None),
+            'col': getattr(node, 'col_num', None),
+            'children': []
+        }
+
+        for child in getattr(node, 'children', []) or []:
+            node_dict['children'].append(self._ast_to_dict(child))
+
+        return node_dict
+    
+    def export_ast_json(self, ast_root, output_path):
+        """导出AST为JSON格式"""
+        try:
+            ast_dict = self._ast_to_dict(ast_root)
             
             with open(output_path, 'w', encoding='utf-8') as f:
-                f.write(html_content)
+                json.dump(ast_dict, f, indent=2, ensure_ascii=False)
             
-            self.logger.info(f"交互式AST可视化已保存到: {output_path}")
+            self.logger.info(f"AST JSON已保存到: {output_path}")
             return output_path
-            
+        
+        except Exception as e:
+            self.logger.error(f"导出AST JSON失败: {str(e)}", exc_info=True)
+            raise
+
+    def create_interactive_ast(self, ast_root, output_path):
+        """创建交互式AST可视化HTML（使用 pyvis）"""
+        try:
+            return self.save_ast_image(ast_root, output_path)
         except Exception as e:
             self.logger.error(f"创建交互式AST失败: {str(e)}", exc_info=True)
             raise

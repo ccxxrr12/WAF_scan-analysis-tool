@@ -20,6 +20,9 @@ from datetime import datetime
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# 默认的 CoreRuleSet 目录（可通过请求参数覆盖）
+DEFAULT_CRS_RULES_DIR = PROJECT_ROOT / 'coreruleset-main' / 'rules'
+
 from common.utils.log_utils import setup_logger
 from common.utils.file_utils import read_file_content, write_file_content, delete_file
 from part2_rule_analysis.lib.parser.modsecurity_parser import ModSecurityParser
@@ -148,16 +151,17 @@ def analyze_rules():
             ast_root = ast_visualizer.build_ast(parsed_rules)
             ast_dict = ast_visualizer._ast_to_dict(ast_root)
             
-            # 生成可视化结果
-            temp_dir = tempfile.mkdtemp()
-            
-            # 保存AST图像
-            ast_img_path = os.path.join(temp_dir, 'ast.png')
-            ast_visualizer.save_ast_image(ast_root, ast_img_path)
-            
-            # 保存依赖图
-            dep_img_path = os.path.join(temp_dir, 'dependencies.png')
-            dependency_analyzer.save_dependency_graph(dependency_results, dep_img_path)
+            # 生成可视化结果并保存到可公开访问的静态目录（frontend/static/visualizations）
+            visuals_dir = PROJECT_ROOT / 'frontend' / 'static' / 'visualizations'
+            os.makedirs(visuals_dir, exist_ok=True)
+
+            # 保存 AST（交互式 HTML）
+            ast_img_path = str(visuals_dir / f"{task_id}_ast.html")
+            ast_img_path = ast_visualizer.save_ast_image(ast_root, ast_img_path)
+
+            # 保存依赖图（交互式 HTML）
+            dep_img_path = str(visuals_dir / f"{task_id}_dependencies.html")
+            dep_img_path = dependency_analyzer.save_dependency_graph(dependency_results, dep_img_path)
             
             # 准备结果
             results = {
@@ -313,12 +317,65 @@ def get_visualization(image_type, task_id):
         image_path = results['visualization_paths'][image_type]
         if not os.path.exists(image_path):
             return jsonify({'error': 'Image not found'}), 404
-        
-        return send_file(image_path, mimetype='image/png')
+
+        # 根据扩展名返回合适的 mimetype
+        import mimetypes
+        mime, _ = mimetypes.guess_type(image_path)
+        if mime is None:
+            # 默认回退
+            mime = 'application/octet-stream'
+
+        return send_file(image_path, mimetype=mime)
         
     except Exception as e:
         logger.error(f"获取可视化图像失败: {str(e)}", exc_info=True)
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/load-ruleset', methods=['POST'])
+def load_ruleset():
+    """从 CRS rules 目录批量加载并索引规则。
+
+    请求 JSON 可包含：
+    - rules_dir: 可选，自定义规则目录路径；若不提供则使用项目中的 coreruleset-main/rules
+    """
+    try:
+        data = request.get_json() or {}
+        rules_dir = data.get('rules_dir') if data.get('rules_dir') else str(DEFAULT_CRS_RULES_DIR)
+
+        logger.info(f"开始从目录加载规则: {rules_dir}")
+
+        parsed_rules = parser.parse_directory(rules_dir)
+
+        db_path = rule_index.init_db()
+        count = 0
+        for rule in parsed_rules:
+            r = {}
+            if hasattr(rule, 'to_dict'):
+                try:
+                    td = rule.to_dict()
+                    r = td.get('rule_info') if isinstance(td, dict) and 'rule_info' in td else td
+                except Exception:
+                    r = {'id': getattr(rule, 'rule_id', None), 'raw': str(rule)}
+            else:
+                r = {
+                    'id': getattr(rule, 'rule_id', None) or getattr(rule, 'id', None),
+                    'node_type': getattr(rule, 'node_type', None) or getattr(rule, 'nodeType', None),
+                    'line': getattr(rule, 'line', getattr(rule, 'line_num', None)),
+                    'raw': getattr(rule, 'pattern', None) or str(rule),
+                    'tags': getattr(rule, 'tags', [])
+                }
+            try:
+                rule_index.insert_rule(r, db_path=db_path)
+                count += 1
+            except Exception:
+                logger.exception('插入规则索引失败，跳过此规则')
+
+        return jsonify({'status': 'completed', 'parsed_rules': len(parsed_rules), 'indexed_rules': count, 'index_db': db_path}), 200
+
+    except Exception as e:
+        logger.exception('加载规则集失败')
+        return jsonify({'status': 'error', 'message': str(e)}), 500
 
 @app.route('/api/download-report/<task_id>', methods=['GET'])
 def download_report(task_id):

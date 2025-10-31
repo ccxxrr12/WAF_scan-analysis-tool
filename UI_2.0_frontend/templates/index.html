@@ -421,6 +421,7 @@
                                     <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                                     <p>正在生成依赖关系图...</p>
                                 </div>
+                                <div id="dependencyVisualizationDetails" class="mt-4 text-left text-sm text-gray-700"></div>
                             </div>
                             <div class="border border-gray-200 rounded-lg p-6">
                                 <h4 class="text-lg font-semibold text-gray-900 mb-4">依赖关系详情</h4>
@@ -458,6 +459,7 @@
                                     <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
                                     <p>正在生成AST可视化图...</p>
                                 </div>
+                                <div id="visualizationDetails" class="mt-4 text-left text-sm text-gray-700"></div>
                             </div>
                             <div class="border border-gray-200 rounded-lg p-6">
                                 <h4 class="text-lg font-semibold text-gray-900 mb-4">AST结构（JSON）</h4>
@@ -943,26 +945,122 @@
         async function loadVisualizationImages() {
             try {
                 // 加载AST图像
+                const astUrl = `/api/visualization/ast/${currentTaskId}?t=${Date.now()}`;
+
                 const astImage = new Image();
                 astImage.onload = function() {
                     document.getElementById('astImageContainer').innerHTML = `
                         <img src="${this.src}" alt="AST可视化" class="max-w-full h-auto rounded-lg shadow-md">
                     `;
                 };
-                astImage.src = `/api/visualization/ast/${currentTaskId}?t=${Date.now()}`;
+                                // 当作为图片加载失败时（通常服务端返回 HTML），使用 iframe 嵌入并显示加载覆盖层
+                                astImage.onerror = function() {
+                                        document.getElementById('astImageContainer').innerHTML = `
+                                                <div class="relative" id="astFrameWrapper">
+                                                    <div id="astLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-20">
+                                                        <div class="text-center">
+                                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                                            <div class="text-sm text-gray-600">加载可视化中...</div>
+                                                        </div>
+                                                    </div>
+                                                    <iframe src="${astUrl}" id="astIframe" style="width:100%;height:720px;border:0;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);" loading="lazy"></iframe>
+                                                </div>
+                                        `;
+                                };
+                astImage.src = astUrl;
 
                 // 加载依赖关系图
+                const depUrl = `/api/visualization/dependencies/${currentTaskId}?t=${Date.now()}`;
                 const depImage = new Image();
                 depImage.onload = function() {
                     document.getElementById('dependencyImageContainer').innerHTML = `
                         <img src="${this.src}" alt="依赖关系图" class="max-w-full h-auto rounded-lg shadow-md">
                     `;
                 };
-                depImage.src = `/api/visualization/dependencies/${currentTaskId}?t=${Date.now()}`;
+                                // 如果服务器返回 HTML（交互式 pyvis），图片加载会失败，回退为 iframe 并显示加载覆盖层
+                                depImage.onerror = function() {
+                                        document.getElementById('dependencyImageContainer').innerHTML = `
+                                                <div class="relative" id="depFrameWrapper">
+                                                    <div id="depLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-80 z-20">
+                                                        <div class="text-center">
+                                                            <i class="fas fa-spinner fa-spin text-2xl mb-2"></i>
+                                                            <div class="text-sm text-gray-600">加载可视化中...</div>
+                                                        </div>
+                                                    </div>
+                                                    <iframe src="${depUrl}" id="depIframe" style="width:100%;height:720px;border:0;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.08);" loading="lazy"></iframe>
+                                                </div>
+                                        `;
+                                };
+                depImage.src = depUrl;
 
             } catch (error) {
                 console.error('加载可视化图像失败:', error);
             }
+        }
+
+        // 接收来自 iframe(pyvis) 的 postMessage 消息：用于自适应高度、就绪事件和节点点击
+        window.addEventListener('message', function(e) {
+            if (!e.data || typeof e.data !== 'object') return;
+            const msg = e.data;
+
+            // 处理 ready 事件：隐藏加载覆盖层
+            if (msg.type === 'pyvis_ready') {
+                try{
+                    if(msg.source === 'dep'){
+                        const loader = document.getElementById('depLoading');
+                        if(loader) loader.style.display = 'none';
+                    } else {
+                        const loader = document.getElementById('astLoading');
+                        if(loader) loader.style.display = 'none';
+                    }
+                }catch(e){}
+            }
+
+            // pyvis 发送高度更新（带节流与上限），只在显著变化时调整 iframe 高度，避免循环
+            if (msg.type === 'pyvis_height') {
+                const iframeId = msg.source === 'dep' ? 'depIframe' : 'astIframe';
+                const iframe = document.getElementById(iframeId);
+                if (iframe && msg.height) {
+                    const maxH = 6000; // 安全上限
+                    const h = Math.min(parseInt(msg.height, 10) || 0, maxH);
+                    const cur = parseInt(iframe.style.height || iframe.clientHeight || 0, 10) || 0;
+                    // 只有当差值超过阈值时才更新（避免微小波动）
+                    if (Math.abs(h - cur) > 40) {
+                        iframe.style.height = h + 'px';
+                    }
+                }
+            }
+
+            // pyvis 节点点击事件，显示节点详情
+            if (msg.type === 'pyvis_node_click') {
+                const source = msg.source || 'ast';
+                const details = msg.node || msg.data || null;
+                showNodeDetails(source, details);
+            }
+        });
+
+        // 在页面中显示可视化节点的详情
+        function showNodeDetails(source, details) {
+            const containerId = source === 'dep' ? 'dependencyVisualizationDetails' : 'visualizationDetails';
+            const container = document.getElementById(containerId);
+            if (!container) return;
+            if (!details) {
+                container.innerHTML = '<div class="text-gray-500">未提供节点详情</div>';
+                return;
+            }
+
+            // 格式化节点详情，优先展示常见字段
+            const lines = [];
+            if (details.label) lines.push(`<div><strong>标签:</strong> ${escapeHtml(String(details.label))}</div>`);
+            if (details.full_value) lines.push(`<div><strong>值:</strong> <pre class="text-xs bg-gray-50 p-2 rounded">${escapeHtml(String(details.full_value))}</pre></div>`);
+            if (details.line) lines.push(`<div><strong>行:</strong> ${escapeHtml(String(details.line))}</div>`);
+            if (details.col) lines.push(`<div><strong>列:</strong> ${escapeHtml(String(details.col))}</div>`);
+            if (details.children_values) lines.push(`<div><strong>子节点:</strong> ${escapeHtml(String(details.children_values.slice(0, 10).join(', ')))}</div>`);
+
+            // 备用：将完整 JSON 展示为折叠的 pre
+            lines.push(`<details class="mt-2"><summary class="cursor-pointer text-sm text-gray-600">完整 JSON</summary><pre class="text-xs bg-gray-50 p-2 rounded mt-2">${escapeHtml(JSON.stringify(details, null, 2))}</pre></details>`);
+
+            container.innerHTML = lines.join('');
         }
 
         // 标签页切换

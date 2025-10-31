@@ -1,32 +1,34 @@
-# WAF规则智能识别与分析工具 - 依赖包清单
+# WAF规则智能识别与分析工具 - 依赖包清单（已清理）
 
-# Web框架
+# 说明：
+# - 移除了不应通过 pip 管理的前端库（如 d3/echarts），建议通过 npm/yarn 或将静态文件放到 frontend/static。
+# - 移除了 Python 标准库回移植包（如 pathlib、logging）。
+# - 不直接固定 urllib3 版本，以避免与 requests 的依赖冲突；让 pip 解析兼容版本。
+
+# Web 框架
 flask==2.3.3
-flask-cors==4.0.0
+flask-cors==6.0.0
 
 # 解析器
 antlr4-python3-runtime==4.13.1
 
-# 数据处理和分析
+# 数据处理与分析
 networkx==3.1
 matplotlib==3.8.2
 numpy==1.26.2
 pandas==2.1.4
+pyvis==0.3.1    # 可选：用于图网络可视化（如项目中使用则保留）
 
-# 可视化
-pyecharts==2.0.0  # 替换原“echarts”（Python中ECharts封装包实际为pyecharts，支持Python 3.8+）
-# 原“d3==7.8.5”为JavaScript库，Python中无直接对应包，若需类似可视化能力，可通过pyecharts或plotly等库实现
-
-# 文件处理和系统操作
+# 文件/环境
 python-dotenv==1.0.0
-# pathlib为Python标准库，无需单独安装
-# logging为Python标准库，无需单独安装
 
-# 开发工具
+# coreruleset 子工具依赖（来自 coreruleset util）
+msc-pyparser>=1.2.1
+
+# 开发/测试工具
 pytest==7.4.3
 flake8==6.1.0
 black==23.10.1
 
-# 其他
-requests==2.31.0
-urllib3==2.0.7
+# 其他网络库（使用较新的 requests）
+requests==2.32.4

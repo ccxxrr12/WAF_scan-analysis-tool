@@ -230,45 +230,102 @@ class DependencyAnalyzer:
         }
     
     def save_dependency_graph(self, dependencies, output_path):
-        """保存依赖关系图"""
+        """保存依赖关系图。若输出路径以 .html 结尾，则生成 pyvis 交互式 HTML；否则生成静态 PNG。"""
         try:
-            plt.figure(figsize=(12, 8))
-            
-            # 创建图形
+            # 构建 networkx 图
             G = nx.DiGraph()
-            
-            # 添加节点和边
-            for dep in dependencies['variable_dependencies']:
-                G.add_edge(dep['source'], dep['target'], label=dep['variable'][:10] + '...' if len(dep['variable']) > 10 else dep['variable'])
-            
-            for dep in dependencies['marker_dependencies']:
-                G.add_edge(dep['source'], dep['target'], label='marker:' + dep['marker'])
-            
-            # 设置布局
-            pos = nx.spring_layout(G, k=3, iterations=50)
-            
-            # 绘制节点
+
+            for dep in dependencies.get('variable_dependencies', []):
+                label = dep['variable'][:10] + '...' if len(dep.get('variable','')) > 10 else dep.get('variable','')
+                G.add_edge(dep['source'], dep['target'], label=label, type='variable')
+
+            for dep in dependencies.get('marker_dependencies', []):
+                G.add_edge(dep['source'], dep['target'], label='marker:' + dep.get('marker',''), type='marker')
+
+            for dep in dependencies.get('include_dependencies', []):
+                G.add_edge(dep['source'], dep['target'], label='include', type='include')
+
+            # 如果目标是 HTML，则使用 pyvis 生成交互式网络
+            out_path = output_path
+            if out_path.lower().endswith('.html'):
+                try:
+                    from pyvis.network import Network
+                except Exception:
+                    raise RuntimeError('pyvis 未安装，请安装 pyvis (pip install pyvis) 以生成交互式依赖图')
+
+                net = Network(height='700px', width='100%', directed=True, notebook=False)
+                net.toggle_physics(True)
+
+                # 添加节点
+                for n in G.nodes():
+                    net.add_node(n, label=str(n))
+
+                # 添加带标签的边
+                for src, dst, data in G.edges(data=True):
+                    title = data.get('label','')
+                    net.add_edge(src, dst, title=title)
+
+                # 生成 HTML（使用 CDN）并追加 postMessage 脚本，类似 AST 可视化
+                if not out_path.lower().endswith('.html'):
+                    out_path = out_path + '.html'
+
+                html_content = net.generate_html(name=os.path.basename(out_path), local=False)
+
+                # append communication script (same pattern as AST)
+                comm_script = """
+<script>
+  (function(){
+    function postHeight(){ try{ window.parent.postMessage({type:'pyvis_height', height: document.body.scrollHeight, graph:'dependencies'}, '*'); }catch(e){} }
+    window.addEventListener('load', function(){ postHeight(); setTimeout(postHeight,500); });
+    window.addEventListener('resize', postHeight);
+
+    function attachClick(){
+      try{
+        if(typeof network !== 'undefined' && typeof nodes !== 'undefined'){
+          network.on('click', function(params){
+            try{
+              if(params.nodes && params.nodes.length > 0){
+                var nodeId = params.nodes[0];
+                var nodeData = null;
+                try{ nodeData = nodes.find(function(n){ return n.id == nodeId; }) || {}; }catch(e){ nodeData = {id: nodeId}; }
+                window.parent.postMessage({type:'pyvis_node_click', node: nodeData, graph:'dependencies'}, '*');
+              }
+            }catch(e){}
+          });
+        } else { setTimeout(attachClick, 200); }
+      }catch(e){ setTimeout(attachClick,200); }
+    }
+    attachClick();
+
+    window.addEventListener('message', function(event){ try{ var data = event.data||{}; if(data && data.type==='pyvis_highlight' && data.graph==='dependencies' && typeof network !== 'undefined'){ network.selectNodes([data.nodeId]); } }catch(e){} });
+  })();
+</script>
+"""
+
+                os.makedirs(os.path.dirname(out_path), exist_ok=True)
+                with open(out_path, 'w', encoding='utf-8') as f:
+                    f.write(html_content)
+                    f.write(comm_script)
+
+                self.logger.info(f"依赖关系交互式图已保存到: {out_path}")
+                return out_path
+
+            # 否则生成静态 PNG（matplotlib）
+            plt.figure(figsize=(12, 8))
+            pos = nx.spring_layout(G, k=0.5, iterations=50)
             nx.draw_networkx_nodes(G, pos, node_size=1000, node_color='lightblue', alpha=0.8)
-            
-            # 绘制边
             nx.draw_networkx_edges(G, pos, edgelist=G.edges(), arrows=True, arrowstyle='->', alpha=0.6)
-            
-            # 绘制标签
             nx.draw_networkx_labels(G, pos, font_size=8)
-            
-            # 绘制边标签
             edge_labels = nx.get_edge_attributes(G, 'label')
             nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=6)
-            
             plt.title('WAF Rule Dependency Graph', fontsize=16)
             plt.axis('off')
             plt.tight_layout()
-            plt.savefig(output_path, dpi=300, bbox_inches='tight')
+            plt.savefig(out_path, dpi=300, bbox_inches='tight')
             plt.close()
-            
-            self.logger.info(f"依赖关系图已保存到: {output_path}")
-            return output_path
-            
+            self.logger.info(f"依赖关系图已保存到: {out_path}")
+            return out_path
+
         except Exception as e:
             self.logger.error(f"保存依赖关系图失败: {str(e)}", exc_info=True)
             raise
