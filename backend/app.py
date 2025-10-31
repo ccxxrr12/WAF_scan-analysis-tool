@@ -20,6 +20,11 @@ from datetime import datetime
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# 添加 Part2 analysis 到 Python 模块搜索路径
+part2_analysis_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Part2 analysis'))
+if part2_analysis_path not in sys.path:
+    sys.path.insert(0, part2_analysis_path)
+
 # 默认的 CoreRuleSet 目录（可通过请求参数覆盖）
 DEFAULT_CRS_RULES_DIR = PROJECT_ROOT / 'coreruleset-main' / 'rules'
 
@@ -34,8 +39,8 @@ from backend.task_manager import AnalysisTask
 from backend import rule_index
 
 # 初始化Flask应用
-app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'frontend' / 'templates'),
-            static_folder=str(PROJECT_ROOT / 'frontend' / 'static'))
+app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'UI_2.0_frontend' / 'templates'),
+            static_folder=str(PROJECT_ROOT / 'UI_2.0_frontend' / 'static'))
 app.config['UPLOAD_FOLDER'] = str(PROJECT_ROOT / 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
 app.secret_key = 'waf-analysis-tool-secret-key'
@@ -430,7 +435,7 @@ def main():
     import argparse
     parser = argparse.ArgumentParser(description='WAF规则分析工具 Web API')
     parser.add_argument('-p', '--port', type=int, default=5000, help='端口号')
-    parser.add_argument('-h', '--host', default='0.0.0.0', help='主机地址')
+    parser.add_argument('--host', default='0.0.0.0', help='主机地址')
     parser.add_argument('-d', '--debug', action='store_true', help='调试模式')
     
     args = parser.parse_args()

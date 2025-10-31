@@ -667,121 +667,34 @@
 
         // URL分析
         async function analyzeUrl() {
-            const url = document.getElementById('targetUrl').value;
-            if (!url) {
-                alert('请输入目标URL');
+            const urlInput = document.getElementById('targetUrl').value;
+            if (!urlInput) {
+                alert('请输入URL');
                 return;
             }
 
             try {
-                // 显示进度
-                document.getElementById('urlAnalysisProgress').classList.remove('hidden');
-                document.getElementById('urlAnalysisResults').classList.add('hidden');
-                
-                // 模拟进度
-                await simulateProgress('url', [
-                    { percent: 25, text: '正在检测WAF指纹...' },
-                    { percent: 50, text: '分析HTTP响应头...' },
-                    { percent: 75, text: '智能检测中...' },
-                    { percent: 100, text: '分析完成' }
-                ]);
-
-                // 调用API
                 const response = await fetch('/api/analyze-url', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ url: url }),
+                    body: JSON.stringify({ url: urlInput })
                 });
 
-                const data = await response.json();
-                
-                if (response.ok) {
-                    displayUrlAnalysisResults(data);
-                } else {
-                    alert('分析失败: ' + (data.error || '未知错误'));
+                if (!response.ok) {
+                    const error = await response.json();
+                    alert(`分析失败: ${error.error}`);
+                    return;
                 }
 
+                const result = await response.json();
+                console.log('分析结果:', result);
+                alert('分析成功！请查看控制台以获取详细信息。');
             } catch (error) {
-                console.error('URL分析失败:', error);
-                alert('分析失败: ' + error.message);
-            } finally {
-                document.getElementById('urlAnalysisProgress').classList.add('hidden');
+                console.error('请求失败:', error);
+                alert('请求失败，请检查网络连接。');
             }
-        }
-
-        function displayUrlAnalysisResults(results) {
-            // 显示WAF指纹识别结果
-            const fingerprintHtml = `
-                <div class="bg-blue-50 rounded-lg p-4 mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="font-semibold text-blue-900">WAF类型</span>
-                        <span class="px-2 py-1 bg-blue-200 text-blue-800 rounded-full text-sm">
-                            ${results.fingerprint.waf_type}
-                        </span>
-                    </div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-blue-700">置信度</span>
-                        <span class="font-semibold">${(results.fingerprint.confidence * 100).toFixed(1)}%</span>
-                    </div>
-                    <div class="mt-3">
-                        <div class="text-sm text-blue-700 mb-1">匹配特征:</div>
-                        <ul class="text-xs text-blue-600 space-y-1">
-                            ${results.fingerprint.fingerprint_matches.map(match => 
-                                `<li>• ${match}</li>`
-                            ).join('')}
-                        </ul>
-                    </div>
-                </div>
-                <div class="bg-gray-50 rounded-lg p-4">
-                    <div class="text-sm font-medium text-gray-900 mb-2">HTTP响应头</div>
-                    <div class="text-xs text-gray-600 space-y-1">
-                        ${Object.entries(results.fingerprint.headers).map(([key, value]) => 
-                            `<div><span class="font-medium">${key}:</span> ${value}</div>`
-                        ).join('')}
-                    </div>
-                </div>
-            `;
-            document.getElementById('fingerprintResults').innerHTML = fingerprintHtml;
-
-            // 显示智能检测结果
-            const mlHtml = `
-                <div class="bg-purple-50 rounded-lg p-4 mb-4">
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="font-semibold text-purple-900">检测模型</span>
-                        <span class="px-2 py-1 bg-purple-200 text-purple-800 rounded-full text-sm">
-                            ${results.ml_detection.detection_model}
-                        </span>
-                    </div>
-                    <div class="flex items-center justify-between mb-4">
-                        <span class="text-purple-700">整体置信度</span>
-                        <span class="font-semibold">${(results.ml_detection.confidence * 100).toFixed(1)}%</span>
-                    </div>
-                </div>
-                <div>
-                    <div class="text-sm font-medium text-gray-900 mb-3">预测攻击类型</div>
-                    <div class="space-y-2">
-                        ${results.ml_detection.predicted_attack_types.map(attack => `
-                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                                <div class="flex items-center">
-                                    <i class="fas fa-shield-alt text-red-500 mr-2"></i>
-                                    <span class="text-gray-800">${attack.type}</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <div class="w-20 bg-gray-200 rounded-full h-2 mr-2">
-                                        <div class="bg-red-500 h-2 rounded-full" style="width: ${(attack.confidence * 100).toFixed(0)}%"></div>
-                                    </div>
-                                    <span class="text-sm text-gray-600">${(attack.confidence * 100).toFixed(1)}%</span>
-                                </div>
-                            </div>
-                        `).join('')}
-                    </div>
-                </div>
-            `;
-            document.getElementById('mlDetectionResults').innerHTML = mlHtml;
-
-            document.getElementById('urlAnalysisResults').classList.remove('hidden');
         }
 
         // 文件分析
