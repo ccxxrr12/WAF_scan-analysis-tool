@@ -100,6 +100,8 @@
     </style>
 </head>
 <body class="bg-gray-50 min-h-screen font-inter">
+    <!-- 页面通知/提示（右上角） -->
+    <div id="notifications" class="fixed top-6 right-6 z-50 space-y-2"></div>
     <!-- 顶部导航 -->
     <nav class="bg-white shadow-lg sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -262,6 +264,11 @@
                         <div id="mlDetectionResults" class="space-y-4">
                             <!-- 结果将通过JavaScript动态填充 -->
                         </div>
+                            <!-- 原始返回（完整 JSON） -->
+                            <div class="mt-4">
+                                <h5 class="text-sm font-medium text-gray-700 mb-2">原始返回 (完整 JSON)</h5>
+                                <pre id="urlRawResponse" class="bg-gray-800 text-green-100 p-4 rounded max-h-64 overflow-auto text-xs">暂无</pre>
+                            </div>
                     </div>
                 </div>
             </div>
@@ -324,6 +331,12 @@
 
                 <!-- 分析结果标签页 -->
                 <div id="analysisTabs" class="hidden">
+                    <!-- 原始返回展示（上传 & 分析） -->
+                    <div id="fileRawResponses" class="mb-4 hidden">
+                        <h5 class="text-sm font-medium text-gray-700 mb-2">原始返回 (上传 / 分析 - 完整 JSON)</h5>
+                        <pre id="fileRawUploadResponse" class="bg-gray-800 text-green-100 p-4 rounded max-h-40 overflow-auto text-xs">暂无上传返回</pre>
+                        <pre id="fileRawAnalyzeResponse" class="bg-gray-800 text-green-100 p-4 rounded max-h-64 overflow-auto text-xs mt-2">暂无分析返回</pre>
+                    </div>
                     <div class="border-b border-gray-200">
                         <nav class="-mb-px flex space-x-8">
                             <button onclick="showTab('summary')" id="tab-summary" class="tab-button border-b-2 border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 text-sm font-medium">
@@ -655,6 +668,13 @@
             document.getElementById('analyzeButtonContainer').classList.add('hidden');
             document.getElementById('fileAnalysisProgress').classList.add('hidden');
             document.getElementById('analysisTabs').classList.add('hidden');
+            // 隐藏并清理原始返回区域
+            const rawContainer = document.getElementById('fileRawResponses');
+            if (rawContainer) {
+                rawContainer.classList.add('hidden');
+                const up = document.getElementById('fileRawUploadResponse'); if (up) up.textContent = '暂无上传返回';
+                const an = document.getElementById('fileRawAnalyzeResponse'); if (an) an.textContent = '暂无分析返回';
+            }
         }
 
         function formatFileSize(bytes) {
@@ -669,11 +689,15 @@
         async function analyzeUrl() {
             const urlInput = document.getElementById('targetUrl').value;
             if (!urlInput) {
-                alert('请输入URL');
+                showError('请输入URL', '目标 URL 为空');
                 return;
             }
 
             try {
+                // 显示 URL 分析进度
+                document.getElementById('urlAnalysisProgress').classList.remove('hidden');
+                updateProgress('url', 10, '正在发送请求...');
+
                 const response = await fetch('/api/analyze-url', {
                     method: 'POST',
                     headers: {
@@ -683,24 +707,42 @@
                 });
 
                 if (!response.ok) {
-                    const error = await response.json();
-                    alert(`分析失败: ${error.error}`);
+                    let errorText = '未知错误';
+                    let parsedBody = null;
+                    try { parsedBody = await response.json(); errorText = parsedBody.error || parsedBody.message || JSON.stringify(parsedBody); } catch(e){}
+                    // 在页面中显示错误
+                    document.getElementById('fingerprintResults').innerHTML = `<div class="p-4 bg-red-50 border border-red-200 rounded"> <strong class="text-red-700">分析失败：</strong> ${escapeHtml(errorText)}</div>`;
+                    // 显示原始返回（如果有）
+                    const rawEl = document.getElementById('urlRawResponse');
+                    if (rawEl) {
+                        rawEl.textContent = parsedBody ? JSON.stringify(parsedBody, null, 2) : (await response.text()).toString();
+                    }
+                    document.getElementById('urlAnalysisProgress').classList.add('hidden');
+                    showError('分析失败', errorText);
                     return;
                 }
 
                 const result = await response.json();
-                console.log('分析结果:', result);
-                alert('分析成功！请查看控制台以获取详细信息。');
+                // 把结果渲染到页面而不是控制台
+                displayUrlAnalysisResults(result);
+                // 显示原始返回
+                const rawEl2 = document.getElementById('urlRawResponse');
+                if (rawEl2) rawEl2.textContent = JSON.stringify(result, null, 2);
+                updateProgress('url', 100, '完成');
             } catch (error) {
-                console.error('请求失败:', error);
-                alert('请求失败，请检查网络连接。');
+                // 网络或其他异常
+                document.getElementById('fingerprintResults').innerHTML = `<div class="p-4 bg-red-50 border border-red-200 rounded"> <strong class="text-red-700">请求失败：</strong> ${escapeHtml(error.message || String(error))}</div>`;
+                const rawEl = document.getElementById('urlRawResponse');
+                if (rawEl) rawEl.textContent = String(error && error.stack ? (error.stack) : (error.message || String(error)));
+                document.getElementById('urlAnalysisProgress').classList.add('hidden');
+                showError('请求失败', error.message || String(error));
             }
         }
 
         // 文件分析
         async function startAnalysis() {
             if (!currentFile) {
-                alert('请先选择文件');
+                showError('请先选择文件', '未检测到上传的规则文件');
                 return;
             }
 
@@ -724,10 +766,18 @@
                     body: formData,
                 });
 
-                const uploadData = await uploadResponse.json();
-                
+                const uploadData = await (async () => {
+                    try { return await uploadResponse.json(); } catch(e) { return { raw: await uploadResponse.text() }; }
+                })();
+
+                // 显示原始上传返回
+                const uploadRawEl = document.getElementById('fileRawUploadResponse');
+                if (uploadRawEl) uploadRawEl.textContent = JSON.stringify(uploadData, null, 2);
+                const rawContainer = document.getElementById('fileRawResponses');
+                if (rawContainer) rawContainer.classList.remove('hidden');
+
                 if (!uploadResponse.ok) {
-                    throw new Error(uploadData.error || '文件上传失败');
+                    throw new Error(uploadData.error || uploadData.message || '文件上传失败');
                 }
 
                 currentTaskId = uploadData.task_id;
@@ -750,8 +800,15 @@
                     body: JSON.stringify({ task_id: currentTaskId }),
                 });
 
-                const analyzeData = await analyzeResponse.json();
-                
+                const analyzeData = await (async () => {
+                    try { return await analyzeResponse.json(); } catch(e) { return { raw: await analyzeResponse.text() }; }
+                })();
+
+                // 显示原始分析返回
+                const analyzeRawEl = document.getElementById('fileRawAnalyzeResponse');
+                if (analyzeRawEl) analyzeRawEl.textContent = JSON.stringify(analyzeData, null, 2);
+                if (rawContainer) rawContainer.classList.remove('hidden');
+
                 if (analyzeResponse.ok) {
                     analysisResults = analyzeData;
                     displayAnalysisResults(analyzeData);
@@ -761,8 +818,17 @@
                 }
 
             } catch (error) {
-                console.error('文件分析失败:', error);
-                alert('分析失败: ' + error.message);
+                // 将错误渲染到页面的分析结果区域并显示通知
+                const container = document.getElementById('conflictsList');
+                if (container) {
+                    container.innerHTML = `<div class="p-4 bg-red-50 border border-red-200 rounded"> <strong class="text-red-700">分析失败：</strong> ${escapeHtml(error.message || String(error))}</div>`;
+                }
+                // 显示原始错误信息
+                const analyzeRawEl = document.getElementById('fileRawAnalyzeResponse');
+                const rawContainer2 = document.getElementById('fileRawResponses');
+                if (analyzeRawEl) analyzeRawEl.textContent = String(error.stack || error.message || String(error));
+                if (rawContainer2) rawContainer2.classList.remove('hidden');
+                showError('分析失败', error.message || String(error));
                 resetFileUpload();
             }
         }
@@ -907,7 +973,8 @@
                 depImage.src = depUrl;
 
             } catch (error) {
-                console.error('加载可视化图像失败:', error);
+                // 在页面中显示错误通知
+                showError('加载可视化失败', error.message || String(error));
             }
         }
 
@@ -1241,6 +1308,93 @@
             astJson.textContent = JSON.stringify(analysisResults.ast, null, 2);
         }
 
+        // 页面内通知与错误渲染（替代 console / alert）
+        function showNotification(type, message, timeout = 5000) {
+            const container = document.getElementById('notifications');
+            if (!container) return;
+
+            const id = 'note-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+            const color = type === 'error' ? 'bg-red-500' : (type === 'success' ? 'bg-green-500' : 'bg-blue-500');
+            const icon = type === 'error' ? 'fa-circle-exclamation' : (type === 'success' ? 'fa-circle-check' : 'fa-info-circle');
+
+            const el = document.createElement('div');
+            el.id = id;
+            el.className = `text-white px-4 py-2 rounded-lg shadow-md flex items-start space-x-3 max-w-sm ${color} animate-fade-in`;
+            el.innerHTML = `
+                <i class="fas ${icon} mt-0.5"></i>
+                <div class="flex-1 text-sm leading-tight">${escapeHtml(message)}</div>
+                <button onclick="document.getElementById('${id}').remove()" class="ml-2 text-white/80 hover:text-white"><i class="fas fa-times"></i></button>
+            `;
+
+            container.appendChild(el);
+
+            if (timeout > 0) {
+                setTimeout(() => {
+                    const n = document.getElementById(id);
+                    if (n) n.remove();
+                }, timeout);
+            }
+        }
+
+        function showSuccess(message, timeout = 4000) { showNotification('success', message, timeout); }
+        function showInfo(message, timeout = 3000) { showNotification('info', message, timeout); }
+        function showError(title, detail, timeout = 0) {
+            // 显示右上角通知（如果有 detail，略缩短显示）
+            showNotification('error', `${title}${detail ? ': ' + (typeof detail === 'string' ? detail : JSON.stringify(detail)) : ''}`, timeout || 7000);
+        }
+
+        // 将 URL 分析结果渲染到页面中的专用方法
+        function displayUrlAnalysisResults(result) {
+            try {
+                document.getElementById('urlAnalysisResults').classList.remove('hidden');
+                // 指纹识别
+                const fnode = document.getElementById('fingerprintResults');
+                fnode.innerHTML = '';
+                if (result.fingerprint) {
+                    fnode.innerHTML = `
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <div class="font-semibold text-gray-900">${escapeHtml(result.fingerprint.name || '未识别')}</div>
+                                <div class="text-sm text-gray-600">置信度: ${typeof result.fingerprint.confidence !== 'undefined' ? (result.fingerprint.confidence*100).toFixed(1) + '%' : '未知'}</div>
+                            </div>
+                            <div class="text-sm text-gray-500">来源: ${escapeHtml(result.fingerprint.source || '被动')}</div>
+                        </div>
+                        <div class="mt-3 text-xs text-gray-700 bg-gray-50 p-3 rounded font-mono">${escapeHtml(result.fingerprint.details || '')}</div>
+                    `;
+                } else {
+                    fnode.innerHTML = `<div class="text-gray-500">未检测到 WAF 指纹</div>`;
+                }
+
+                // ML 检测结果
+                const mnode = document.getElementById('mlDetectionResults');
+                mnode.innerHTML = '';
+                if (result.ml && (result.ml.predictions || result.ml.summary)) {
+                    const preds = result.ml.predictions || [];
+                    const summary = result.ml.summary || {};
+                    mnode.innerHTML = `
+                        <div class="text-sm text-gray-700">模型摘要: ${escapeHtml(summary.message || '无')}</div>
+                        <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-2">${preds.map(p=>`
+                            <div class='p-2 bg-gray-50 rounded'>
+                                <div class='font-medium text-gray-800'>${escapeHtml(p.label || '未知')}</div>
+                                <div class='text-xs text-gray-600'>置信度: ${(p.score*100||0).toFixed(1)}%</div>
+                            </div>
+                        `).join('')}</div>
+                    `;
+                } else {
+                    mnode.innerHTML = `<div class="text-gray-500">未返回智能检测结果</div>`;
+                }
+
+                // 显示进度隐藏
+                document.getElementById('urlAnalysisProgress').classList.add('hidden');
+                // 同时显示原始返回（保险）
+                const rawEl = document.getElementById('urlRawResponse');
+                if (rawEl && result) rawEl.textContent = JSON.stringify(result, null, 2);
+                showSuccess('URL 分析完成，结果已显示在页面中');
+            } catch (e) {
+                showError('渲染结果失败', e.message || e);
+            }
+        }
+
         // 辅助函数
         function getSeverityColor(severity) {
             const colors = {
@@ -1364,7 +1518,7 @@
 
         // 页面加载完成后的初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('WAF规则分析工具已加载完成');
+            showInfo('界面已加载');
         });
     </script>
 </body>
