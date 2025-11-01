@@ -155,9 +155,9 @@ def analyze_rules():
             logger.info("开始AST生成")
             ast_root = ast_visualizer.build_ast(parsed_rules)
             ast_dict = ast_visualizer._ast_to_dict(ast_root)
-            
-            # 生成可视化结果并保存到可公开访问的静态目录（frontend/static/visualizations）
-            visuals_dir = PROJECT_ROOT / 'frontend' / 'static' / 'visualizations'
+
+            # 生成可视化结果并保存到可公开访问的静态目录（UI_2.0_frontend/static/visualizations）
+            visuals_dir = PROJECT_ROOT / 'UI_2.0_frontend' / 'static' / 'visualizations'
             os.makedirs(visuals_dir, exist_ok=True)
 
             # 保存 AST（交互式 HTML）
