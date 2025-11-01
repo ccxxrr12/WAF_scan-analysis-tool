@@ -1,4 +1,0 @@
-2025-10-30 07:34:32 [WARNING] werkzeug [_internal.py:97]:  * Debugger is active!
-2025-10-30 07:34:32 [INFO] werkzeug [_internal.py:97]:  * Debugger PIN: 313-066-573
-2025-10-30 07:34:51 [INFO] werkzeug [_internal.py:97]: 127.0.0.1 - - [30/Oct/2025 07:34:51] "GET / HTTP/1.1" 200 -
-2025-10-30 07:34:51 [INFO] werkzeug [_internal.py:97]: 127.0.0.1 - - [30/Oct/2025 07:34:51] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
