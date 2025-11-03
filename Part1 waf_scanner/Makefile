@@ -21,5 +21,11 @@ html:
 	cd $(DOC_DIR) && $(MAKE) html
 
 clean:
-	rm -rf *.egg-info build dist .coverage
-	find $(SRC_DIR) -name "*.pyc" | xargs rm -rf
+	@echo Cleaning up...
+	@powershell -Command "Get-ChildItem -Path . -Include *.egg-info -Directory -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force"
+	@powershell -Command "if (Test-Path build) { Remove-Item build -Recurse -Force }"
+	@powershell -Command "if (Test-Path dist) { Remove-Item dist -Recurse -Force }"
+	@powershell -Command "if (Test-Path .coverage) { Remove-Item .coverage -Force }"
+	@powershell -Command "Get-ChildItem -Path . -Include *.pyc -Recurse -ErrorAction SilentlyContinue | Remove-Item -Force"
+	@powershell -Command "Get-ChildItem -Path . -Include __pycache__ -Directory -Recurse -ErrorAction SilentlyContinue | Remove-Item -Recurse -Force"
+	@echo Clean completed.

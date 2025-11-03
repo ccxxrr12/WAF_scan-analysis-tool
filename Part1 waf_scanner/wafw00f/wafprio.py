@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 '''
 Copyright (C) 2024, WAFW00F Developers.
 See the LICENSE file for copying permission.
 '''
 
-# NOTE: this priority list is used so that each check can be prioritized,
-# so that the quick checks are done first and ones that require more
-# requests, are done later
+# 注意：此优先级列表用于确定每个检测的优先级，
+# 使快速检测先执行，需要更多请求的检测后执行
 
-
+# WAF检测优先级列表
 wafdetectionsprio = [
 	'360PanYun (360 Technologies)',
 	'360WangZhanBao (360 Technologies)',

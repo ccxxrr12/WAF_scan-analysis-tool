@@ -5,63 +5,99 @@ Copyright (C) 2024, WAFW00F Developers.
 See the LICENSE file for copying permission.
 '''
 
-import csv
-import io
-import json
-import logging
-import os
-import random
-import re
-import sys
-import string
-import urllib.parse
-from collections import defaultdict
-from optparse import OptionParser
+# 导入所需的标准库模块
+import csv                  # 用于处理CSV文件
+import io                   # 用于处理输入输出流
+import json                 # 用于处理JSON数据
+import logging              # 用于记录日志
+import os                   # 用于操作系统相关功能
+import random               # 用于生成随机数
+import re                   # 用于正则表达式操作
+import sys                  # 用于访问解释器变量
+import string               # 用于字符串操作
+import urllib.parse         # 用于URL解析
+from collections import defaultdict  # 用于创建带有默认值的字典
+from optparse import OptionParser   # 用于解析命令行选项
 
-from wafw00f import __license__, __version__
-from wafw00f.lib.asciiarts import Color, randomArt
-from wafw00f.lib.evillib import waftoolsengine
-from wafw00f.manager import load_plugins
-from wafw00f.wafprio import wafdetectionsprio
+# 导入项目内部模块和变量
+from wafw00f import __license__, __version__  # 导入许可证和版本信息
+from wafw00f.lib.asciiarts import Color, randomArt  # 导入ASCII艺术字相关功能
+from wafw00f.lib.evillib import waftoolsengine   # 导入WAF检测引擎
+from wafw00f.manager import load_plugins        # 导入插件加载功能
+from wafw00f.wafprio import wafdetectionsprio   # 导入WAF检测优先级列表
 
-
+# 定义WAFW00F类，继承自waftoolsengine
 class WAFW00F(waftoolsengine):
-
-    xsstring = r'<script>alert("XSS");</script>'
-    sqlistring = r'UNION SELECT ALL FROM information_schema AND " or SLEEP(5) or "'
-    lfistring = r'../../etc/passwd'
-    rcestring = r'/bin/cat /etc/passwd; ping 127.0.0.1; curl baidu.com'
-    xxestring = r'<!ENTITY xxe SYSTEM "file:///etc/shadow">]><pwn>&hack;</pwn>'
+    # 定义各种攻击载荷字符串
+    xsstring = r'<script>alert("XSS");</script>'  # XSS攻击测试字符串
+    sqlistring = r'UNION SELECT ALL FROM information_schema AND " or SLEEP(5) or "'  # SQL注入测试字符串
+    lfistring = r'../../etc/passwd'  # 本地文件包含测试字符串
+    rcestring = r'/bin/cat /etc/passwd; ping 127.0.0.1; curl baidu.com'  # 远程命令执行测试字符串
+    xxestring = r'<!ENTITY xxe SYSTEM "file:///etc/shadow">]><pwn>&hack;</pwn>'  # XXE攻击测试字符串
 
     def __init__(self, target='www.example.com', debuglevel=0, path='/',
                  followredirect=True, extraheaders={}, proxies=None, timeout=7):
+        """
+        初始化WAFW00F实例
+        
+        参数:
+        target: 目标网站地址
+        debuglevel: 调试级别
+        path: 请求路径
+        followredirect: 是否跟随重定向
+        extraheaders: 额外的HTTP头
+        proxies: 代理设置
+        timeout: 请求超时时间
+        """
 
+        # 初始化日志记录器
         self.log = logging.getLogger('wafw00f')
+        # 攻击结果存储
         self.attackres = None
+        # 调用父类初始化方法
         waftoolsengine.__init__(self, target, debuglevel, path, proxies, followredirect, extraheaders, timeout)
+        # 初始化知识库，用于存储检测结果
         self.knowledge = {
             'generic': {
-                'found': False,
-                'reason': ''
+                'found': False,  # 是否发现WAF
+                'reason': ''     # 发现WAF的原因
             },
-            'wafname': []
+            'wafname': []  # WAF名称列表
         }
+        # 发送正常请求
         self.rq = self.normalRequest()
 
     def normalRequest(self):
+        """
+        发送正常请求
+        返回请求响应对象
+        """
         return self.Request()
 
     def customRequest(self, headers=None):
+        """
+        发送自定义头部的请求
+        
+        参数:
+        headers: 自定义HTTP头部字典
+        """
         return self.Request(
             headers=headers
         )
 
     def nonExistent(self):
+        """
+        发送对不存在路径的请求
+        用于测试WAF的行为
+        """
         return self.Request(
             path=self.path + str(random.randrange(100, 999)) + '.html'
         )
 
     def xssAttack(self):
+        """
+        发送XSS攻击请求
+        """
         return self.Request(
             path=self.path,
             params={
@@ -70,6 +106,9 @@ class WAFW00F(waftoolsengine):
         )
 
     def xxeAttack(self):
+        """
+        发送XXE攻击请求
+        """
         return self.Request(
             path=self.path,
             params={
@@ -78,11 +117,17 @@ class WAFW00F(waftoolsengine):
         )
 
     def lfiAttack(self):
+        """
+        发送本地文件包含攻击请求
+        """
         return self.Request(
             path=self.path + self.lfistring
         )
 
     def centralAttack(self):
+        """
+        发送综合攻击请求（包含多种攻击类型）
+        """
         return self.Request(
             path=self.path,
             params={
@@ -93,6 +138,9 @@ class WAFW00F(waftoolsengine):
         )
 
     def sqliAttack(self):
+        """
+        发送SQL注入攻击请求
+        """
         return self.Request(
             path=self.path,
             params={
@@ -101,6 +149,9 @@ class WAFW00F(waftoolsengine):
         )
 
     def osciAttack(self):
+        """
+        发送操作系统命令注入攻击请求
+        """
         return self.Request(
             path=self.path,
             params= {
@@ -109,17 +160,31 @@ class WAFW00F(waftoolsengine):
         )
 
     def performCheck(self, request_method):
+        """
+        执行指定的请求方法并返回结果
+        
+        参数:
+        request_method: 要执行的请求方法
+        
+        返回:
+        响应对象和URL元组
+        """
         r = request_method()
         if r is None:
             raise RequestBlocked()
         return r, r.url
 
-    # Most common attacks used to detect WAFs
-    attcom = [xssAttack, sqliAttack, lfiAttack]
-    attacks = [xssAttack, xxeAttack, lfiAttack, sqliAttack, osciAttack]
+    # 最常用的攻击方法，用于检测WAF
+    attcom = [xssAttack, sqliAttack, lfiAttack]  # 常用攻击方法列表
+    attacks = [xssAttack, xxeAttack, lfiAttack, sqliAttack, osciAttack]  # 所有攻击方法列表
 
     def genericdetect(self):
-        reason = ''
+        """
+        通用WAF检测方法
+        通过多种方式检测是否存在WAF
+        """
+        reason = ''  # 存储检测到WAF的原因
+        # 可能的WAF检测原因列表
         reasons = ['Blocking is being done at connection/packet level.',
                    'The server header is different when an attack is detected.',
                    'The server returns a different response code when an attack string is used.',
@@ -127,10 +192,10 @@ class WAFW00F(waftoolsengine):
                    'The response was different when the request wasn\'t made from a browser.'
                 ]
         try:
-            # Testing for no user-agent response. Detects almost all WAFs out there.
+            # 测试没有User-Agent时的响应，可以检测到大多数WAF
             resp1, _ = self.performCheck(self.normalRequest)
             if 'User-Agent' in self.headers:
-                self.headers.pop('User-Agent')  # Deleting the user-agent key from object not dict.
+                self.headers.pop('User-Agent')  # 从对象中删除User-Agent键，而不是字典
             resp3 = self.customRequest(headers=self.headers)
             if resp3 is not None and resp1 is not None:
                 if resp1.status_code != resp3.status_code:
@@ -143,7 +208,7 @@ class WAFW00F(waftoolsengine):
                     self.knowledge['generic']['found'] = True
                     return True
 
-            # Testing the status code upon sending a xss attack
+            # 测试发送XSS攻击时的状态码
             resp2, xss_url = self.performCheck(self.xssAttack)
             if resp1.status_code != resp2.status_code:
                 self.log.info('Server returned a different response when a XSS attack vector was tried.')
@@ -155,7 +220,7 @@ class WAFW00F(waftoolsengine):
                 self.knowledge['generic']['found'] = True
                 return xss_url
 
-            # Testing the status code upon sending a lfi attack
+            # 测试发送LFI攻击时的状态码
             resp2, lfi_url = self.performCheck(self.lfiAttack)
             if resp1.status_code != resp2.status_code:
                 self.log.info('Server returned a different response when a directory traversal was attempted.')
@@ -167,7 +232,7 @@ class WAFW00F(waftoolsengine):
                 self.knowledge['generic']['found'] = True
                 return lfi_url
 
-            # Testing the status code upon sending a sqli attack
+            # 测试发送SQL注入攻击时的状态码
             resp2, sqli_url = self.performCheck(self.sqliAttack)
             if resp1.status_code != resp2.status_code:
                 self.log.info('Server returned a different response when a SQLi was attempted.')
@@ -179,7 +244,7 @@ class WAFW00F(waftoolsengine):
                 self.knowledge['generic']['found'] = True
                 return sqli_url
 
-            # Checking for the Server header after sending malicious requests
+            # 检查发送恶意请求后的Server头部
             normalserver, attackresponse_server = '', ''
             response = self.attackres
             if 'server' in resp1.headers:
@@ -197,7 +262,7 @@ class WAFW00F(waftoolsengine):
                 self.knowledge['generic']['found'] = True
                 return True
 
-        # If at all request doesn't go, press F
+        # 如果请求被阻止，返回True
         except RequestBlocked:
             self.knowledge['generic']['reason'] = reasons[0]
             self.knowledge['generic']['found'] = True
@@ -205,6 +270,16 @@ class WAFW00F(waftoolsengine):
         return False
 
     def matchHeader(self, headermatch, attack=False):
+        """
+        匹配HTTP头部
+        
+        参数:
+        headermatch: 包含头部名称和匹配模式的元组
+        attack: 是否匹配攻击响应的头部
+        
+        返回:
+        匹配结果（True/False）
+        """
         if attack:
             r = self.attackres
         else:
@@ -215,8 +290,7 @@ class WAFW00F(waftoolsengine):
         header, match = headermatch
         headerval = r.headers.get(header)
         if headerval:
-            # set-cookie can have multiple headers, python gives it to us
-            # concatinated with a comma
+            # set-cookie可以有多个头部，python会将其连接成一个字符串
             if header == 'Set-Cookie':
                 headervals = headerval.split(', ')
             else:
@@ -227,6 +301,16 @@ class WAFW00F(waftoolsengine):
         return False
 
     def matchStatus(self, statuscode, attack=True):
+        """
+        匹配HTTP状态码
+        
+        参数:
+        statuscode: 要匹配的状态码
+        attack: 是否匹配攻击响应的状态码
+        
+        返回:
+        匹配结果（True/False）
+        """
         if attack:
             r = self.attackres
         else:
@@ -238,28 +322,58 @@ class WAFW00F(waftoolsengine):
         return False
 
     def matchCookie(self, match, attack=False):
+        """
+        匹配Set-Cookie头部
+        
+        参数:
+        match: 匹配模式
+        attack: 是否匹配攻击响应的头部
+        
+        返回:
+        匹配结果（True/False）
+        """
         return self.matchHeader(('Set-Cookie', match), attack=attack)
 
     def matchReason(self, reasoncode, attack=True):
+        """
+        匹配HTTP响应原因短语
+        
+        参数:
+        reasoncode: 要匹配的原因短语
+        attack: 是否匹配攻击响应的原因短语
+        
+        返回:
+        匹配结果（True/False）
+        """
         if attack:
             r = self.attackres
         else:
             r = self.rq
         if r is None:
             return
-        # We may need to match multiline context in response body
+        # 我们可能需要匹配响应体中的多行内容
         if str(r.reason) == reasoncode:
             return True
         return False
 
     def matchContent(self, regex, attack=True):
+        """
+        匹配HTTP响应体
+        
+        参数:
+        regex: 正则表达式模式
+        attack: 是否匹配攻击响应的响应体
+        
+        返回:
+        匹配结果（True/False）
+        """
         if attack:
             r = self.attackres
         else:
             r = self.rq
         if r is None:
             return
-        # We may need to match multiline context in response body
+        # 我们可能需要匹配响应体中的多行内容
         if re.search(regex, r.text, re.I):
             return True
         return False
@@ -270,11 +384,20 @@ class WAFW00F(waftoolsengine):
     result_dict = {}
     for plugin_module in plugin_dict.values():
         wafdetections[plugin_module.NAME] = plugin_module.is_waf
-    # Check for prioritized ones first, then check those added externally
+    # 先检查优先级高的，再检查外部添加的
     checklist = wafdetectionsprio
     checklist += list(set(wafdetections.keys()) - set(checklist))
 
     def identwaf(self, findall=False):
+        """
+        识别WAF
+        
+        参数:
+        findall: 是否查找所有匹配的WAF
+        
+        返回:
+        匹配的WAF列表和触发URL
+        """
         detected = list()
         try:
             self.attackres, xurl = self.performCheck(self.centralAttack)
@@ -290,13 +413,33 @@ class WAFW00F(waftoolsengine):
         return detected, xurl
 
 def calclogginglevel(verbosity):
-    default = 40  # errors are printed out
+    """
+    计算日志级别
+    
+    参数:
+    verbosity: 详细程度级别
+    
+    返回:
+    日志级别
+    """
+    default = 40  # 默认只打印错误信息
     level = default - (verbosity * 10)
     if level < 0:
         level = 0
     return level
 
 def buildResultRecord(url, waf, evil_url=None):
+    """
+    构建结果记录
+    
+    参数:
+    url: 目标URL
+    waf: 检测到的WAF
+    evil_url: 触发WAF的URL
+    
+    返回:
+    结果记录字典
+    """
     result = {}
     result['url'] = url
     if waf:
@@ -317,8 +460,17 @@ def buildResultRecord(url, waf, evil_url=None):
     return result
 
 def getTextResults(res=[]):
-    # leaving out some space for future possibilities of newer columns
-    # newer columns can be added to this tuple below
+    """
+    获取文本格式的结果
+    
+    参数:
+    res: 结果列表
+    
+    返回:
+    文本格式的结果列表
+    """
+    # 留出一些空间用于未来可能添加的新列
+    # 新列可以添加到下面的元组中
     keys = ('detected')
     res = [({key: ba[key] for key in ba if key not in keys}) for ba in res]
     rows = []
@@ -339,15 +491,40 @@ def getTextResults(res=[]):
     return textresults
 
 def create_random_param_name(size=8, chars=string.ascii_lowercase):
+    """
+    生成随机参数名称
+    
+    参数:
+    size: 参数名称长度
+    chars: 可用字符集
+    
+    返回:
+    随机参数名称
+    """
     return ''.join(random.choice(chars) for _ in range(size))
 
 def disableStdOut():
+    """
+    禁用标准输出
+    """
     sys.stdout = None
 
 def enableStdOut():
+    """
+    启用标准输出
+    """
     sys.stdout = sys.__stdout__
 
 def getheaders(fn):
+    """
+    从文件中读取HTTP头部
+    
+    参数:
+    fn: 文件名
+    
+    返回:
+    HTTP头部字典
+    """
     headers = {}
     if not os.path.exists(fn):
         logging.getLogger('wafw00f').critical('Headers file "%s" does not exist!' % fn)
@@ -361,9 +538,15 @@ def getheaders(fn):
     return headers
 
 class RequestBlocked(Exception):
+    """
+    请求被阻止异常
+    """
     pass
 
 def main():
+    """
+    主函数
+    """
     parser = OptionParser(usage='%prog url1 [url2 [url3 ... ]]\r\nexample: %prog http://www.victim.org/')
     parser.add_option('-v', '--verbose', action='count', dest='verbose', default=0,
                       help='Enable verbosity, multiple -v options increase verbosity')

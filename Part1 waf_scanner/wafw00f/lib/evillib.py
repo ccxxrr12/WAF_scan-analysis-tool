@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 '''
 Copyright (C) 2024, WAFW00F Developers.
 See the LICENSE file for copying permission.
 '''
 
-import time
-import logging
-from copy import copy
+# 导入所需模块
+import time      # 用于时间相关功能
+import logging   # 用于日志记录
+from copy import copy  # 用于复制对象
 
-import requests
-import urllib3
+# 导入第三方库
+import requests       # 用于发送HTTP请求
+import urllib3        # 用于处理HTTP连接
 
-# For requests < 2.16, this should be used.
+# 对于requests < 2.16版本，应使用以下方式
 # requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
-# For requests >= 2.16, this is the convention
+# 对于requests >= 2.16版本，使用以下方式
+# 禁用urllib3的不安全请求警告
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
+# 默认HTTP头部信息
 def_headers = {
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3',
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:130.0) Gecko/20100101 Firefox/130.0',
@@ -27,6 +32,7 @@ def_headers = {
     'Priority': 'u=0, i',
     'DNT': '1',
 }
+# 代理设置
 proxies = {}
 
 class waftoolsengine:
