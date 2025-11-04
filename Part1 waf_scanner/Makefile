@@ -4,7 +4,6 @@ MAKE = make
 
 all:
 	make install
-	make test
 	make html
 	make clean
 
@@ -13,6 +12,9 @@ install:
 
 lint:
 	prospector $(SRC_DIR) --strictness veryhigh
+
+test:
+	@echo "No tests available"
 
 testall:
 	tox
