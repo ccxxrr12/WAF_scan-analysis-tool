@@ -4,7 +4,9 @@ xgboost>=1.5.0
 lightgbm>=3.3.0
 
 # 深度学习相关
-tensorflow>=2.8.0
+# TensorFlow在某些Windows Python版本上可能无法直接安装
+# 可以尝试使用tensorflow-cpu或者通过conda安装
+# tensorflow>=2.8.0
 torch>=1.10.0
 keras>=2.8.0
 
