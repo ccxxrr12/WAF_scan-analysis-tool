@@ -15,6 +15,7 @@
 """
 
 import argparse
+import json
 from data_processor import DataProcessor
 from trainer import ModelTrainer
 from predictor import Predictor
@@ -59,6 +60,11 @@ def parse_args():
         help="输出路径"
     )
     
+    parser.add_argument(
+        "--waf-info-path",
+        help="WAF指纹信息路径"
+    )
+    
     return parser.parse_args()
 
 
@@ -76,6 +82,16 @@ def train_mode(args):
     
     # 加载和预处理数据
     # TODO: 实现数据加载和预处理
+    
+    # 如果提供了WAF指纹信息，则处理它
+    if args.waf_info_path:
+        try:
+            with open(args.waf_info_path, 'r', encoding='utf-8') as f:
+                waf_info = json.load(f)
+            processed_waf = data_processor.process_waf_fingerprint(waf_info)
+            print(f"处理WAF指纹信息: {processed_waf}")
+        except Exception as e:
+            print(f"处理WAF指纹信息时出错: {e}")
     
     # 初始化模型训练器
     trainer = ModelTrainer(args.model_type)
@@ -104,6 +120,17 @@ def predict_mode(args):
     # 加载模型
     # TODO: 实现模型加载逻辑
     
+    # 如果提供了WAF指纹信息，则处理它
+    if args.waf_info_path:
+        try:
+            data_processor = DataProcessor()
+            with open(args.waf_info_path, 'r', encoding='utf-8') as f:
+                waf_info = json.load(f)
+            processed_waf = data_processor.process_waf_fingerprint(waf_info)
+            print(f"处理WAF指纹信息: {processed_waf}")
+        except Exception as e:
+            print(f"处理WAF指纹信息时出错: {e}")
+    
     # 进行预测
     # TODO: 实现预测逻辑
     
@@ -124,6 +151,17 @@ def evaluate_mode(args):
     
     # 加载数据和模型
     # TODO: 实现数据和模型加载逻辑
+    
+    # 如果提供了WAF指纹信息，则处理它
+    if args.waf_info_path:
+        try:
+            data_processor = DataProcessor()
+            with open(args.waf_info_path, 'r', encoding='utf-8') as f:
+                waf_info = json.load(f)
+            processed_waf = data_processor.process_waf_fingerprint(waf_info)
+            print(f"处理WAF指纹信息: {processed_waf}")
+        except Exception as e:
+            print(f"处理WAF指纹信息时出错: {e}")
     
     # 进行评估
     # TODO: 实现评估逻辑

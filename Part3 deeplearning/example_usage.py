@@ -41,6 +41,28 @@ def create_sample_data():
     return sample_requests
 
 
+def create_sample_waf_fingerprints():
+    """
+    创建示例WAF指纹数据用于演示
+    """
+    sample_fingerprints = [
+        {
+            "waf_type": "Cloudflare (Cloudflare Inc.)",
+            "confidence": 0.95
+        },
+        {
+            "waf_type": "ModSecurity (SpiderLabs)",
+            "confidence": 0.87
+        },
+        {
+            "waf_type": "AWS Elastic Load Balancer (Amazon)",
+            "confidence": 0.92
+        }
+    ]
+    
+    return sample_fingerprints
+
+
 def main():
     """
     主函数：演示数据处理和模型使用流程
@@ -50,14 +72,22 @@ def main():
     # 1. 创建示例数据
     print("\n1. 创建示例数据...")
     sample_data = create_sample_data()
+    sample_waf_fingerprints = create_sample_waf_fingerprints()
     print(f"创建了 {len(sample_data)} 个示例请求")
+    print(f"创建了 {len(sample_waf_fingerprints)} 个示例WAF指纹")
     
     # 2. 初始化数据处理器
     print("\n2. 初始化数据处理器...")
     processor = DataProcessor()
     
-    # 3. 提取特征
-    print("\n3. 提取特征...")
+    # 3. 处理WAF指纹
+    print("\n3. 处理WAF指纹...")
+    for i, fingerprint in enumerate(sample_waf_fingerprints):
+        processed_waf = processor.process_waf_fingerprint(fingerprint)
+        print(f"WAF指纹 {i+1}: {processed_waf}")
+    
+    # 4. 提取特征
+    print("\n4. 提取特征...")
     features_list = []
     labels = []
     
@@ -68,8 +98,8 @@ def main():
         print(f"请求特征: {features}")
         print(f"标签: {req['is_attack']}")
     
-    # 4. 转换为numpy数组
-    print("\n4. 转换特征为numpy数组...")
+    # 5. 转换为numpy数组
+    print("\n5. 转换特征为numpy数组...")
     # 获取所有特征名称
     feature_names = list(features_list[0].keys())
     print(f"特征名称: {feature_names}")
@@ -81,8 +111,8 @@ def main():
     print(f"特征矩阵形状: {X.shape}")
     print(f"标签数组形状: {y.shape}")
     
-    # 5. 划分训练集和测试集（简单划分）
-    print("\n5. 划分训练集和测试集...")
+    # 6. 划分训练集和测试集（简单划分）
+    print("\n6. 划分训练集和测试集...")
     split_idx = len(X) // 2
     X_train, X_test = X[:split_idx], X[split_idx:]
     y_train, y_test = y[:split_idx], y[split_idx:]
@@ -90,8 +120,8 @@ def main():
     print(f"训练集大小: {X_train.shape[0]}")
     print(f"测试集大小: {X_test.shape[0]}")
     
-    # 6. 创建并训练模型
-    print("\n6. 创建并训练逻辑回归模型...")
+    # 7. 创建并训练模型
+    print("\n7. 创建并训练逻辑回归模型...")
     model_params = MODEL_CONFIGS["logistic_regression"]
     model = ModelFactory.create_model("logistic_regression", model_params)
     
@@ -99,14 +129,14 @@ def main():
     model.train(X_train, y_train)
     print("模型训练完成")
     
-    # 7. 模型预测
-    print("\n7. 模型预测...")
+    # 8. 模型预测
+    print("\n8. 模型预测...")
     predictions = model.predict(X_test)
     print(f"测试集预测结果: {predictions}")
     print(f"测试集真实标签: {y_test}")
     
-    # 8. 模型评估
-    print("\n8. 模型评估...")
+    # 9. 模型评估
+    print("\n9. 模型评估...")
     metrics = model.evaluate(X_test, y_test)
     print("评估指标:")
     for metric, value in metrics.items():

@@ -23,6 +23,23 @@ import numpy as np
 from urllib.parse import urlparse, parse_qs
 
 
+# WAF类型映射，将WAF名称映射到简化的类型
+WAF_TYPES = {
+    'Cloudflare': 'cloudflare',
+    'ModSecurity': 'modsecurity',
+    'AWS': 'aws',
+    'Cloudfront': 'aws',
+    'Incapsula': 'imperva',
+    'Imperva': 'imperva',
+    'F5': 'f5',
+    'Fortinet': 'fortinet',
+    'Fortiweb': 'fortinet',
+    'Sucuri': 'sucuri',
+    'Akamai': 'akamai',
+    'Radware': 'radware'
+}
+
+
 class DataProcessor:
     """数据处理器类"""
     
@@ -37,13 +54,38 @@ class DataProcessor:
         处理Part1的WAF指纹识别结果
         
         Args:
-            fingerprint_data: WAF指纹数据
+            fingerprint_data: WAF指纹数据，包含WAF名称和置信度等信息
             
         Returns:
-            processed_data: 处理后的数据
+            processed_data: 处理后的数据，包括WAF类型和特征
         """
-        # TODO: 实现WAF指纹数据处理逻辑
-        pass
+        if not fingerprint_data or 'waf_type' not in fingerprint_data:
+            return {
+                'waf_type': 'unknown',
+                'waf_confidence': 0.0,
+                'waf_features': [0] * len(WAF_TYPES)
+            }
+        
+        waf_name = fingerprint_data.get('waf_type', 'unknown')
+        confidence = fingerprint_data.get('confidence', 0.0)
+        
+        # 标准化WAF类型
+        waf_type = 'unknown'
+        for key, value in WAF_TYPES.items():
+            if key.lower() in waf_name.lower():
+                waf_type = value
+                break
+        
+        # 创建WAF类型特征向量
+        waf_features = [0] * len(WAF_TYPES)
+        if waf_type in WAF_TYPES.values():
+            waf_features[list(WAF_TYPES.values()).index(waf_type)] = 1
+        
+        return {
+            'waf_type': waf_type,
+            'waf_confidence': confidence,
+            'waf_features': waf_features
+        }
     
     def extract_features(self, http_request):
         """
@@ -126,6 +168,15 @@ class DataProcessor:
             if ":" in line:
                 header_count += 1
         features["header_count"] = header_count
+        
+        # 常见攻击模式特征
+        request_lower = request_str.lower()
+        features["has_sql_keywords"] = 1 if any(keyword in request_lower 
+                                               for keyword in ['select', 'union', 'insert', 'update', 'delete', 'drop']) else 0
+        features["has_xss_keywords"] = 1 if any(keyword in request_lower 
+                                               for keyword in ['script', 'alert', 'onerror', 'onload', 'eval']) else 0
+        features["has_lfi_keywords"] = 1 if any(keyword in request_lower 
+                                               for keyword in ['../', '..\\', 'etc/passwd', 'boot.ini']) else 0
         
         return features
     

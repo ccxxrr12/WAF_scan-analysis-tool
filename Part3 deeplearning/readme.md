@@ -2,12 +2,13 @@
 
 ## 简介
 
-Part3是基于机器学习的智能检测模块，旨在预测HTTP请求是否可能被WAF拦截。该模块通过集成多种机器学习算法，实现对WAF拦截行为的智能预测。
+Part3是基于机器学习的智能检测模块，旨在预测HTTP请求是否可能被WAF拦截。该模块通过集成多种传统机器学习算法，实现对WAF拦截行为的智能预测。
 
 ## 功能特点
 
 - 支持多种机器学习模型（逻辑回归、随机森林、XGBoost等）
 - 特征工程：从HTTP请求中提取多种特征
+- WAF指纹处理：处理Part1识别的WAF类型信息
 - 模型训练、预测和评估一体化
 - 可扩展的架构设计
 
@@ -29,6 +30,10 @@ from models import ModelFactory
 # 初始化数据处理器
 processor = DataProcessor()
 
+# 处理WAF指纹信息
+waf_info = {"waf_type": "Cloudflare (Cloudflare Inc.)", "confidence": 0.95}
+processed_waf = processor.process_waf_fingerprint(waf_info)
+
 # 提取HTTP请求特征
 features = processor.extract_features(http_request)
 
@@ -44,17 +49,18 @@ predictions = model.predict(X_test)
 
 ```bash
 python example_usage.py
+python example_waf_processing.py
 ```
 
 ## 模块说明
 
 ### 数据处理模块 (data_processor.py)
 
-负责处理输入数据，提取特征等。
+负责处理输入数据，提取特征以及处理WAF指纹信息。
 
 ### 模型定义模块 (models.py)
 
-定义了多种机器学习模型，包括逻辑回归、随机森林、XGBoost等。
+定义了多种传统机器学习模型，包括逻辑回归、随机森林、XGBoost等。
 
 ### 配置文件 (config.py)
 

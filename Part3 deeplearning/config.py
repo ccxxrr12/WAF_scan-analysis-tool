@@ -58,7 +58,10 @@ DEFAULT_FEATURES = [
     "encoding_type",
     "user_agent_anomaly",
     "content_type_anomaly",
-    "header_count"
+    "header_count",
+    "has_sql_keywords",
+    "has_xss_keywords",
+    "has_lfi_keywords"
 ]
 
 # WAF类型映射
@@ -67,7 +70,12 @@ WAF_TYPES = {
     "modsecurity": "ModSecurity",
     "aws": "AWS WAF",
     "imperva": "Imperva WAF",
-    "f5": "F5 WAF"
+    "f5": "F5 WAF",
+    "fortinet": "Fortinet WAF",
+    "sucuri": "Sucuri WAF",
+    "akamai": "Akamai WAF",
+    "radware": "Radware WAF",
+    "unknown": "Unknown WAF"
 }
 
 # 攻击类型
