@@ -32,18 +32,6 @@ MODEL_CONFIGS = {
         "max_depth": 6,
         "learning_rate": 0.1,
         "random_state": 42
-    },
-    
-    "lstm": {
-        "hidden_units": 64,
-        "layers": 2,
-        "dropout": 0.2
-    },
-    
-    "cnn": {
-        "filters": 32,
-        "kernel_size": 3,
-        "pool_size": 2
     }
 }
 

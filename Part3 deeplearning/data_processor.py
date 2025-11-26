@@ -18,6 +18,11 @@
 - preprocess_data(): 数据预处理
 """
 
+import re
+import numpy as np
+from urllib.parse import urlparse, parse_qs
+
+
 class DataProcessor:
     """数据处理器类"""
     
@@ -45,14 +50,84 @@ class DataProcessor:
         从HTTP请求中提取特征
         
         Args:
-            http_request: HTTP请求对象
+            http_request: HTTP请求对象，包含request和response信息
             
         Returns:
-            features: 提取的特征
+            features: 提取的特征字典
         """
-        # TODO: 实现特征提取逻辑
-        # 包括URL特征、请求头特征、Payload特征等
-        pass
+        features = {}
+        
+        # 解析HTTP请求
+        request_str = http_request.get("request", "")
+        response_status = http_request.get("response_status", 200)
+        
+        # 提取URL特征
+        url_match = re.search(r'^(GET|POST|PUT|DELETE)\s+(.*?)\s+HTTP', request_str)
+        if url_match:
+            method = url_match.group(1)
+            url = url_match.group(2)
+            
+            # URL长度
+            features["url_length"] = len(url)
+            
+            # 解析URL参数
+            parsed_url = urlparse(url)
+            query_params = parse_qs(parsed_url.query)
+            
+            # 参数数量
+            features["param_count"] = len(query_params)
+            
+            # 参数值总长度
+            param_value_length = 0
+            for key, values in query_params.items():
+                for value in values:
+                    param_value_length += len(value)
+            features["param_value_length"] = param_value_length
+            
+            # 特殊字符计数
+            special_chars = ['"', "'", "<", ">", "=", "(", ")", "{", "}", "[", "]", 
+                           "script", "alert", "union", "select", "insert", "update", 
+                           "delete", "drop", "create", "alter", "exec", "eval"]
+            special_char_count = 0
+            for char in special_chars:
+                special_char_count += url.lower().count(char)
+            features["special_char_count"] = special_char_count
+            
+        else:
+            # 默认值
+            features["url_length"] = 0
+            features["param_count"] = 0
+            features["param_value_length"] = 0
+            features["special_char_count"] = 0
+        
+        # 请求方法特征
+        features["is_get"] = 1 if "GET" in request_str else 0
+        features["is_post"] = 1 if "POST" in request_str else 0
+        features["is_put"] = 1 if "PUT" in request_str else 0
+        features["is_delete"] = 1 if "DELETE" in request_str else 0
+        
+        # 响应状态特征
+        features["response_status"] = response_status
+        features["is_4xx"] = 1 if 400 <= response_status < 500 else 0
+        features["is_5xx"] = 1 if 500 <= response_status < 600 else 0
+        
+        # 请求体长度
+        body_start = request_str.find("\r\n\r\n")
+        if body_start != -1:
+            body = request_str[body_start+4:]
+            features["request_body_length"] = len(body)
+        else:
+            features["request_body_length"] = 0
+            
+        # 请求头数量
+        header_lines = request_str.split("\r\n")[1:]  # 跳过第一行（请求行）
+        header_count = 0
+        for line in header_lines:
+            if ":" in line:
+                header_count += 1
+        features["header_count"] = header_count
+        
+        return features
     
     def generate_training_data(self, rules_data):
         """

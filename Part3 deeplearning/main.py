@@ -39,7 +39,7 @@ def parse_args():
     
     parser.add_argument(
         "--model-type",
-        choices=["logistic_regression", "random_forest", "xgboost", "lstm", "cnn"],
+        choices=["logistic_regression", "random_forest", "xgboost"],
         default="random_forest",
         help="模型类型"
     )
