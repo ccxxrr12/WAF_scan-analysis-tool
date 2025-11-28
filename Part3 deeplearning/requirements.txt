@@ -10,6 +10,7 @@ numpy>=1.21.0
 # NLP相关
 spacy>=3.2.0
 nltk>=3.6.0
+transformers>=4.15.0
 
 # 可视化相关
 matplotlib>=3.5.0

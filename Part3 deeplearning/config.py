@@ -86,3 +86,9 @@ ATTACK_TYPES = [
     "file_inclusion",
     "csrf"
 ]
+
+# 模型路径配置
+MODEL_PATHS = {
+    "modsecurity": "modsecurity_model.pkl",
+    "generic": "generic_model.pkl"
+}

@@ -14,6 +14,8 @@
 - select_model_by_waf(): 根据WAF类型选择模型
 """
 
+import os
+import pickle
 from data_processor import DataProcessor
 
 
@@ -36,10 +38,23 @@ class Predictor:
         
         Args:
             model_path: 模型路径
-            model_type: 模型类型
+            model_type: 模型类型 ("modsecurity", "generic", "default")
         """
-        # TODO: 实现模型加载逻辑
-        pass
+        if os.path.exists(model_path):
+            try:
+                with open(model_path, 'rb') as f:
+                    model = pickle.load(f)
+                
+                if model_type == "default":
+                    self.default_model = model
+                else:
+                    self.models[model_type] = model
+                    
+                print(f"成功加载{model_type}模型: {model_path}")
+            except Exception as e:
+                print(f"加载模型失败: {e}")
+        else:
+            print(f"模型文件不存在: {model_path}")
     
     def select_model_by_waf(self, waf_type):
         """
@@ -51,9 +66,19 @@ class Predictor:
         Returns:
             model: 选择的模型
         """
-        # TODO: 实现模型选择逻辑
-        # 根据WAF类型选择特化模型，如果没有则使用默认模型
-        pass
+        # 标准化WAF类型
+        waf_type = waf_type.lower() if waf_type else ""
+        
+        # 如果是ModSecurity，优先使用特化模型
+        if "modsecurity" in waf_type and "modsecurity" in self.models:
+            return self.models["modsecurity"]
+        
+        # 如果是其他WAF类型，使用通用模型
+        if "generic" in self.models:
+            return self.models["generic"]
+        
+        # 如果都没有，使用默认模型
+        return self.default_model
     
     def predict(self, http_request, waf_info=None):
         """
@@ -67,22 +92,65 @@ class Predictor:
             prediction: 预测结果
             confidence: 置信度
         """
-        # TODO: 实现单个请求预测逻辑
-        pass
+        # 提取特征
+        features = self.data_processor.extract_features(http_request)
+        
+        # 获取WAF类型
+        waf_type = None
+        if waf_info and isinstance(waf_info, dict):
+            waf_type = waf_info.get("waf_type", None)
+        
+        # 选择模型
+        model = self.select_model_by_waf(waf_type)
+        
+        if model is None:
+            print("没有可用的模型")
+            return None, 0.0
+        
+        # 转换特征为模型所需格式（这里简化处理）
+        # 实际应用中需要根据具体模型要求进行特征处理
+        feature_vector = list(features.values())
+        
+        try:
+            # 预测
+            prediction = model.predict([feature_vector])[0]
+            
+            # 获取预测概率（如果模型支持）
+            confidence = 0.0
+            if hasattr(model, "predict_proba"):
+                proba = model.predict_proba([feature_vector])[0]
+                confidence = max(proba)
+            
+            return prediction, confidence
+        except Exception as e:
+            print(f"预测过程中出现错误: {e}")
+            return None, 0.0
     
-    def batch_predict(self, http_requests, waf_info=None):
+    def batch_predict(self, http_requests, waf_info_list=None):
         """
         批量预测HTTP请求
         
         Args:
             http_requests: HTTP请求列表
-            waf_info: WAF信息（可选）
+            waf_info_list: WAF信息列表（可选）
             
         Returns:
             predictions: 预测结果列表
         """
-        # TODO: 实现批量预测逻辑
-        pass
+        predictions = []
+        
+        for i, request in enumerate(http_requests):
+            waf_info = None
+            if waf_info_list and i < len(waf_info_list):
+                waf_info = waf_info_list[i]
+            
+            prediction, confidence = self.predict(request, waf_info)
+            predictions.append({
+                'prediction': prediction,
+                'confidence': confidence
+            })
+        
+        return predictions
 
 
 def main():
