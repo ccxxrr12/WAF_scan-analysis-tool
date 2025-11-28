@@ -185,12 +185,21 @@ class DataProcessor:
         根据规则数据生成训练样本
         
         Args:
-            rules_data: Part2解析的规则数据
+            rules_data: Part2解析的规则数据，应包含以下字段:
+              - rule_info: 规则基本信息，包括id, phase, variables, operator, pattern等
+              - semantic_analysis: 语义分析结果，包括攻击类型分类等
+              - dependency_analysis: 依赖分析结果，包括变量依赖、标记依赖等
+              - conflict_analysis: 冲突分析结果，包括潜在冲突规则等
             
         Returns:
-            training_data: 生成的训练数据
+            training_data: 生成的训练数据，包含特征和标签
         """
         # TODO: 实现训练数据生成逻辑
+        # 基于Part2的规则数据生成训练样本:
+        # 1. 利用规则模式(pattern)生成正样本(能触发规则的请求)
+        # 2. 生成负样本(不会触发规则的正常请求)
+        # 3. 根据规则的攻击类型分类给样本打标签
+        # 4. 利用依赖关系和冲突分析优化样本生成策略
         pass
     
     def load_dataset(self, dataset_path):
