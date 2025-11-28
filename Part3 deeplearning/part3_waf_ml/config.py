@@ -32,18 +32,6 @@ MODEL_CONFIGS = {
         "max_depth": 6,
         "learning_rate": 0.1,
         "random_state": 42
-    },
-    
-    "lstm": {
-        "hidden_units": 64,
-        "layers": 2,
-        "dropout": 0.2
-    },
-    
-    "cnn": {
-        "filters": 32,
-        "kernel_size": 3,
-        "pool_size": 2
     }
 }
 
@@ -70,7 +58,10 @@ DEFAULT_FEATURES = [
     "encoding_type",
     "user_agent_anomaly",
     "content_type_anomaly",
-    "header_count"
+    "header_count",
+    "has_sql_keywords",
+    "has_xss_keywords",
+    "has_lfi_keywords"
 ]
 
 # WAF类型映射
@@ -79,7 +70,12 @@ WAF_TYPES = {
     "modsecurity": "ModSecurity",
     "aws": "AWS WAF",
     "imperva": "Imperva WAF",
-    "f5": "F5 WAF"
+    "f5": "F5 WAF",
+    "fortinet": "Fortinet WAF",
+    "sucuri": "Sucuri WAF",
+    "akamai": "Akamai WAF",
+    "radware": "Radware WAF",
+    "unknown": "Unknown WAF"
 }
 
 # 攻击类型
@@ -90,3 +86,9 @@ ATTACK_TYPES = [
     "file_inclusion",
     "csrf"
 ]
+
+# 模型路径配置
+MODEL_PATHS = {
+    "modsecurity": "modsecurity_model.pkl",
+    "generic": "generic_model.pkl"
+}
