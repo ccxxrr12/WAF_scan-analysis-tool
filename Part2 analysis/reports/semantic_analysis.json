@@ -1,0 +1,24 @@
+{
+  "rule_count": 5647,
+  "rule_types": {
+    "DataEntry": 5647
+  },
+  "attack_types": {},
+  "phases_distribution": {},
+  "severity_distribution": {},
+  "warnings": [],
+  "rule_classification": {
+    "sql_injection": [],
+    "xss": [],
+    "path_traversal": [],
+    "command_injection": [],
+    "file_upload": [],
+    "authentication": [],
+    "authorization": [],
+    "information_disclosure": [],
+    "rate_limiting": [],
+    "other": []
+  },
+  "action_summary": {},
+  "variable_usage": {}
+}

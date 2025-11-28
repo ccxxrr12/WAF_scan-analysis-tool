@@ -1,0 +1,16 @@
+{
+  "variable_dependencies": [
+    {
+      "type": "variable_dependency",
+      "source": "901410",
+      "target": "901450",
+      "variable": "tx:sampling_rnd100",
+      "source_line": 39,
+      "target_line": 42,
+      "description": "规则 901410 设置变量 tx:sampling_rnd100，规则 901450 使用该变量"
+    }
+  ],
+  "marker_dependencies": [],
+  "include_dependencies": [],
+  "total_dependencies": 1
+}

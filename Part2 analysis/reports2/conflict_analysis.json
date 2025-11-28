@@ -1,0 +1,354 @@
+{
+  "conflicts": [
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901100",
+      "rule1_line": 3,
+      "rule2_line": 4,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901100 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901110",
+      "rule1_line": 3,
+      "rule2_line": 5,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901110 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901111",
+      "rule1_line": 3,
+      "rule2_line": 6,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901111 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901115",
+      "rule1_line": 3,
+      "rule2_line": 7,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901115 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901120",
+      "rule1_line": 3,
+      "rule2_line": 8,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901120 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901125",
+      "rule1_line": 3,
+      "rule2_line": 9,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901125 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901130",
+      "rule1_line": 3,
+      "rule2_line": 10,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901130 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901140",
+      "rule1_line": 3,
+      "rule2_line": 11,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901140 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901141",
+      "rule1_line": 3,
+      "rule2_line": 13,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901141 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901142",
+      "rule1_line": 3,
+      "rule2_line": 15,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901142 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901143",
+      "rule1_line": 3,
+      "rule2_line": 17,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901143 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901160",
+      "rule1_line": 3,
+      "rule2_line": 18,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901160 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901162",
+      "rule1_line": 3,
+      "rule2_line": 19,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901162 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901168",
+      "rule1_line": 3,
+      "rule2_line": 20,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901168 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901163",
+      "rule1_line": 3,
+      "rule2_line": 21,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901163 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901164",
+      "rule1_line": 3,
+      "rule2_line": 22,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901164 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901165",
+      "rule1_line": 3,
+      "rule2_line": 23,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901165 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901171",
+      "rule1_line": 3,
+      "rule2_line": 24,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901171 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901167",
+      "rule1_line": 3,
+      "rule2_line": 25,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901167 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901169",
+      "rule1_line": 3,
+      "rule2_line": 26,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901169 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901170",
+      "rule1_line": 3,
+      "rule2_line": 27,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901170 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901001",
+      "rule2_id": "901320",
+      "rule1_line": 3,
+      "rule2_line": 30,
+      "conflicting_actions": [
+        "deny",
+        "pass"
+      ],
+      "description": "规则 901001 和 901320 在变量 &tx 和阶段 default 上有冲突的动作: deny vs pass",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901350",
+      "rule2_id": "901500",
+      "rule1_line": 34,
+      "rule2_line": 45,
+      "conflicting_actions": [
+        "pass",
+        "deny"
+      ],
+      "description": "规则 901350 和 901500 在变量 tx 和阶段 default 上有冲突的动作: pass vs deny",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901400",
+      "rule2_id": "901500",
+      "rule1_line": 37,
+      "rule2_line": 45,
+      "conflicting_actions": [
+        "pass",
+        "deny"
+      ],
+      "description": "规则 901400 和 901500 在变量 tx 和阶段 default 上有冲突的动作: pass vs deny",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    },
+    {
+      "type": "logical_conflict",
+      "severity": "high",
+      "rule1_id": "901450",
+      "rule2_id": "901500",
+      "rule1_line": 42,
+      "rule2_line": 45,
+      "conflicting_actions": [
+        "pass",
+        "deny"
+      ],
+      "description": "规则 901450 和 901500 在变量 tx 和阶段 default 上有冲突的动作: pass vs deny",
+      "recommendation": "检查规则的匹配条件和动作优先级，确保防护逻辑的一致性"
+    }
+  ]
+}
