@@ -195,13 +195,118 @@ class DataProcessor:
         Returns:
             training_data: 生成的训练数据，包含特征和标签
         """
-        # TODO: 实现训练数据生成逻辑
-        # 基于Part2的规则数据生成训练样本:
-        # 1. 利用规则模式(pattern)生成正样本(能触发规则的请求)
-        # 2. 生成负样本(不会触发规则的正常请求)
-        # 3. 根据规则的攻击类型分类给样本打标签
-        # 4. 利用依赖关系和冲突分析优化样本生成策略
-        pass
+        # 初始化训练数据列表
+        training_samples = []
+        labels = []
+        
+        # 遍历所有规则数据
+        for file_name, rules in rules_data.items():
+            for rule_obj in rules:
+                # 获取规则信息
+                rule_info = rule_obj.get('rule_info', {})
+                semantic_analysis = rule_obj.get('semantic_analysis', {})
+                pattern = rule_info.get('pattern', '')
+                rule_id = rule_info.get('id', 'unknown')
+                
+                # 根据规则的攻击类型生成正样本
+                attack_types = semantic_analysis.get('attack_types', [])
+                
+                # 创建一个能触发此规则的示例请求（正样本）
+                sample_request = self._generate_positive_sample(pattern, rule_info)
+                if sample_request:
+                    # 为每个攻击类型生成样本
+                    for attack_type in attack_types:
+                        # 提取特征
+                        features = self.extract_features(sample_request)
+                        
+                        # 添加规则相关信息作为额外特征
+                        features['rule_id'] = hash(rule_id) % 10000  # 将规则ID哈希为数值特征
+                        features['attack_type'] = self._encode_attack_type(attack_type)
+                        
+                        training_samples.append(features)
+                        labels.append(1)  # 正样本标签为1
+                
+                # 生成负样本（不会触发规则的正常请求）
+                negative_sample = self._generate_negative_sample()
+                if negative_sample:
+                    features = self.extract_features(negative_sample)
+                    
+                    # 添加规则相关信息作为额外特征
+                    features['rule_id'] = 0  # 负样本不关联特定规则
+                    features['attack_type'] = 0  # 负样本不关联特定攻击类型
+                    
+                    training_samples.append(features)
+                    labels.append(0)  # 负样本标签为0
+        
+        # 转换为DataFrame格式
+        if training_samples:
+            df = pd.DataFrame(training_samples)
+            df['label'] = labels
+            return df
+        else:
+            return None
+    
+    def _generate_positive_sample(self, pattern, rule_info):
+        """
+        根据规则模式生成正样本请求
+        
+        Args:
+            pattern: 规则匹配模式
+            rule_info: 规则信息
+            
+        Returns:
+            sample_request: 示例HTTP请求
+        """
+        # 基于规则模式生成能触发规则的示例请求
+        if not pattern:
+            return None
+            
+        # 简单示例：构造包含模式的GET请求
+        sample_request = {
+            "request": f"GET /test?param={pattern} HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+            "response_status": 200
+        }
+        
+        return sample_request
+    
+    def _generate_negative_sample(self):
+        """
+        生成负样本请求（正常的请求）
+        
+        Returns:
+            sample_request: 正常的HTTP请求示例
+        """
+        # 生成正常的请求示例
+        sample_request = {
+            "request": "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+            "response_status": 200
+        }
+        
+        return sample_request
+    
+    def _encode_attack_type(self, attack_type):
+        """
+        将攻击类型编码为数值
+        
+        Args:
+            attack_type: 攻击类型字符串
+            
+        Returns:
+            encoded_type: 编码后的数值
+        """
+        attack_type_mapping = {
+            "SQL Injection": 1,
+            "Cross-Site Scripting (XSS)": 2,
+            "Command Injection": 3,
+            "LDAP Injection": 4,
+            "XML External Entity (XXE)": 5,
+            "File Inclusion": 6,
+            "HTTP Request Smuggling": 7,
+            "HTTP Response Splitting": 8,
+            "Server-Side Request Forgery (SSRF)": 9
+        }
+        
+        return attack_type_mapping.get(attack_type, 0)
     
     def load_dataset(self, dataset_path):
         """

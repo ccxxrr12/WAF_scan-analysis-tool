@@ -27,6 +27,7 @@ import argparse
 import json
 import pickle
 import numpy as np
+import pandas as pd
 from data_processor import DataProcessor
 from trainer import ModelTrainer
 from predictor import Predictor
@@ -83,6 +84,11 @@ def parse_args():
         help="WAF类型（用于训练模式）"
     )
     
+    parser.add_argument(
+        "--rules-data-path",
+        help="Part2规则数据路径（JSON格式）"
+    )
+    
     return parser.parse_args()
 
 
@@ -96,8 +102,8 @@ def train_mode(args):
     print("进入训练模式...")
     
     # 检查必要参数
-    if not args.data_path:
-        print("错误: 训练模式需要指定 --data-path 参数")
+    if not args.data_path and not args.rules_data_path:
+        print("错误: 训练模式需要指定 --data-path 或 --rules-data-path 参数")
         return
     
     # 初始化数据处理器
@@ -106,18 +112,42 @@ def train_mode(args):
     # 加载和预处理数据
     # 这里简化处理，实际应用中需要根据数据格式进行适当处理
     try:
-        # 假设数据是CSV格式，包含特征列和标签列
-        # 在实际应用中需要根据具体情况实现数据加载逻辑
-        print(f"正在加载数据: {args.data_path}")
-        # 示例数据加载（需要根据实际情况修改）
-        # data = pd.read_csv(args.data_path)
-        # X = data.drop('label', axis=1)
-        # y = data['label']
-        
-        # 为了演示，我们创建一些示例数据
-        print("创建示例训练数据...")
-        X = np.random.rand(100, 10)  # 100个样本，10个特征
-        y = np.random.randint(0, 2, 100)  # 二分类标签
+        if args.rules_data_path:
+            # 使用Part2规则数据生成训练数据
+            print(f"正在加载Part2规则数据: {args.rules_data_path}")
+            with open(args.rules_data_path, 'r', encoding='utf-8') as f:
+                rules_data = json.load(f)
+            
+            # 生成训练数据
+            print("正在根据规则数据生成训练样本...")
+            training_data = data_processor.generate_training_data(rules_data)
+            
+            if training_data is not None:
+                # 分离特征和标签
+                label_column = training_data['label']
+                feature_columns = training_data.drop('label', axis=1)
+                X = feature_columns.values
+                y = label_column.values
+                print(f"生成训练数据完成，共 {len(X)} 个样本")
+            else:
+                print("未能生成有效的训练数据")
+                return
+        elif args.data_path:
+            # 假设数据是CSV格式，包含特征列和标签列
+            # 在实际应用中需要根据具体情况实现数据加载逻辑
+            print(f"正在加载数据: {args.data_path}")
+            # 示例数据加载（需要根据实际情况修改）
+            # data = pd.read_csv(args.data_path)
+            # X = data.drop('label', axis=1)
+            # y = data['label']
+            
+            # 为了演示，我们创建一些示例数据
+            print("创建示例训练数据...")
+            X = np.random.rand(100, 10)  # 100个样本，10个特征
+            y = np.random.randint(0, 2, 100)  # 二分类标签
+        else:
+            print("未提供有效的数据路径")
+            return
         
         print(f"数据形状: X={X.shape}, y={y.shape}")
     except Exception as e:
