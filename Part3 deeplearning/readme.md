@@ -48,6 +48,7 @@ Part3采用模块化设计，主要包括以下组件：
 - WAF指纹处理：处理Part1识别的WAF类型信息，标准化WAF类型
 - 数据加载：支持CSV格式数据集加载
 - 数据预处理：提供去重和缺失值处理功能
+- 训练数据生成：基于Part2规则数据自动生成训练样本
 
 ### 模型定义模块 (models.py)
 定义了多种传统机器学习模型，包括：
@@ -62,6 +63,7 @@ Part3采用模块化设计，主要包括以下组件：
 - 交叉验证：实现分层K折交叉验证以评估模型稳定性
 - 模型保存：将训练好的模型序列化保存到文件
 - 模型评估：计算模型在测试集上的性能指标
+- 模型选择：根据WAF类型选择最适合的模型
 
 ### 预测器模块 (predictor.py)
 使用训练好的模型进行预测：
@@ -77,8 +79,9 @@ Part3采用模块化设计，主要包括以下组件：
 ### 工具模块 (utils.py)
 提供通用工具函数：
 - JSON文件读写：支持JSON格式配置文件和数据的读写
-- 日志记录：提供日志记录功能（待实现）
-- 数据转换：HTTP请求与其他格式之间的转换（待实现）
+- 日志记录：提供日志记录功能
+- 数据转换：HTTP请求与其他格式之间的转换
+- 文本处理：文本标准化和Payload编码解码功能
 
 ### 配置模块 (config.py)
 包含项目配置参数：
@@ -86,6 +89,9 @@ Part3采用模块化设计，主要包括以下组件：
 - 数据配置：数据处理相关参数
 - 训练配置：训练过程相关参数
 - 特征列表：默认特征列表
+- WAF类型映射：WAF类型标准化映射
+- 攻击类型：支持的攻击类型列表
+- 模型路径配置：默认模型路径
 
 ## 技术实现原理
 
@@ -123,6 +129,9 @@ pip install -r requirements.txt
 # 训练ModSecurity特化模型
 python main.py --mode train --model-type xgboost --waf-type modsecurity --data-path modsecurity_data.csv --model-path modsecurity_model.pkl
 
+# 使用Part2规则数据训练ModSecurity特化模型
+python main.py --mode train --model-type xgboost --waf-type modsecurity --rules-data-path detailed_rules_report.json --model-path modsecurity_model.pkl
+
 # 训练通用模型
 python main.py --mode train --model-type random_forest --waf-type generic --data-path generic_data.csv --model-path generic_model.pkl
 
@@ -138,3 +147,30 @@ python main.py --mode evaluate --model-path modsecurity_model.pkl --data-path te
 - 逻辑回归 (logistic_regression)
 - 随机森林 (random_forest)
 - XGBoost (xgboost)
+
+## 与其它模块的集成
+
+### 与Part1的集成
+- 利用Part1提供的WAF指纹信息选择最适合的预测模型
+- 根据识别出的WAF类型调整特征提取策略
+
+### 与Part2的集成
+- 利用Part2规则解析结果生成高质量的训练数据
+- 基于规则语义分析结果进行分类训练
+- 使用规则依赖关系提取高级特征
+
+## 当前开发状态
+
+### 已完成模块
+- 配置模块
+- 数据处理模块（包括Part2规则数据支持）
+- 模型定义模块
+- 模型训练器模块
+- 预测器模块
+- 模型评估模块（基础功能）
+- 工具模块
+- 主程序模块
+
+### 待完善模块
+- 模型评估模块（可视化功能）
+- 模型训练器（超参数调优功能）
