@@ -1,18 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-WAF规则分析工具 - Web API服务
-提供RESTful API接口，支持规则文件上传、解析和分析
+WAF规则分析工具 - 命令行工具
+提供命令行接口进行WAF分析功能
 """
 
 import os
 import sys
 import json
-import tempfile
 import logging
-from flask import Flask, request, jsonify, render_template, redirect, url_for, send_file
-from flask_cors import CORS
-from werkzeug.utils import secure_filename
+import argparse
 from pathlib import Path
 from datetime import datetime
 
@@ -20,429 +17,346 @@ from datetime import datetime
 PROJECT_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PROJECT_ROOT))
 
+# 添加 Part1 waf_scanner 到 Python 模块搜索路径
+part1_scanner_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Part1 waf_scanner'))
+if part1_scanner_path not in sys.path:
+    sys.path.insert(0, part1_scanner_path)
+
 # 添加 Part2 analysis 到 Python 模块搜索路径
 part2_analysis_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../Part2 analysis'))
 if part2_analysis_path not in sys.path:
     sys.path.insert(0, part2_analysis_path)
 
-# 默认的 CoreRuleSet 目录（可通过请求参数覆盖）
-DEFAULT_CRS_RULES_DIR = PROJECT_ROOT / 'coreruleset-main' / 'rules'
+# 添加 Part2 analysis 2.0 到 Python 模块搜索路径
+part2_2_0_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
+                             'Part2 analysis', 'part2_rule_analysis', '2.0', 'backend')
+if part2_2_0_path not in sys.path:
+    sys.path.append(part2_2_0_path)
 
+# 默认的 CoreRuleSet 目录
+DEFAULT_CRS_RULES_DIR = PROJECT_ROOT / 'Part2 analysis' / 'coreruleset-main' / 'rules'
+
+# 初始化日志记录器
 from common.utils.log_utils import setup_logger
-from common.utils.file_utils import read_file_content, write_file_content, delete_file
-from part2_rule_analysis.lib.parser.modsecurity_parser import ModSecurityParser
-from part2_rule_analysis.lib.analyzer.semantic_analyzer import SemanticAnalyzer
-from part2_rule_analysis.lib.analyzer.dependency_analyzer import DependencyAnalyzer
-from part2_rule_analysis.lib.analyzer.conflict_analyzer import ConflictAnalyzer
-from part2_rule_analysis.lib.visualizer.ast_visualizer import ASTVisualizer
-from backend.task_manager import AnalysisTask
-from backend import rule_index
+logger = setup_logger('WAFAnalysisTool', log_level='INFO')
 
-# 初始化Flask应用
-app = Flask(__name__, template_folder=str(PROJECT_ROOT / 'UI_2.0_frontend' / 'templates'),
-            static_folder=str(PROJECT_ROOT / 'UI_2.0_frontend' / 'static'))
-app.config['UPLOAD_FOLDER'] = str(PROJECT_ROOT / 'uploads')
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB
-app.secret_key = 'waf-analysis-tool-secret-key'
+# 导入Part1模块
+try:
+    from wafw00f.main import WAFW00F
+    HAS_WAFW00F = True
+except ImportError:
+    HAS_WAFW00F = False
+    logger.error("无法导入wafw00f模块")
 
-# 启用CORS
-CORS(app)
+# 导入Part2模块
+try:
+    # 尝试从新的Part2解析器导入
+    from parser import parse_file
+    HAS_PART2_MODULES = True
+    HAS_ANTLR = False
+    HAS_SECRULES_PARSING = False
+    logger.info("使用新的Part2解析器")
+except ImportError:
+    HAS_PART2_MODULES = False
+    HAS_ANTLR = False
+    HAS_SECRULES_PARSING = False
+    logger.error("无法导入Part2模块")
 
-# 设置日志
-logger = setup_logger('WAFWebAPI', log_level='INFO')
-
-# 创建必要的目录
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-
-# 初始化分析器
-parser = ModSecurityParser()
-semantic_analyzer = SemanticAnalyzer()
-dependency_analyzer = DependencyAnalyzer()
-conflict_analyzer = ConflictAnalyzer()
-ast_visualizer = ASTVisualizer()
-
-# 初始化任务管理器
-task_manager = AnalysisTask()
-
-@app.route('/')
-def index():
-    """首页"""
-    return render_template('index.html')
-
-@app.route('/api/upload', methods=['POST'])
-def upload_file():
-    """上传规则文件"""
-    try:
-        if 'file' not in request.files:
-            return jsonify({'error': 'No file part'}), 400
-        
-        file = request.files['file']
-        if file.filename == '':
-            return jsonify({'error': 'No selected file'}), 400
-        
-        if file:
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            file.save(file_path)
-            
-            logger.info(f"文件上传成功: {filename} ({os.path.getsize(file_path)} bytes)")
-            
-            # 创建分析任务
-            task_id = task_manager.create_task(file_path)
-            
-            return jsonify({
-                'success': True,
-                'task_id': task_id,
-                'filename': filename,
-                'file_size': os.path.getsize(file_path)
-            }), 200
+def analyze_url(url):
+    """分析URL的WAF指纹并关联规则"""
+    if not HAS_WAFW00F:
+        logger.error("WAFW00F模块不可用")
+        return None
     
-    except Exception as e:
-        logger.error(f"文件上传失败: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/analyze', methods=['POST'])
-def analyze_rules():
-    """分析规则文件"""
     try:
-        data = request.get_json()
-        if not data or 'task_id' not in data:
-            return jsonify({'error': 'Missing task_id'}), 400
-        
-        task_id = data['task_id']
-        task = task_manager.get_task(task_id)
-        
-        if not task:
-            return jsonify({'error': 'Task not found'}), 404
-        
-        if task['status'] == 'processing':
-            return jsonify({'status': 'processing'}), 202
-        
-        file_path = task['file_path']
-        if not os.path.exists(file_path):
-            return jsonify({'error': 'File not found'}), 404
-        
-        # 更新任务状态
-        task_manager.update_task(task_id, 'processing')
-        
-        try:
-            # 1. 语法解析
-            logger.info(f"开始解析文件: {file_path}")
-            parsed_rules = parser.parse_file(file_path)
-            parse_errors = parser.get_parse_errors()
-            
-            if not parsed_rules and parse_errors:
-                results = {
-                    'status': 'error',
-                    'errors': parse_errors
-                }
-                task_manager.update_task(task_id, 'failed', results)
-                return jsonify(results), 400
-            
-            # 2. 语义分析
-            logger.info("开始语义分析")
-            semantic_results = semantic_analyzer.analyze_rules(parsed_rules)
-            
-            # 3. 依赖分析
-            logger.info("开始依赖分析")
-            dependency_results = dependency_analyzer.analyze_dependencies(parsed_rules)
-            
-            # 4. 冲突检测
-            logger.info("开始冲突检测")
-            conflict_results = conflict_analyzer.detect_conflicts(parsed_rules)
-            
-            # 5. AST生成
-            logger.info("开始AST生成")
-            ast_root = ast_visualizer.build_ast(parsed_rules)
-            ast_dict = ast_visualizer._ast_to_dict(ast_root)
-
-            # 生成可视化结果并保存到可公开访问的静态目录（UI_2.0_frontend/static/visualizations）
-            visuals_dir = PROJECT_ROOT / 'UI_2.0_frontend' / 'static' / 'visualizations'
-            os.makedirs(visuals_dir, exist_ok=True)
-
-            # 保存 AST（交互式 HTML）
-            ast_img_path = str(visuals_dir / f"{task_id}_ast.html")
-            ast_img_path = ast_visualizer.save_ast_image(ast_root, ast_img_path)
-
-            # 保存依赖图（交互式 HTML）
-            dep_img_path = str(visuals_dir / f"{task_id}_dependencies.html")
-            dep_img_path = dependency_analyzer.save_dependency_graph(dependency_results, dep_img_path)
-            
-            # 准备结果
-            results = {
-                'status': 'completed',
-                'summary': {
-                    'total_rules': len(parsed_rules),
-                    'parse_errors': len(parse_errors),
-                    'conflicts': len(conflict_results),
-                    'dependencies': dependency_results['total_dependencies']
-                },
-                'parsing': {
-                    'rules': [rule.get_rule_summary() for rule in parsed_rules[:20]],  # 只返回前20条规则
-                    'errors': parse_errors,
-                    'total_rules': len(parsed_rules)
-                },
-                'semantic': semantic_results,
-                'dependencies': dependency_results,
-                'conflicts': conflict_results,
-                'ast': ast_dict,
-                'visualization_paths': {
-                    'ast': ast_img_path,
-                    'dependencies': dep_img_path
-                }
-            }
-            
-            # 将解析到的规则保存到索引数据库（轻量索引）
-            try:
-                db_path = rule_index.init_db()
-                for rule in parsed_rules:
-                    # 规则对象可能是自定义类，尝试提取常见字段
-                    r = {}
-                    if hasattr(rule, 'to_dict'):
-                        r = rule.to_dict()
-                    else:
-                        # 最小化字段映射
-                        r = {
-                            'id': getattr(rule, 'id', None) or getattr(rule, 'rule_id', None),
-                            'node_type': getattr(rule, 'node_type', getattr(rule, 'nodeType', None)),
-                            'line': getattr(rule, 'line', None),
-                            'raw': getattr(rule, 'raw', str(rule)),
-                            'tags': getattr(rule, 'tags', [])
-                        }
-                    rule_index.insert_rule(r, db_path=db_path)
-                results['index_db'] = db_path
-            except Exception:
-                logger.exception('写入规则索引失败')
-            # 更新任务状态
-            task_manager.update_task(task_id, 'completed', results)
-            
-            logger.info(f"分析完成: {task_id}")
-            
-            return jsonify(results), 200
-            
-        except Exception as e:
-            logger.error(f"分析过程中发生错误: {str(e)}", exc_info=True)
-            results = {
-                'status': 'error',
-                'message': str(e)
-            }
-            task_manager.update_task(task_id, 'failed', results)
-            return jsonify(results), 500
-    
-    except Exception as e:
-        logger.error(f"分析请求处理失败: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/analyze-url', methods=['POST'])
-def analyze_url():
-    """分析URL（模拟Part1功能）"""
-    try:
-        data = request.get_json()
-        if not data or 'url' not in data:
-            return jsonify({'error': 'Missing URL'}), 400
-        
-        url = data['url']
         logger.info(f"开始分析URL: {url}")
         
-        # 模拟WAF指纹识别（Part1功能）
+        # Part1: WAF指纹识别
+        waf_scanner = WAFW00F(target=url)
+        
+        # 检查网站是否可访问
+        if waf_scanner.rq is None:
+            logger.error(f"网站 {url} 无法访问")
+            return None
+        
+        # 执行WAF检测
+        detected_wafs, trigger_url = waf_scanner.identwaf(findall=False)
+        
+        # 构造WAF指纹识别结果
         fingerprint_results = {
-            'waf_detected': True,
-            'waf_type': 'ModSecurity',
-            'confidence': 0.95,
+            'waf_detected': len(detected_wafs) > 0,
+            'waf_type': detected_wafs[0] if detected_wafs else 'Unknown',
+            'confidence': 0.95,  # 可以根据实际情况调整置信度
             'headers': {
-                'Server': 'Apache/2.4.41 (Ubuntu)',
-                'X-Frame-Options': 'DENY',
-                'X-Content-Type-Options': 'nosniff'
+                'Server': getattr(waf_scanner.rq, 'Server', ''),
+                'X-Frame-Options': getattr(waf_scanner.rq, 'X-Frame-Options', ''),
+                'X-Content-Type-Options': getattr(waf_scanner.rq, 'X-Content-Type-Options', '')
             },
-            'fingerprint_matches': [
-                'Server header indicates Apache with ModSecurity',
-                'Security headers suggest WAF protection'
-            ]
+            'fingerprint_matches': [f'Detected WAF: {waf}' for waf in detected_wafs]
         }
         
-        # 模拟智能检测（Part3功能）
-        ml_results = {
-            'detection_model': 'CNN-LSTM',
-            'confidence': 0.89,
-            'predicted_attack_types': [
-                {'type': 'SQL Injection', 'confidence': 0.78},
-                {'type': 'XSS', 'confidence': 0.65},
-                {'type': 'Path Traversal', 'confidence': 0.52}
-            ]
-        }
+        # 执行通用检测（如果没有检测到特定WAF）
+        if not detected_wafs:
+            generic_result = waf_scanner.genericdetect()
+            if generic_result:
+                fingerprint_results['waf_detected'] = True
+                fingerprint_results['waf_type'] = 'Generic WAF'
+                fingerprint_results['fingerprint_matches'].append(f'Generic WAF detected: {waf_scanner.knowledge["generic"]["reason"]}')
         
+        logger.info(f"WAF指纹识别完成: {fingerprint_results}")
+        
+        # Part2: 规则匹配引擎
+        rule_analysis_results = None
+        if HAS_PART2_MODULES:
+            try:
+                # 初始化数据库
+                database = RuleDatabase()
+                
+                # 构造wafw00f格式的JSON数据用于Part2规则匹配
+                wafw00f_json = {
+                    'url': url,
+                    'detected': fingerprint_results['waf_detected'],
+                    'trigger_url': trigger_url,
+                    'firewall': fingerprint_results['waf_type'],
+                    'manufacturer': ''  # 暂时留空
+                }
+                
+                # 根据WAF类型搜索规则
+                matched_rules = database.search_by_wafw00f(wafw00f_json)
+                
+                rule_analysis_results = {
+                    'rules': matched_rules,
+                    'total': len(matched_rules)
+                }
+                
+                logger.info(f"规则匹配完成，找到 {len(matched_rules)} 条相关规则")
+            except Exception as e:
+                logger.error(f"规则分析时发生错误: {str(e)}")
+                rule_analysis_results = {'error': f'Rule analysis failed: {str(e)}'}
+        else:
+            logger.warning("Part2模块不可用，跳过规则分析")
+            rule_analysis_results = {'error': 'Part2 modules not available'}
+        
+        # 整合所有结果
         results = {
             'status': 'completed',
+            'timestamp': datetime.now().isoformat(),
             'url': url,
             'fingerprint': fingerprint_results,
-            'ml_detection': ml_results
+            'rule_analysis': rule_analysis_results
         }
         
-        return jsonify(results), 200
+        return results
         
     except Exception as e:
-        logger.error(f"URL分析失败: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
+        logger.error(f"URL分析失败: {str(e)}")
+        return None
 
-@app.route('/api/task/<task_id>', methods=['GET'])
-def get_task_status(task_id):
-    """获取任务状态"""
-    try:
-        task = task_manager.get_task(task_id)
-        if not task:
-            return jsonify({'error': 'Task not found'}), 404
-        
-        return jsonify({
-            'task_id': task_id,
-            'status': task['status'],
-            'created_at': task['created_at'],
-            'updated_at': task.get('updated_at'),
-            'results': task.get('results')
-        }), 200
-        
-    except Exception as e:
-        logger.error(f"获取任务状态失败: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/api/visualization/<image_type>/<task_id>', methods=['GET'])
-def get_visualization(image_type, task_id):
-    """获取可视化图像"""
-    try:
-        task = task_manager.get_task(task_id)
-        if not task or task['status'] != 'completed':
-            return jsonify({'error': 'Task not completed'}), 404
-        
-        results = task['results']
-        if not results or 'visualization_paths' not in results:
-            return jsonify({'error': 'Visualization not available'}), 404
-        
-        if image_type not in results['visualization_paths']:
-            return jsonify({'error': 'Invalid image type'}), 400
-        
-        image_path = results['visualization_paths'][image_type]
-        if not os.path.exists(image_path):
-            return jsonify({'error': 'Image not found'}), 404
-
-        # 根据扩展名返回合适的 mimetype
-        import mimetypes
-        mime, _ = mimetypes.guess_type(image_path)
-        if mime is None:
-            # 默认回退
-            mime = 'application/octet-stream'
-
-        return send_file(image_path, mimetype=mime)
-        
-    except Exception as e:
-        logger.error(f"获取可视化图像失败: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-
-@app.route('/api/load-ruleset', methods=['POST'])
-def load_ruleset():
-    """从 CRS rules 目录批量加载并索引规则。
-
-    请求 JSON 可包含：
-    - rules_dir: 可选，自定义规则目录路径；若不提供则使用项目中的 coreruleset-main/rules
-    """
-    try:
-        data = request.get_json() or {}
-        rules_dir = data.get('rules_dir') if data.get('rules_dir') else str(DEFAULT_CRS_RULES_DIR)
-
-        logger.info(f"开始从目录加载规则: {rules_dir}")
-
-        parsed_rules = parser.parse_directory(rules_dir)
-
-        db_path = rule_index.init_db()
-        count = 0
-        for rule in parsed_rules:
-            r = {}
-            if hasattr(rule, 'to_dict'):
-                try:
-                    td = rule.to_dict()
-                    r = td.get('rule_info') if isinstance(td, dict) and 'rule_info' in td else td
-                except Exception:
-                    r = {'id': getattr(rule, 'rule_id', None), 'raw': str(rule)}
-            else:
-                r = {
-                    'id': getattr(rule, 'rule_id', None) or getattr(rule, 'id', None),
-                    'node_type': getattr(rule, 'node_type', None) or getattr(rule, 'nodeType', None),
-                    'line': getattr(rule, 'line', getattr(rule, 'line_num', None)),
-                    'raw': getattr(rule, 'pattern', None) or str(rule),
-                    'tags': getattr(rule, 'tags', [])
-                }
-            try:
-                rule_index.insert_rule(r, db_path=db_path)
-                count += 1
-            except Exception:
-                logger.exception('插入规则索引失败，跳过此规则')
-
-        return jsonify({'status': 'completed', 'parsed_rules': len(parsed_rules), 'indexed_rules': count, 'index_db': db_path}), 200
-
-    except Exception as e:
-        logger.exception('加载规则集失败')
-        return jsonify({'status': 'error', 'message': str(e)}), 500
-
-@app.route('/api/download-report/<task_id>', methods=['GET'])
-def download_report(task_id):
-    """下载分析报告"""
-    try:
-        task = task_manager.get_task(task_id)
-        if not task or task['status'] != 'completed':
-            return jsonify({'error': 'Task not completed'}), 404
-        
-        results = task['results']
-        if not results:
-            return jsonify({'error': 'No results available'}), 404
-        
-        # 创建报告文件
-        report_content = json.dumps(results, indent=2, ensure_ascii=False)
-        temp_file = tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False, encoding='utf-8')
-        temp_file.write(report_content)
-        temp_file.close()
-        
-        return send_file(temp_file.name, as_attachment=True, download_name=f'waf_analysis_report_{task_id}.json')
-        
-    except Exception as e:
-        logger.error(f"下载报告失败: {str(e)}", exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
-@app.route('/analysis')
-def analysis_page():
-    """分析结果页面"""
-    task_id = request.args.get('task_id')
-    if not task_id:
-        return redirect(url_for('index'))
+def load_rules(rules_dir=None):
+    """加载规则集到数据库"""
+    if not HAS_PART2_MODULES:
+        logger.error("Part2模块不可用")
+        return False
     
-    return render_template('analysis.html', task_id=task_id)
+    try:
+        rules_dir = rules_dir or str(DEFAULT_CRS_RULES_DIR)
+        logger.info(f"开始从目录加载规则: {rules_dir}")
+        
+        # 初始化数据库
+        # 注意：这里我们需要实现数据库功能或者暂时跳过
+        try:
+            # 使用动态导入方式导入数据库模块
+            import importlib.util
+            db_path = os.path.join(part2_2_0_path, 'database.py')
+            spec = importlib.util.spec_from_file_location("database", db_path)
+            db_module = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(db_module)
+            RuleDatabase = getattr(db_module, "RuleDatabase")
+            database = RuleDatabase()
+        except Exception as e:
+            logger.warning(f"无法导入RuleDatabase，将跳过数据库存储: {e}")
+            database = None
+        
+        # 导入新的解析器
+        from parser import parse_file
+        
+        # 解析目录中的所有规则文件
+        import glob
+        rule_files = glob.glob(os.path.join(rules_dir, "*.conf"))
+        logger.info(f"找到 {len(rule_files)} 个规则文件")
+        
+        total_parsed = 0
+        total_inserted = 0
+        
+        for rule_file in rule_files:
+            try:
+                logger.info(f"正在处理规则文件: {rule_file}")
+                
+                # 使用新的解析器解析规则文件
+                parsed_rules = parse_file(rule_file)
+                if parsed_rules is not None:
+                    total_parsed += len(parsed_rules)
+                    
+                    # 如果有数据库，将规则插入数据库
+                    if database:
+                        for rule in parsed_rules:
+                            try:
+                                # 获取规则的JSON表示
+                                rule_data = rule.jsonify_rule()
+                                
+                                # 构造符合数据库期望的数据结构
+                                db_rule_data = {
+                                    'rule_info': {
+                                        'id': extract_rule_id(rule_data),
+                                        'type': 'SecRule',
+                                        'phase': extract_phase(rule_data),
+                                        'variables': [rule_data.get('variable')] if rule_data.get('variable') else [],
+                                        'operator': rule_data.get('operator'),
+                                        'pattern': None,  # 模式需要从操作符中提取
+                                        'actions': rule_data.get('action', []) if rule_data.get('action') else [],
+                                        'tags': extract_tags(rule_data),
+                                        'message': extract_message(rule_data),
+                                        'severity': extract_severity(rule_data),
+                                        'is_chain': False  # 简化处理
+                                    },
+                                    'semantic_analysis': {},
+                                    'dependency_analysis': {}
+                                }
+                                
+                                # 插入数据库
+                                success = database.insert(db_rule_data, 'parsed', rule_data.get('rule', ''))
+                                if success:
+                                    total_inserted += 1
+                            except Exception as e:
+                                logger.warning(f"插入规则时出错: {str(e)}")
+                                # 不要中断整个过程，继续处理其他规则
+                                continue
+                else:
+                    logger.warning(f"解析规则文件失败: {rule_file}")
+                        
+            except Exception as e:
+                logger.warning(f"处理规则文件 {rule_file} 时出错: {str(e)}")
+                # 不要中断整个过程，继续处理其他规则文件
+                continue
+        
+        logger.info(f"规则加载完成，共解析 {total_parsed} 条规则，成功插入 {total_inserted} 条规则")
+        return True
+        
+    except Exception as e:
+        logger.error(f"加载规则集失败: {str(e)}")
+        return False
 
-@app.route('/ast-visualization/<task_id>')
-def ast_visualization_page(task_id):
-    """AST可视化页面"""
-    return render_template('ast_visualization.html', task_id=task_id)
 
-@app.errorhandler(404)
-def not_found(error):
-    """404错误处理"""
-    return jsonify({'error': 'Not found'}), 404
+def extract_rule_id(rule_data):
+    """从规则数据中提取规则ID"""
+    actions = rule_data.get('action', [])
+    if isinstance(actions, str):
+        actions = [actions]
+    
+    for action in actions:
+        if action.startswith('id:'):
+            return action[3:]  # 移除'id:'前缀
+    return ''
 
-@app.errorhandler(500)
-def server_error(error):
-    """500错误处理"""
-    return jsonify({'error': 'Internal server error'}), 500
+
+def extract_phase(rule_data):
+    """从规则数据中提取phase"""
+    actions = rule_data.get('action', [])
+    if isinstance(actions, str):
+        actions = [actions]
+    
+    for action in actions:
+        if action.startswith('phase:'):
+            return action[6:]  # 移除'phase:'前缀
+    return ''
+
+
+def extract_tags(rule_data):
+    """从规则数据中提取tags"""
+    actions = rule_data.get('action', [])
+    if isinstance(actions, str):
+        actions = [actions]
+    
+    tags = []
+    for action in actions:
+        if action.startswith('tag:'):
+            tags.append(action[4:])  # 移除'tag:'前缀
+    return tags
+
+
+def extract_message(rule_data):
+    """从规则数据中提取消息"""
+    actions = rule_data.get('action', [])
+    if isinstance(actions, str):
+        actions = [actions]
+    
+    for action in actions:
+        if action.startswith('msg:'):
+            return action[4:]  # 移除'msg:'前缀
+    return ''
+
+
+def extract_severity(rule_data):
+    """从规则数据中提取严重性"""
+    actions = rule_data.get('action', [])
+    if isinstance(actions, str):
+        actions = [actions]
+    
+    for action in actions:
+        if action.startswith('severity:'):
+            return action[9:]  # 移除'severity:'前缀
+        elif action.startswith('sev:'):
+            return action[4:]  # 移除'sev:'前缀
+    return ''
+
 
 def main():
     """主函数"""
-    import argparse
-    parser = argparse.ArgumentParser(description='WAF规则分析工具 Web API')
-    parser.add_argument('-p', '--port', type=int, default=5000, help='端口号')
-    parser.add_argument('--host', default='0.0.0.0', help='主机地址')
-    parser.add_argument('-d', '--debug', action='store_true', help='调试模式')
+    parser = argparse.ArgumentParser(description='WAF规则分析工具命令行接口')
+    parser.add_argument('-u', '--url', help='要分析的URL')
+    parser.add_argument('-l', '--load-rules', action='store_true', help='加载规则到数据库')
+    parser.add_argument('-r', '--rules-dir', help='自定义规则目录路径')
+    parser.add_argument('-o', '--output', help='输出结果到文件')
     
     args = parser.parse_args()
     
-    logger.info(f"启动WAF规则分析工具 Web API (端口: {args.port})")
-    # 模块顶部已导入 datetime，无需在此处重复导入
-    app.run(host=args.host, port=args.port, debug=args.debug, threaded=True)
+    # 如果指定了加载规则
+    if args.load_rules:
+        success = load_rules(args.rules_dir)
+        if success:
+            print("规则加载成功")
+            return 0
+        else:
+            print("规则加载失败")
+            return 1
+    
+    # 如果指定了URL分析
+    if args.url:
+        results = analyze_url(args.url)
+        if results:
+            output = json.dumps(results, indent=2, ensure_ascii=False)
+            
+            # 如果指定了输出文件
+            if args.output:
+                try:
+                    with open(args.output, 'w', encoding='utf-8') as f:
+                        f.write(output)
+                    print(f"结果已保存到 {args.output}")
+                except Exception as e:
+                    print(f"保存结果失败: {str(e)}")
+                    return 1
+            else:
+                # 直接打印结果
+                print(output)
+            
+            return 0
+        else:
+            print("URL分析失败")
+            return 1
+    
+    # 如果没有指定任何操作，显示帮助信息
+    parser.print_help()
+    return 0
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())

@@ -1,0 +1,234 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 800px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#2E86AB", "font": {"color": "#ffffff"}, "id": "title", "label": "Rule Processing Flow", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Title\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule Processing Flow\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "phase_1", "label": "Phase 1\n168 rules\nCRITICAL: 52\nLOW: 100\nWARNING: 11\nNOTICE: 5", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Phase\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003ePhase 1\n168 rules\nCRITICAL: 52\nLOW: 100\nWARNING: 11\nNOTICE: 5\u003cbr\u003e\u003c/div\u003e"}, {"color": "#ff4d4f", "font": {"color": "#ffffff"}, "id": "rule_901001", "label": "Rule 901001\n(CRITICAL)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901001\nPhase: 1\nSeverity: CRITICAL\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901100", "label": "Rule 901100\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901100\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901110", "label": "Rule 901110\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901110\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901111", "label": "Rule 901111\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901111\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901115", "label": "Rule 901115\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901115\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901120", "label": "Rule 901120\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901120\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901125", "label": "Rule 901125\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901125\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901130", "label": "Rule 901130\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901130\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901140", "label": "Rule 901140\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901140\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901141", "label": "Rule 901141\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901141\nPhase: 1\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#666666", "font": {"color": "#333333"}, "id": "more_1", "label": "... 158 more rules", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e MoreRules\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003e... 158 more rules\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "phase_2", "label": "Phase 2\n276 rules\nCRITICAL: 198\nLOW: 70\nWARNING: 8", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Phase\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003ePhase 2\n276 rules\nCRITICAL: 198\nLOW: 70\nWARNING: 8\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_911012", "label": "Rule 911012\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 911012\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_911014", "label": "Rule 911014\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 911014\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_911016", "label": "Rule 911016\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 911016\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_911018", "label": "Rule 911018\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 911018\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_913012", "label": "Rule 913012\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 913012\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_913014", "label": "Rule 913014\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 913014\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_913016", "label": "Rule 913016\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 913016\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_913018", "label": "Rule 913018\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 913018\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_920012", "label": "Rule 920012\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 920012\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_920014", "label": "Rule 920014\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 920014\nPhase: 2\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#666666", "font": {"color": "#333333"}, "id": "more_2", "label": "... 266 more rules", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e MoreRules\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003e... 266 more rules\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "phase_3", "label": "Phase 3\n43 rules\nLOW: 42\nERROR: 1", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Phase\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003ePhase 3\n43 rules\nLOW: 42\nERROR: 1\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950011", "label": "Rule 950011\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950011\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950013", "label": "Rule 950013\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950013\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950015", "label": "Rule 950015\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950015\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950017", "label": "Rule 950017\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950017\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950021", "label": "Rule 950021\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950021\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#d9d9d9", "font": {"color": "#333333"}, "id": "rule_950100", "label": "Rule 950100\n(ERROR)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950100\nPhase: 3\nSeverity: ERROR\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_951011", "label": "Rule 951011\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 951011\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_951013", "label": "Rule 951013\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 951013\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_951015", "label": "Rule 951015\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 951015\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_951017", "label": "Rule 951017\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 951017\nPhase: 3\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#666666", "font": {"color": "#333333"}, "id": "more_3", "label": "... 33 more rules", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e MoreRules\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003e... 33 more rules\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "phase_4", "label": "Phase 4\n107 rules\nCRITICAL: 43\nLOW: 49\nERROR: 15", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Phase\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003ePhase 4\n107 rules\nCRITICAL: 43\nLOW: 49\nERROR: 15\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950010", "label": "Rule 950010\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950010\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950012", "label": "Rule 950012\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950012\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950014", "label": "Rule 950014\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950014\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950016", "label": "Rule 950016\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950016\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_950018", "label": "Rule 950018\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950018\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#d9d9d9", "font": {"color": "#333333"}, "id": "rule_950130", "label": "Rule 950130\n(ERROR)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950130\nPhase: 4\nSeverity: ERROR\u003cbr\u003e\u003c/div\u003e"}, {"color": "#d9d9d9", "font": {"color": "#333333"}, "id": "rule_950140", "label": "Rule 950140\n(ERROR)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950140\nPhase: 4\nSeverity: ERROR\u003cbr\u003e\u003c/div\u003e"}, {"color": "#d9d9d9", "font": {"color": "#333333"}, "id": "rule_950150", "label": "Rule 950150\n(ERROR)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 950150\nPhase: 4\nSeverity: ERROR\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_951010", "label": "Rule 951010\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 951010\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_951012", "label": "Rule 951012\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 951012\nPhase: 4\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#666666", "font": {"color": "#333333"}, "id": "more_4", "label": "... 97 more rules", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e MoreRules\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003e... 97 more rules\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "phase_5", "label": "Phase 5\n11 rules\nLOW: 11", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Phase\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003ePhase 5\n11 rules\nLOW: 11\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980041", "label": "Rule 980041\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980041\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980042", "label": "Rule 980042\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980042\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980043", "label": "Rule 980043\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980043\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980044", "label": "Rule 980044\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980044\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980045", "label": "Rule 980045\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980045\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980046", "label": "Rule 980046\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980046\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980047", "label": "Rule 980047\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980047\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980048", "label": "Rule 980048\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980048\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980049", "label": "Rule 980049\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980049\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_980050", "label": "Rule 980050\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 980050\nPhase: 5\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#666666", "font": {"color": "#333333"}, "id": "more_5", "label": "... 1 more rules", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e MoreRules\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003e... 1 more rules\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "phase_Unknown", "label": "Phase Unknown\n71 rules\nLOW: 71", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Phase\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003ePhase Unknown\n71 rules\nLOW: 71\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901320", "label": "Rule 901320\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901320\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_901340", "label": "Rule 901340\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: 901340\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_no_id_0170c9186c484dea8c9612cb96f27990", "label": "Rule no_id_0170c9186c484dea8c9612cb96f27990\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: no_id_0170c9186c484dea8c9612cb96f27990\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_no_id_0ad4436c3d1a4f5b9ddc19ea786198df", "label": "Rule no_id_0ad4436c3d1a4f5b9ddc19ea786198df\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: no_id_0ad4436c3d1a4f5b9ddc19ea786198df\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_no_id_0d8c7abcd2a446bc8c89cdea570246ee", "label": "Rule no_id_0d8c7abcd2a446bc8c89cdea570246ee\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: no_id_0d8c7abcd2a446bc8c89cdea570246ee\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_no_id_0ecb628992af40b392a4ad3415a3986a", "label": "Rule no_id_0ecb628992af40b392a4ad3415a3986a\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: no_id_0ecb628992af40b392a4ad3415a3986a\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_no_id_13c5feb4c5f0471d8c210e497c02e57f", "label": "Rule no_id_13c5feb4c5f0471d8c210e497c02e57f\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: no_id_13c5feb4c5f0471d8c210e497c02e57f\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "rule_no_id_1761bc0afe4d4715bd1e2c1864deea2a", "label": "Rule no_id_1761bc0afe4d4715bd1e2c1864deea2a\n(LOW)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Rule\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eRule ID: no_id_1761bc0afe4d4715bd1e2c1864deea2a\nPhase: Unknown\nSeverity: LOW\u003cbr\u003e\u003c/div\u003e"}, {"color": "#666666", "font": {"color": "#333333"}, "id": "more_Unknown", "label": "... 61 more rules", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e MoreRules\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003e... 61 more rules\u003cbr\u003e\u003c/div\u003e"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "title", "to": "phase_1"}, {"arrows": "to", "from": "phase_1", "to": "rule_901001"}, {"arrows": "to", "from": "phase_1", "to": "rule_901100"}, {"arrows": "to", "from": "phase_1", "to": "rule_901110"}, {"arrows": "to", "from": "phase_1", "to": "rule_901111"}, {"arrows": "to", "from": "phase_1", "to": "rule_901115"}, {"arrows": "to", "from": "phase_1", "to": "rule_901120"}, {"arrows": "to", "from": "phase_1", "to": "rule_901125"}, {"arrows": "to", "from": "phase_1", "to": "rule_901130"}, {"arrows": "to", "from": "phase_1", "to": "rule_901140"}, {"arrows": "to", "from": "phase_1", "to": "rule_901141"}, {"arrows": "to", "from": "phase_1", "to": "more_1"}, {"arrows": "to", "from": "phase_1", "to": "phase_2"}, {"arrows": "to", "from": "phase_2", "to": "rule_911012"}, {"arrows": "to", "from": "phase_2", "to": "rule_911014"}, {"arrows": "to", "from": "phase_2", "to": "rule_911016"}, {"arrows": "to", "from": "phase_2", "to": "rule_911018"}, {"arrows": "to", "from": "phase_2", "to": "rule_913012"}, {"arrows": "to", "from": "phase_2", "to": "rule_913014"}, {"arrows": "to", "from": "phase_2", "to": "rule_913016"}, {"arrows": "to", "from": "phase_2", "to": "rule_913018"}, {"arrows": "to", "from": "phase_2", "to": "rule_920012"}, {"arrows": "to", "from": "phase_2", "to": "rule_920014"}, {"arrows": "to", "from": "phase_2", "to": "more_2"}, {"arrows": "to", "from": "phase_2", "to": "phase_3"}, {"arrows": "to", "from": "phase_3", "to": "rule_950011"}, {"arrows": "to", "from": "phase_3", "to": "rule_950013"}, {"arrows": "to", "from": "phase_3", "to": "rule_950015"}, {"arrows": "to", "from": "phase_3", "to": "rule_950017"}, {"arrows": "to", "from": "phase_3", "to": "rule_950021"}, {"arrows": "to", "from": "phase_3", "to": "rule_950100"}, {"arrows": "to", "from": "phase_3", "to": "rule_951011"}, {"arrows": "to", "from": "phase_3", "to": "rule_951013"}, {"arrows": "to", "from": "phase_3", "to": "rule_951015"}, {"arrows": "to", "from": "phase_3", "to": "rule_951017"}, {"arrows": "to", "from": "phase_3", "to": "more_3"}, {"arrows": "to", "from": "phase_3", "to": "phase_4"}, {"arrows": "to", "from": "phase_4", "to": "rule_950010"}, {"arrows": "to", "from": "phase_4", "to": "rule_950012"}, {"arrows": "to", "from": "phase_4", "to": "rule_950014"}, {"arrows": "to", "from": "phase_4", "to": "rule_950016"}, {"arrows": "to", "from": "phase_4", "to": "rule_950018"}, {"arrows": "to", "from": "phase_4", "to": "rule_950130"}, {"arrows": "to", "from": "phase_4", "to": "rule_950140"}, {"arrows": "to", "from": "phase_4", "to": "rule_950150"}, {"arrows": "to", "from": "phase_4", "to": "rule_951010"}, {"arrows": "to", "from": "phase_4", "to": "rule_951012"}, {"arrows": "to", "from": "phase_4", "to": "more_4"}, {"arrows": "to", "from": "phase_4", "to": "phase_5"}, {"arrows": "to", "from": "phase_5", "to": "rule_980041"}, {"arrows": "to", "from": "phase_5", "to": "rule_980042"}, {"arrows": "to", "from": "phase_5", "to": "rule_980043"}, {"arrows": "to", "from": "phase_5", "to": "rule_980044"}, {"arrows": "to", "from": "phase_5", "to": "rule_980045"}, {"arrows": "to", "from": "phase_5", "to": "rule_980046"}, {"arrows": "to", "from": "phase_5", "to": "rule_980047"}, {"arrows": "to", "from": "phase_5", "to": "rule_980048"}, {"arrows": "to", "from": "phase_5", "to": "rule_980049"}, {"arrows": "to", "from": "phase_5", "to": "rule_980050"}, {"arrows": "to", "from": "phase_5", "to": "more_5"}, {"arrows": "to", "from": "phase_5", "to": "phase_Unknown"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_901320"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_901340"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_no_id_0170c9186c484dea8c9612cb96f27990"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_no_id_0ad4436c3d1a4f5b9ddc19ea786198df"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_no_id_0d8c7abcd2a446bc8c89cdea570246ee"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_no_id_0ecb628992af40b392a4ad3415a3986a"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_no_id_13c5feb4c5f0471d8c210e497c02e57f"}, {"arrows": "to", "from": "phase_Unknown", "to": "rule_no_id_1761bc0afe4d4715bd1e2c1864deea2a"}, {"arrows": "to", "from": "phase_Unknown", "to": "more_Unknown"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": false,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
+            <script>
+                (function(){
+                    var lastSentHeight = 0;
+                    var sendTimer = null;
+                    var maxHeight = 8000;
+                    
+                    function safePost(msg){
+                        try{ window.parent.postMessage(msg, '*'); }catch(e){}
+                    }
+                    
+                    function postHeightDebounced(){
+                        if(sendTimer) return;
+                        sendTimer = setTimeout(function(){
+                            sendTimer = null;
+                            try{
+                                var h = Math.min(document.body.scrollHeight || 0, maxHeight);
+                                if(Math.abs(h - lastSentHeight) > 30){
+                                    lastSentHeight = h;
+                                    safePost({type: 'pyvis_height', height: h, source: 'ruleflow'});
+                                }
+                            }catch(e){}
+                        }, 300);
+                    }
+                    
+                    function postReady(){
+                        safePost({type: 'pyvis_ready', source: 'ruleflow'});
+                        postHeightDebounced();
+                        setTimeout(postHeightDebounced, 700);
+                        setTimeout(postHeightDebounced, 1500);
+                    }
+                    
+                    window.addEventListener('load', function(){
+                        try{ postReady(); }catch(e){}
+                    });
+                    
+                    var resizeObserver = null;
+                    try{
+                        if(window.ResizeObserver){
+                            resizeObserver = new ResizeObserver(function(){ postHeightDebounced(); });
+                            resizeObserver.observe(document.body);
+                        } else {
+                            window.addEventListener('resize', postHeightDebounced);
+                        }
+                    }catch(e){ window.addEventListener('resize', postHeightDebounced); }
+                    
+                    function attachClick(){
+                        try{
+                            if(typeof network !== 'undefined' && typeof nodes !== 'undefined'){
+                                try{ safePost({type: 'pyvis_ready', source: 'ruleflow'}); }catch(e){}
+                                
+                                network.on('click', function(params){
+                                    try{
+                                        if(params.nodes && params.nodes.length > 0){
+                                            var nodeId = params.nodes[0];
+                                            var nodeData = null;
+                                            try{ nodeData = nodes.find(function(n){ return n.id == nodeId; }) || {id: nodeId}; }catch(e){ nodeData = {id: nodeId}; }
+                                            safePost({type:'pyvis_node_click', node: nodeData, source: 'ruleflow'});
+                                            setTimeout(postHeightDebounced, 300);
+                                        }
+                                    }catch(e){ }
+                                });
+                            } else {
+                                setTimeout(attachClick, 200);
+                            }
+                        }catch(e){ setTimeout(attachClick, 200); }
+                    }
+                    attachClick();
+                    
+                    window.addEventListener('message', function(event){
+                        try{
+                            var data = event.data || {};
+                            if(data && data.type === 'pyvis_highlight' && typeof network !== 'undefined'){
+                                try{ network.selectNodes([data.nodeId]); }catch(e){}
+                            }
+                        }catch(e){}
+                    });
+                })();
+            </script>
+            

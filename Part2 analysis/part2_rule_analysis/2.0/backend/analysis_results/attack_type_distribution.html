@@ -1,0 +1,234 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 800px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#2E86AB", "font": {"color": "#ffffff"}, "id": "root", "label": "Attack Types Distribution", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Root\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Types Distribution\u003cbr\u003e\u003c/div\u003e"}, {"color": "#43AA8B", "font": {"color": "#ffffff"}, "id": "stats", "label": "Statistics\nTotal Rules: 676\nUnique Attack Types: 35", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e Statistics\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eStatistics\nTotal Rules: 676\nUnique Attack Types: 35\u003cbr\u003e\u003c/div\u003e"}, {"color": "#ff4d4f", "font": {"color": "#ffffff"}, "id": "attack_0", "label": "SQL Injection\n(676 rules, 100.0%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: SQL Injection\nCount: 676\nPercentage: 100.0%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#ff4d4f", "font": {"color": "#ffffff"}, "id": "attack_1", "label": "LDAP Injection\n(676 rules, 100.0%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: LDAP Injection\nCount: 676\nPercentage: 100.0%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#ff4d4f", "font": {"color": "#ffffff"}, "id": "attack_2", "label": "Command Injection\n(486 rules, 71.9%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Command Injection\nCount: 486\nPercentage: 71.9%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#faad14", "font": {"color": "#333333"}, "id": "attack_3", "label": "Cross-Site Scripting (XSS)\n(184 rules, 27.2%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Cross-Site Scripting (XSS)\nCount: 184\nPercentage: 27.2%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#faad14", "font": {"color": "#333333"}, "id": "attack_4", "label": "Session Fixation\n(161 rules, 23.8%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Session Fixation\nCount: 161\nPercentage: 23.8%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#faad14", "font": {"color": "#333333"}, "id": "attack_5", "label": "HTTP Request Smuggling\n(128 rules, 18.9%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: HTTP Request Smuggling\nCount: 128\nPercentage: 18.9%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#faad14", "font": {"color": "#333333"}, "id": "attack_6", "label": "Information Disclosure\n(103 rules, 15.2%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Information Disclosure\nCount: 103\nPercentage: 15.2%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "attack_7", "label": "Web Shell\n(61 rules, 9.0%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Web Shell\nCount: 61\nPercentage: 9.0%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "attack_8", "label": "Authentication Bypass\n(60 rules, 8.9%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Authentication Bypass\nCount: 60\nPercentage: 8.9%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "attack_9", "label": "Code Injection\n(49 rules, 7.2%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Code Injection\nCount: 49\nPercentage: 7.2%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "attack_10", "label": "Path Traversal\n(42 rules, 6.2%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Path Traversal\nCount: 42\nPercentage: 6.2%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#1890ff", "font": {"color": "#ffffff"}, "id": "attack_11", "label": "Web Shells\n(36 rules, 5.3%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Web Shells\nCount: 36\nPercentage: 5.3%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_12", "label": "PHP Injection\n(28 rules, 4.1%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: PHP Injection\nCount: 28\nPercentage: 4.1%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_13", "label": "Protocol Attack\n(26 rules, 3.8%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Protocol Attack\nCount: 26\nPercentage: 3.8%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_14", "label": "Blocking Evaluation\n(26 rules, 3.8%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Blocking Evaluation\nCount: 26\nPercentage: 3.8%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_15", "label": "SQL Injection Data Leakage\n(26 rules, 3.8%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: SQL Injection Data Leakage\nCount: 26\nPercentage: 3.8%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_16", "label": "Response Blocking Evaluation\n(26 rules, 3.8%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Response Blocking Evaluation\nCount: 26\nPercentage: 3.8%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_17", "label": "Application Attack - Java\n(22 rules, 3.3%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Application Attack - Java\nCount: 22\nPercentage: 3.3%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_18", "label": "XML External Entity (XXE)\n(20 rules, 3.0%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: XML External Entity (XXE)\nCount: 20\nPercentage: 3.0%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_19", "label": "HTTP Response Splitting\n(20 rules, 3.0%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: HTTP Response Splitting\nCount: 20\nPercentage: 3.0%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_20", "label": "Correlation\n(19 rules, 2.8%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Correlation\nCount: 19\nPercentage: 2.8%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_21", "label": "Remote File Inclusion\n(15 rules, 2.2%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Remote File Inclusion\nCount: 15\nPercentage: 2.2%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_22", "label": "Data Leakages\n(14 rules, 2.1%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Data Leakages\nCount: 14\nPercentage: 2.1%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_23", "label": "IIS Data Leakage\n(14 rules, 2.1%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: IIS Data Leakage\nCount: 14\nPercentage: 2.1%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_24", "label": "PHP Data Leakage\n(13 rules, 1.9%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: PHP Data Leakage\nCount: 13\nPercentage: 1.9%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_25", "label": "Application Attack - Generic\n(11 rules, 1.6%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Application Attack - Generic\nCount: 11\nPercentage: 1.6%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_26", "label": "Ruby Data Leakage\n(11 rules, 1.6%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Ruby Data Leakage\nCount: 11\nPercentage: 1.6%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_27", "label": "Java Data Leakage\n(10 rules, 1.5%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Java Data Leakage\nCount: 10\nPercentage: 1.5%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_28", "label": "Server-Side Request Forgery (SSRF)\n(7 rules, 1.0%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Server-Side Request Forgery (SSRF)\nCount: 7\nPercentage: 1.0%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_29", "label": "Denial of Service (DoS)\n(4 rules, 0.6%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Denial of Service (DoS)\nCount: 4\nPercentage: 0.6%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_30", "label": "Multipart Attack\n(4 rules, 0.6%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Multipart Attack\nCount: 4\nPercentage: 0.6%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_31", "label": "Cross-Site Request Forgery (CSRF)\n(3 rules, 0.4%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Cross-Site Request Forgery (CSRF)\nCount: 3\nPercentage: 0.4%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_32", "label": "SSRF - Internal Service\n(2 rules, 0.3%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: SSRF - Internal Service\nCount: 2\nPercentage: 0.3%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_33", "label": "Local File Inclusion\n(2 rules, 0.3%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Local File Inclusion\nCount: 2\nPercentage: 0.3%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}, {"color": "#52c41a", "font": {"color": "#ffffff"}, "id": "attack_34", "label": "Server-Side Template Injection (SSTI)\n(2 rules, 0.3%)", "shape": "dot", "title": "\u003cdiv style=\"max-width:300px;word-wrap:break-word;\"\u003e\u003cb\u003eType:\u003c/b\u003e AttackType\u003cbr\u003e\u003cb\u003eDetails:\u003c/b\u003e\u003cbr\u003eAttack Type: Server-Side Template Injection (SSTI)\nCount: 2\nPercentage: 0.3%\nTotal Rules: 676\u003cbr\u003e\u003c/div\u003e"}]);
+                  edges = new vis.DataSet([{"arrows": "to", "from": "root", "to": "stats"}, {"arrows": "to", "from": "stats", "to": "attack_0"}, {"arrows": "to", "from": "stats", "to": "attack_1"}, {"arrows": "to", "from": "stats", "to": "attack_2"}, {"arrows": "to", "from": "stats", "to": "attack_3"}, {"arrows": "to", "from": "stats", "to": "attack_4"}, {"arrows": "to", "from": "stats", "to": "attack_5"}, {"arrows": "to", "from": "stats", "to": "attack_6"}, {"arrows": "to", "from": "stats", "to": "attack_7"}, {"arrows": "to", "from": "stats", "to": "attack_8"}, {"arrows": "to", "from": "stats", "to": "attack_9"}, {"arrows": "to", "from": "stats", "to": "attack_10"}, {"arrows": "to", "from": "stats", "to": "attack_11"}, {"arrows": "to", "from": "stats", "to": "attack_12"}, {"arrows": "to", "from": "stats", "to": "attack_13"}, {"arrows": "to", "from": "stats", "to": "attack_14"}, {"arrows": "to", "from": "stats", "to": "attack_15"}, {"arrows": "to", "from": "stats", "to": "attack_16"}, {"arrows": "to", "from": "stats", "to": "attack_17"}, {"arrows": "to", "from": "stats", "to": "attack_18"}, {"arrows": "to", "from": "stats", "to": "attack_19"}, {"arrows": "to", "from": "stats", "to": "attack_20"}, {"arrows": "to", "from": "stats", "to": "attack_21"}, {"arrows": "to", "from": "stats", "to": "attack_22"}, {"arrows": "to", "from": "stats", "to": "attack_23"}, {"arrows": "to", "from": "stats", "to": "attack_24"}, {"arrows": "to", "from": "stats", "to": "attack_25"}, {"arrows": "to", "from": "stats", "to": "attack_26"}, {"arrows": "to", "from": "stats", "to": "attack_27"}, {"arrows": "to", "from": "stats", "to": "attack_28"}, {"arrows": "to", "from": "stats", "to": "attack_29"}, {"arrows": "to", "from": "stats", "to": "attack_30"}, {"arrows": "to", "from": "stats", "to": "attack_31"}, {"arrows": "to", "from": "stats", "to": "attack_32"}, {"arrows": "to", "from": "stats", "to": "attack_33"}, {"arrows": "to", "from": "stats", "to": "attack_34"}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": false,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
+            <script>
+                (function(){
+                    var lastSentHeight = 0;
+                    var sendTimer = null;
+                    var maxHeight = 8000;
+                    
+                    function safePost(msg){
+                        try{ window.parent.postMessage(msg, '*'); }catch(e){}
+                    }
+                    
+                    function postHeightDebounced(){
+                        if(sendTimer) return;
+                        sendTimer = setTimeout(function(){
+                            sendTimer = null;
+                            try{
+                                var h = Math.min(document.body.scrollHeight || 0, maxHeight);
+                                if(Math.abs(h - lastSentHeight) > 30){
+                                    lastSentHeight = h;
+                                    safePost({type: 'pyvis_height', height: h, source: 'attack_type'});
+                                }
+                            }catch(e){}
+                        }, 300);
+                    }
+                    
+                    function postReady(){
+                        safePost({type: 'pyvis_ready', source: 'attack_type'});
+                        postHeightDebounced();
+                        setTimeout(postHeightDebounced, 700);
+                        setTimeout(postHeightDebounced, 1500);
+                    }
+                    
+                    window.addEventListener('load', function(){
+                        try{ postReady(); }catch(e){}
+                    });
+                    
+                    var resizeObserver = null;
+                    try{
+                        if(window.ResizeObserver){
+                            resizeObserver = new ResizeObserver(function(){ postHeightDebounced(); });
+                            resizeObserver.observe(document.body);
+                        } else {
+                            window.addEventListener('resize', postHeightDebounced);
+                        }
+                    }catch(e){ window.addEventListener('resize', postHeightDebounced); }
+                    
+                    function attachClick(){
+                        try{
+                            if(typeof network !== 'undefined' && typeof nodes !== 'undefined'){
+                                try{ safePost({type: 'pyvis_ready', source: 'attack_type'}); }catch(e){}
+                                
+                                network.on('click', function(params){
+                                    try{
+                                        if(params.nodes && params.nodes.length > 0){
+                                            var nodeId = params.nodes[0];
+                                            var nodeData = null;
+                                            try{ nodeData = nodes.find(function(n){ return n.id == nodeId; }) || {id: nodeId}; }catch(e){ nodeData = {id: nodeId}; }
+                                            safePost({type:'pyvis_node_click', node: nodeData, source: 'attack_type'});
+                                            setTimeout(postHeightDebounced, 300);
+                                        }
+                                    }catch(e){ }
+                                });
+                            } else {
+                                setTimeout(attachClick, 200);
+                            }
+                        }catch(e){ setTimeout(attachClick, 200); }
+                    }
+                    attachClick();
+                    
+                    window.addEventListener('message', function(event){
+                        try{
+                            var data = event.data || {};
+                            if(data && data.type === 'pyvis_highlight' && typeof network !== 'undefined'){
+                                try{ network.selectNodes([data.nodeId]); }catch(e){}
+                            }
+                        }catch(e){}
+                    });
+                })();
+            </script>
+            
