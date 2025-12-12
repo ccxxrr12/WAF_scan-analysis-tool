@@ -9,15 +9,16 @@
 文件结构：
 - ModelTrainer: 模型训练器类
 - train_model(): 训练模型
-- cross_validate(): 交叉验证
+- cross_validate(): 交叉验证 (使用分层K折交叉验证)
 - hyperparameter_tuning(): 超参数调优
 - select_best_model(): 模型选择
 """
 
 import pickle
 from models import ModelFactory
-from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_score, StratifiedKFold
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+import numpy as np
 
 
 class ModelTrainer:
@@ -70,7 +71,9 @@ class ModelTrainer:
             return None
         
         try:
-            cv_scores = cross_val_score(self.model.model, X, y, cv=cv_folds, scoring='accuracy')
+            # 使用分层K折交叉验证确保每折中类别分布均匀
+            skf = StratifiedKFold(n_splits=cv_folds, shuffle=True, random_state=42)
+            cv_scores = cross_val_score(self.model.model, X, y, cv=skf, scoring='accuracy')
             return cv_scores
         except Exception as e:
             print(f"交叉验证过程中出现错误: {e}")

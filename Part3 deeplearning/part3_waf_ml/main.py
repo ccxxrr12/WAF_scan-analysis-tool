@@ -12,6 +12,15 @@
 - predict_mode(): 预测模式
 - evaluate_mode(): 评估模式
 - parse_args(): 解析命令行参数
+
+命令行参数：
+--mode: 运行模式，可选 train/predict/evaluate，默认为 predict
+--model-type: 模型类型，可选 logistic_regression/random_forest/xgboost
+--data-path: 数据路径，训练和评估模式必需
+--model-path: 模型路径，预测和评估模式必需
+--output-path: 输出路径（预留）
+--waf-info-path: WAF指纹信息路径（JSON格式）
+--waf-type: WAF类型，可选 modsecurity/generic，用于训练模式
 """
 
 import argparse

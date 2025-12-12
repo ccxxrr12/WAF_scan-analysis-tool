@@ -13,13 +13,14 @@
 文件结构：
 - process_waf_fingerprint(): 处理Part1的WAF指纹识别结果
 - extract_features(): 从HTTP请求中提取特征
-- generate_training_data(): 生成训练数据集
-- load_dataset(): 加载数据集
-- preprocess_data(): 数据预处理
+- generate_training_data(): 生成训练数据集 (需要Part2数据)
+- load_dataset(): 加载数据集 (支持CSV格式)
+- preprocess_data(): 数据预处理 (支持去重和缺失值处理)
 """
 
 import re
 import numpy as np
+import pandas as pd
 from urllib.parse import urlparse, parse_qs
 
 
@@ -212,8 +213,18 @@ class DataProcessor:
         Returns:
             dataset: 加载的数据集
         """
-        # TODO: 实现数据集加载逻辑
-        pass
+        try:
+            # 尝试加载CSV格式数据
+            if dataset_path.endswith('.csv'):
+                data = pd.read_csv(dataset_path)
+                print(f"成功加载CSV数据集: {dataset_path}")
+                return data
+            else:
+                print("目前仅支持CSV格式数据集")
+                return None
+        except Exception as e:
+            print(f"加载数据集时出错: {e}")
+            return None
     
     def preprocess_data(self, raw_data):
         """
@@ -225,9 +236,38 @@ class DataProcessor:
         Returns:
             processed_data: 预处理后的数据
         """
-        # TODO: 实现数据预处理逻辑
-        # 包括数据清洗、标准化、归一化等
-        pass
+        try:
+            # 检查输入数据
+            if raw_data is None:
+                print("输入数据为空")
+                return None
+                
+            # 如果是DataFrame，进行基本的预处理
+            if isinstance(raw_data, pd.DataFrame):
+                # 删除完全重复的行
+                data = raw_data.drop_duplicates()
+                
+                # 处理缺失值 - 数值型用均值填充，分类型用众数填充
+                for column in data.columns:
+                    if data[column].isnull().any():
+                        if data[column].dtype in ['int64', 'float64']:
+                            # 数值型用均值填充
+                            data[column].fillna(data[column].mean(), inplace=True)
+                        else:
+                            # 分类型用众数填充
+                            mode_value = data[column].mode()
+                            if not mode_value.empty:
+                                data[column].fillna(mode_value[0], inplace=True)
+                
+                print(f"数据预处理完成，原始数据 shape: {raw_data.shape}, 处理后数据 shape: {data.shape}")
+                return data
+            else:
+                print("目前仅支持pandas DataFrame格式的数据预处理")
+                return raw_data
+                
+        except Exception as e:
+            print(f"数据预处理时出错: {e}")
+            return raw_data
 
 
 def main():

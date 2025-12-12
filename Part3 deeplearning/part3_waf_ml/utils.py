@@ -7,8 +7,8 @@
 包括文件操作、日志记录、数据转换等。
 
 文件结构：
-- load_json(): 加载JSON文件
-- save_json(): 保存JSON文件
+- load_json(): 加载JSON文件 (支持UTF-8编码)
+- save_json(): 保存JSON文件 (支持UTF-8编码和格式化输出)
 - setup_logger(): 设置日志记录器
 - http_request_to_dict(): HTTP请求转字典
 - dict_to_http_request(): 字典转HTTP请求
@@ -29,8 +29,13 @@ def load_json(file_path):
     Returns:
         data: 加载的数据
     """
-    # TODO: 实现JSON文件加载逻辑
-    pass
+    try:
+        with open(file_path, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        return data
+    except Exception as e:
+        print(f"加载JSON文件时出错: {e}")
+        return None
 
 
 def save_json(data, file_path):
@@ -41,8 +46,12 @@ def save_json(data, file_path):
         data: 要保存的数据
         file_path: 文件路径
     """
-    # TODO: 实现JSON文件保存逻辑
-    pass
+    try:
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        print(f"数据已保存到: {file_path}")
+    except Exception as e:
+        print(f"保存JSON文件时出错: {e}")
 
 
 def setup_logger(name, log_file, level=logging.INFO):
