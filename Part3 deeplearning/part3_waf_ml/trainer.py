@@ -95,21 +95,45 @@ class ModelTrainer:
         print("超参数调优功能尚未完全实现")
         return self.model_params
     
-    def select_best_model(self, models, X_val, y_val):
+    def select_best_model(self, models, waf_type=None):
         """
-        模型选择
+        根据WAF类型选择最佳模型
         
         Args:
-            models: 模型列表
-            X_val: 验证特征
-            y_val: 验证标签
+            models: 模型字典，键为模型类型，值为模型实例
+            waf_type: WAF类型
             
         Returns:
             best_model: 最佳模型
         """
-        # TODO: 实现模型选择逻辑
-        print("模型选择功能尚未完全实现")
-        return models[0] if models else None
+        if not models:
+            print("模型列表为空，无法选择最佳模型")
+            return None
+        
+        # 标准化WAF类型
+        waf_type = waf_type.lower() if waf_type else ""
+        
+        # 如果是ModSecurity，优先使用特化模型
+        if "modsecurity" in waf_type and "modsecurity" in models:
+            print("选择ModSecurity特化模型")
+            return models["modsecurity"]
+        
+        # 如果是其他WAF类型，使用通用模型
+        if "generic" in models:
+            print("选择通用模型")
+            return models["generic"]
+        
+        # 如果都没有，返回默认模型或第一个模型
+        if "default" in models:
+            print("选择默认模型")
+            return models["default"]
+        
+        # 返回第一个可用的模型
+        print("未找到特定模型，使用第一个可用模型")
+        for model in models.values():
+            return model
+        
+        return None
     
     def evaluate_model(self, X_test, y_test):
         """
