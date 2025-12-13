@@ -1,5 +1,6 @@
 <!-- 纵向布局作为基础布局 -->
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue';
 import { useSafeArea } from '@/hooks/useSafeArea';
 import { useWindowWidthObserver } from '@/hooks/useWindowWidthObserver';
 import Aside from '@/layouts/components/Aside/index.vue';
@@ -24,6 +25,16 @@ useSafeArea({
 
 /** 监听窗口大小变化，折叠侧边栏 */
 useWindowWidthObserver();
+
+// 添加预加载link标签
+onMounted(() => {
+  // 预加载solo模式的iframe内容
+  const preloadLink = document.createElement('link');
+  preloadLink.rel = 'preload';
+  preloadLink.as = 'document';
+  preloadLink.href = '/index.html';
+  document.head.appendChild(preloadLink);
+});
 </script>
 
 <template>

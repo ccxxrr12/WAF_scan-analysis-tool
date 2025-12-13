@@ -62,7 +62,7 @@ function handleClick(item: GetSessionListVO) {
       <!-- 触发元素插槽 -->
       <template #trigger>
         <div
-          class="model-select-box select-none flex items-center gap-4px p-10px rounded-10px cursor-pointer font-size-12px border-[rgba()]"
+          class="model-select-box select-none flex items-center gap-4px p-2 rounded-10px cursor-pointer font-size-12px"
         >
           <div class="model-select-box-icon">
             <SvgIcon name="models" size="12" />

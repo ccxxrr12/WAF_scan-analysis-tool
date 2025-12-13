@@ -1,4 +1,5 @@
 import type { ChatMessageVo } from '@/api/chat/types';
+import { ref, computed } from 'vue';
 import { defineStore } from 'pinia';
 import { getChatList } from '@/api';
 import { useUserStore } from './user';

@@ -26,6 +26,7 @@ declare module 'vue' {
     IconSelect: typeof import('./../src/components/IconSelect/index.vue')['default']
     LoginDialog: typeof import('./../src/components/LoginDialog/index.vue')['default']
     ModelSelect: typeof import('./../src/components/ModelSelect/index.vue')['default']
+    ModeToggle: typeof import('./../src/components/ModeToggle/index.vue')['default']
     Popover: typeof import('./../src/components/Popover/index.vue')['default']
     QrCodeLogin: typeof import('./../src/components/LoginDialog/components/QrCodeLogin/index.vue')['default']
     RegistrationForm: typeof import('./../src/components/LoginDialog/components/FormLogin/RegistrationForm.vue')['default']

@@ -1,7 +1,7 @@
 import type { ChatSessionVo, CreateSessionDTO, GetSessionListParams } from '@/api/session/types';
 import { ChatLineRound } from '@element-plus/icons-vue';
 import { defineStore } from 'pinia';
-import { markRaw } from 'vue';
+import { ref, markRaw } from 'vue';
 import { useRouter } from 'vue-router';
 import {
   create_session,

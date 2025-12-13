@@ -9,6 +9,7 @@ import Collapse from './components/Collapse.vue';
 import CreateChat from './components/CreateChat.vue';
 import LoginBtn from './components/LoginBtn.vue';
 import TitleEditing from './components/TitleEditing.vue';
+import ModeToggle from '@/components/ModeToggle/index.vue';
 
 const userStore = useUserStore();
 const designStore = useDesignStore();
@@ -69,6 +70,7 @@ onKeyStroke(event => event.ctrlKey && event.key.toLowerCase() === 'k', handleCtr
 
         <!-- 右边 -->
         <div class="right-box flex h-full items-center pr-20px flex-shrink-0 mr-auto flex-row">
+          <ModeToggle />
           <Avatar v-show="userStore.token" />
           <LoginBtn v-show="!userStore.token" />
         </div>
@@ -95,6 +97,10 @@ onKeyStroke(event => event.ctrlKey && event.key.toLowerCase() === 'k', handleCtr
     height: var(--header-container-default-heigth);
     margin: 0 var(--sidebar-right-container-default-width, 0) 0
       var(--sidebar-left-container-default-width, 0);
+  }
+  
+  .right-box {
+    gap: 12px;
   }
 }
 </style>
