@@ -1,6 +1,6 @@
 # Detailed ModSecurity Rules Parsing Report
 
-Generated on: 2025-12-12 23:29:36
+Generated on: 2025-12-13 00:58:26
 Rules directory: D:\github\Repository\WAF_scan-analysis-tool\Part2 analysis\part2_rule_analysis\2.0\rules
 Total files: 26
 

@@ -29,12 +29,18 @@ if part2_analysis_path not in sys.path:
 
 # 添加 Part2 analysis 2.0 到 Python 模块搜索路径
 part2_2_0_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
-                             'Part2 analysis', 'part2_rule_analysis', '2.0', 'backend')
+                             'Part2 analysis', 'part2_rule_analysis', '2.0')
+part2_2_0_backend_path = os.path.join(part2_2_0_path, 'backend')
 if part2_2_0_path not in sys.path:
     sys.path.append(part2_2_0_path)
+if part2_2_0_backend_path not in sys.path:
+    sys.path.append(part2_2_0_backend_path)
 
 # 默认的 CoreRuleSet 目录
-DEFAULT_CRS_RULES_DIR = PROJECT_ROOT / 'Part2 analysis' / 'coreruleset-main' / 'rules'
+DEFAULT_CRS_RULES_DIR = PROJECT_ROOT / 'Part2 analysis' / 'part2_rule_analysis' / '2.0' / 'rules'
+
+# 默认的规则数据库路径
+DEFAULT_RULES_DB = PROJECT_ROOT / 'Part2 analysis' / 'part2_rule_analysis' / '2.0' / 'backend' / 'analysis_results' / 'rules.db'
 
 # 初始化日志记录器
 from common.utils.log_utils import setup_logger
@@ -51,16 +57,17 @@ except ImportError:
 # 导入Part2模块
 try:
     # 尝试从新的Part2解析器导入
-    from parser import parse_file
+    from backend.msc_pyparser import MSCParser
+    from backend.database import RuleDatabase
     HAS_PART2_MODULES = True
     HAS_ANTLR = False
     HAS_SECRULES_PARSING = False
     logger.info("使用新的Part2解析器")
-except ImportError:
+except ImportError as e:
     HAS_PART2_MODULES = False
     HAS_ANTLR = False
     HAS_SECRULES_PARSING = False
-    logger.error("无法导入Part2模块")
+    logger.error(f"无法导入Part2模块: {e}")
 
 def analyze_url(url):
     """分析URL的WAF指纹并关联规则"""
@@ -110,7 +117,7 @@ def analyze_url(url):
         if HAS_PART2_MODULES:
             try:
                 # 初始化数据库
-                database = RuleDatabase()
+                database = RuleDatabase(str(DEFAULT_RULES_DB))
                 
                 # 构造wafw00f格式的JSON数据用于Part2规则匹配
                 wafw00f_json = {
@@ -159,91 +166,21 @@ def load_rules(rules_dir=None):
         return False
     
     try:
-        rules_dir = rules_dir or str(DEFAULT_CRS_RULES_DIR)
-        logger.info(f"开始从目录加载规则: {rules_dir}")
+        # Part2 2.0使用预生成的数据库，不需要重新解析规则
+        # 这里可以添加数据库检查或重新生成逻辑
+        logger.info("Part2 2.0使用预生成的规则数据库")
+        logger.info(f"规则数据库路径: {DEFAULT_RULES_DB}")
         
-        # 初始化数据库
-        # 注意：这里我们需要实现数据库功能或者暂时跳过
-        try:
-            # 使用动态导入方式导入数据库模块
-            import importlib.util
-            db_path = os.path.join(part2_2_0_path, 'database.py')
-            spec = importlib.util.spec_from_file_location("database", db_path)
-            db_module = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(db_module)
-            RuleDatabase = getattr(db_module, "RuleDatabase")
-            database = RuleDatabase()
-        except Exception as e:
-            logger.warning(f"无法导入RuleDatabase，将跳过数据库存储: {e}")
-            database = None
-        
-        # 导入新的解析器
-        from parser import parse_file
-        
-        # 解析目录中的所有规则文件
-        import glob
-        rule_files = glob.glob(os.path.join(rules_dir, "*.conf"))
-        logger.info(f"找到 {len(rule_files)} 个规则文件")
-        
-        total_parsed = 0
-        total_inserted = 0
-        
-        for rule_file in rule_files:
-            try:
-                logger.info(f"正在处理规则文件: {rule_file}")
-                
-                # 使用新的解析器解析规则文件
-                parsed_rules = parse_file(rule_file)
-                if parsed_rules is not None:
-                    total_parsed += len(parsed_rules)
-                    
-                    # 如果有数据库，将规则插入数据库
-                    if database:
-                        for rule in parsed_rules:
-                            try:
-                                # 获取规则的JSON表示
-                                rule_data = rule.jsonify_rule()
-                                
-                                # 构造符合数据库期望的数据结构
-                                db_rule_data = {
-                                    'rule_info': {
-                                        'id': extract_rule_id(rule_data),
-                                        'type': 'SecRule',
-                                        'phase': extract_phase(rule_data),
-                                        'variables': [rule_data.get('variable')] if rule_data.get('variable') else [],
-                                        'operator': rule_data.get('operator'),
-                                        'pattern': None,  # 模式需要从操作符中提取
-                                        'actions': rule_data.get('action', []) if rule_data.get('action') else [],
-                                        'tags': extract_tags(rule_data),
-                                        'message': extract_message(rule_data),
-                                        'severity': extract_severity(rule_data),
-                                        'is_chain': False  # 简化处理
-                                    },
-                                    'semantic_analysis': {},
-                                    'dependency_analysis': {}
-                                }
-                                
-                                # 插入数据库
-                                success = database.insert(db_rule_data, 'parsed', rule_data.get('rule', ''))
-                                if success:
-                                    total_inserted += 1
-                            except Exception as e:
-                                logger.warning(f"插入规则时出错: {str(e)}")
-                                # 不要中断整个过程，继续处理其他规则
-                                continue
-                else:
-                    logger.warning(f"解析规则文件失败: {rule_file}")
-                        
-            except Exception as e:
-                logger.warning(f"处理规则文件 {rule_file} 时出错: {str(e)}")
-                # 不要中断整个过程，继续处理其他规则文件
-                continue
-        
-        logger.info(f"规则加载完成，共解析 {total_parsed} 条规则，成功插入 {total_inserted} 条规则")
+        # 检查数据库文件是否存在
+        if not os.path.exists(DEFAULT_RULES_DB):
+            logger.error(f"规则数据库文件不存在: {DEFAULT_RULES_DB}")
+            return False
+            
+        logger.info("规则数据库已就绪")
         return True
         
     except Exception as e:
-        logger.error(f"加载规则集失败: {str(e)}")
+        logger.error(f"检查规则数据库时出错: {str(e)}")
         return False
 
 

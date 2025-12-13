@@ -2,6 +2,7 @@ import sys
 import os
 import glob
 import json
+import sqlite3
 from datetime import datetime
 
 # Add the project directory to the Python path
@@ -232,7 +233,33 @@ def main():
         
         # 初始化数据库，默认不启用自动备份
         db = RuleDatabase(db_path=db_path, backup_dir=backup_dir, auto_backup=False)
-        db.batch_insert(all_rules, "success", [str(rule) for rule in all_rules])
+        
+        # 清空数据库中的所有规则，确保只有当前文件中的规则
+        print("清空数据库中的所有规则...")
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute("DELETE FROM rules")
+        conn.commit()
+        conn.close()
+        print("数据库已清空")
+        
+        # 修复raw_rules参数，传递正确的原始规则字符串
+        # 首先从文件中重新解析获取原始规则
+        raw_rules = []
+        for file_path in glob.glob(os.path.join(rules_dir, '*.conf')):
+            try:
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+            except UnicodeDecodeError:
+                with open(file_path, 'r', encoding='gbk') as f:
+                    content = f.read()
+            
+            parser = MSCParser()
+            parser.parser.parse(content)
+            secrules = [item for item in parser.configlines if item['type'] == 'SecRule']
+            raw_rules.extend([str(rule) for rule in secrules])
+        
+        db.batch_insert(all_rules, "success", raw_rules)
         print(f"Results stored in database: {db_path}")
         
         # Generate visualizations

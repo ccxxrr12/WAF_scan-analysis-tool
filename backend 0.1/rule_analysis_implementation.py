@@ -13,7 +13,7 @@ sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__f
                             'Part2 analysis', 'part2_rule_analysis', '2.0'))
 
 try:
-    from backend.rule_parser import RuleParser
+    from backend.msc_pyparser import MSCParser
     from backend.semantic_analyzer import SemanticAnalyzer
     from backend.dependency_analyzer import DependencyAnalyzer
     from backend.conflict_analyzer import ConflictAnalyzer
@@ -32,7 +32,7 @@ class RuleAnalysisImplementation(RuleAnalysisInterface):
     def __init__(self):
         self.config = {
             'rules_dir': os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
-                                    'Part2 analysis', 'coreruleset-main', 'rules'),
+                                    'Part2 analysis', 'part2_rule_analysis', '2.0', 'rules'),
             'db_path': os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 
                                   'Part2 analysis', 'part2_rule_analysis', '2.0', 'rules.db')
         }
@@ -44,7 +44,7 @@ class RuleAnalysisImplementation(RuleAnalysisInterface):
         # 初始化Part2 analysis 2.0组件
         if HAS_PART2_BACKEND:
             try:
-                self.rule_parser = RuleParser()
+                self.parser = MSCParser()
                 self.semantic_analyzer = SemanticAnalyzer()
                 self.dependency_analyzer = DependencyAnalyzer()
                 self.conflict_analyzer = ConflictAnalyzer()
@@ -116,35 +116,41 @@ class RuleAnalysisImplementation(RuleAnalysisInterface):
                                 content = f.read()
                             
                             # 使用Part2 analysis 2.0解析规则
-                            parse_result = self.rule_parser.parse_content(content)
+                            self.parser.parser.parse(content)
+                            parsed_rules = self.parser.configlines
+                            
+                            # 过滤出SecRule和SecAction规则
+                            secrules = [item for item in parsed_rules if item['type'] in ['SecRule', 'SecAction']]
                             
                             # 进行语义分析
-                            rules = parse_result.get('rules', [])
-                            rules = self.semantic_analyzer.batch_analyze(rules)
+                            # TODO: 实现语义分析逻辑
+                            semantic_results = {}
                             
                             # 进行依赖分析
-                            rules = self.dependency_analyzer.batch_analyze(rules)
+                            # TODO: 实现依赖分析逻辑
+                            dependency_results = {}
                             
                             # 进行冲突分析
-                            conflicts = self.conflict_analyzer.batch_analyze(rules)
+                            # TODO: 实现冲突分析逻辑
+                            conflict_results = {}
                             
                             # 将规则插入数据库
-                            self.database.batch_insert(rules, parse_result.get('parse_status', ''), [content])
+                            # self.database.batch_insert(secrules, "success", [content])
                             
                             # 统计每个文件的规则数
                             self.rules_by_file[filename] = {
-                                'total': len(rules),
-                                'conflicts': len(conflicts),
-                                'parse_status': parse_result.get('parse_status', '')
+                                'total': len(secrules),
+                                'conflicts': len(conflict_results),
+                                'semantic_issues': 0  # 简化处理
                             }
                             
                             # 添加规则到内部存储
-                            for rule in rules:
+                            for rule in secrules:
                                 self.rules.append({
-                                    'id': rule.get('rule_info', {}).get('id', ''),
-                                    'type': rule.get('rule_info', {}).get('type', ''),
+                                    'id': "",  # 简化处理
+                                    'type': rule.get('type', ''),
                                     'file': filename,
-                                    'content': rule.get('rule_info', {}).get('raw_rule', ''),
+                                    'content': str(rule),
                                     'rule_data': rule
                                 })
                                 
@@ -224,22 +230,21 @@ class RuleAnalysisImplementation(RuleAnalysisInterface):
             # 如果Part2 analysis 2.0可用，使用数据库中的规则进行分析
             if self.part2_available:
                 # 获取所有规则
-                all_rules = self.database.get_all_rules()
+                # all_rules = self.database.get_all_rules()
                 
                 # 这里应该实现更复杂的规则匹配逻辑
                 # 目前简化处理，仅返回规则统计信息
                 matched_rules = []
-                for rule in all_rules:
-                    # 示例匹配逻辑
-                    rule_info = rule.get('rule_info', {})
-                    rule_id = rule_info.get('id', '')
-                    if rule_id:
-                        matched_rules.append({
-                            'rule_id': rule_id,
-                            'severity': rule_info.get('severity', 'unknown'),
-                            'phase': rule_info.get('phase', 'unknown'),
-                            'message': rule_info.get('msg', '')
-                        })
+                # for rule in all_rules:
+                #     # 示例匹配逻辑
+                #     rule_id = rule.get('id', '')
+                #     if rule_id:
+                #         matched_rules.append({
+                #             'rule_id': rule_id,
+                #             'severity': rule.get('severity', 'unknown'),
+                #             'phase': rule.get('phase', 'unknown'),
+                #             'message': rule.get('message', '')
+                #         })
                 
                 # 确定风险级别
                 risk_level = 'Low'
@@ -317,23 +322,11 @@ class RuleAnalysisImplementation(RuleAnalysisInterface):
         try:
             if self.part2_available:
                 # 使用Part2 analysis 2.0数据库获取统计信息
-                all_rules = self.database.get_all_rules()
-                
-                total_secrule = len([r for r in all_rules if r.get('rule_info', {}).get('type') == 'SecRule'])
-                total_secaction = len([r for r in all_rules if r.get('rule_info', {}).get('type') == 'SecAction'])
-                
-                # 获取冲突信息
-                conflicts = []
-                for rule in all_rules:
-                    # 这里应该调用冲突分析器重新分析或者从数据库获取冲突信息
-                    pass
-                
+                # stats = self.database.get_statistics()
+                # return stats
                 return {
-                    'total_rules': len(all_rules),
-                    'secrule_count': total_secrule,
-                    'secaction_count': total_secaction,
-                    'file_count': len(self.rules_by_file),
-                    'avg_rules_per_file': round(len(all_rules) / len(self.rules_by_file), 2) if self.rules_by_file else 0
+                    'total_rules': self.rules_count,
+                    'file_count': len(self.rules_by_file)
                 }
             else:
                 # 使用原有的统计方法
@@ -367,44 +360,9 @@ class RuleAnalysisImplementation(RuleAnalysisInterface):
         try:
             if self.part2_available:
                 # 使用Part2 analysis 2.0数据库搜索规则
-                all_rules = self.database.get_all_rules()
-                results = []
-                
-                for rule in all_rules:
-                    rule_info = rule.get('rule_info', {})
-                    rule_id = rule_info.get('id', '')
-                    rule_type = rule_info.get('type', '')
-                    raw_rule = rule_info.get('raw_rule', '')
-                    
-                    # 检查查询关键词
-                    if query:
-                        if (query.lower() not in str(rule_id).lower() and 
-                            query.lower() not in str(rule_type).lower() and
-                            query.lower() not in str(raw_rule).lower()):
-                            continue
-                    
-                    # 应用过滤器
-                    match_filter = True
-                    if filters:
-                        # 规则类型过滤
-                        if 'rule_type' in filters and rule_type != filters['rule_type']:
-                            match_filter = False
-                        
-                        # 严重性过滤
-                        if 'severity' in filters:
-                            severity = rule_info.get('severity', '')
-                            if severity != filters['severity']:
-                                match_filter = False
-                    
-                    if match_filter:
-                        results.append({
-                            'id': rule_id,
-                            'type': rule_type,
-                            'content': raw_rule,
-                            'rule_data': rule
-                        })
-                
-                return results
+                # results = self.database.search_rules(query, filters)
+                # return results
+                return self.rules
             else:
                 # 使用原有的搜索方法
                 results = []

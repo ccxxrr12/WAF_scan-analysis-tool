@@ -28,6 +28,12 @@ class DeepLearningImplementation(DeepLearningInterface):
         self.model = None
         self.model_loaded = False
         self.training_history = {}
+        
+        # Part3模块组件
+        self.predictor = None
+        self.trainer = None
+        self.evaluator = None
+        self.data_processor = None
     
     def initialize(self, config: Dict[str, Any] = None) -> bool:
         """初始化深度学习模块
@@ -52,17 +58,26 @@ class DeepLearningImplementation(DeepLearningInterface):
             if self.config['model_dir'] not in sys.path:
                 sys.path.append(self.config['model_dir'])
             
-            # 验证必要的Python文件是否存在
-            required_files = ['main.py', 'models.py', 'data_processor.py', 'trainer.py']
-            for file in required_files:
-                if not os.path.exists(os.path.join(self.config['model_dir'], file)):
-                    print(f"必要的文件不存在: {file}")
-                    # 这里不直接返回False，因为可能只是缺少某些可选文件
-            
-            # 尝试加载默认模型
-            default_model_path = os.path.join(self.config['model_dir'], self.config['default_model'])
-            if os.path.exists(default_model_path):
-                self.load_model(default_model_path)
+            # 动态导入Part3模块
+            try:
+                import predictor
+                import trainer
+                import evaluator
+                import data_processor
+                
+                self.predictor = predictor.Predictor()
+                self.trainer = trainer.Trainer()
+                self.evaluator = evaluator.Evaluator()
+                self.data_processor = data_processor.DataProcessor()
+                
+                # 尝试加载默认模型
+                default_model_path = os.path.join(self.config['model_dir'], self.config['default_model'])
+                if os.path.exists(default_model_path):
+                    self.load_model(default_model_path)
+                    
+            except ImportError as e:
+                print(f"无法导入Part3模块: {e}")
+                return False
             
             self.initialized = True
             return True
@@ -98,35 +113,16 @@ class DeepLearningImplementation(DeepLearningInterface):
             if model_config:
                 config.update(model_config)
             
-            # 检查训练数据
+            # 准备训练数据
             if isinstance(training_data, str):
                 if not os.path.exists(training_data):
                     return {'error': f'训练数据文件不存在: {training_data}'}
-                # 这里应该加载文件数据
-                print(f"从文件加载训练数据: {training_data}")
-            else:
-                # 直接使用内存中的数据
-                print(f"使用内存中的训练数据，共 {len(training_data)} 条记录")
+                # 加载文件数据
+                with open(training_data, 'r') as f:
+                    training_data = json.load(f)
             
-            # 这里是一个简化的训练实现
-            # 实际的训练过程应该调用Part3 deeplearning中的trainer.py
-            
-            # 模拟训练过程
-            print(f"开始训练模型，配置: {config}")
-            
-            # 模拟训练结果
-            training_results = {
-                'accuracy': 0.92,
-                'loss': 0.15,
-                'val_accuracy': 0.89,
-                'val_loss': 0.21,
-                'epochs': config['epochs'],
-                'training_time': '120s',
-                'model_info': {
-                    'type': 'RandomForestClassifier',
-                    'parameters': config
-                }
-            }
+            # 使用Part3 trainer进行训练
+            training_results = self.trainer.train(training_data, config)
             
             # 保存训练历史
             self.training_history = training_results
@@ -149,37 +145,22 @@ class DeepLearningImplementation(DeepLearningInterface):
         if not self.initialized:
             return {'error': '模块未初始化'}
         
-        if not self.model_loaded:
+        if not self.model_loaded and self.predictor.default_model is None:
             return {'error': '模型未加载'}
         
         try:
-            # 这里是一个简化的预测实现
-            # 实际的预测应该调用Part3 deeplearning中的predictor.py
-            
-            # 准备预测数据
+            # 使用Part3 predictor进行预测
             if isinstance(data, str):
-                prediction_input = data
+                # 字符串数据处理
+                prediction, confidence = self.predictor.predict({'raw_data': data})
             elif isinstance(data, dict):
-                # 从字典中提取关键信息
-                prediction_input = json.dumps(data)
+                # 字典数据处理
+                prediction, confidence = self.predictor.predict(data)
             else:
-                prediction_input = str(data)
-            
-            # 模拟预测结果
-            # 实际应用中应该调用真实的模型进行预测
-            is_attack = False
-            confidence = 0.95
-            
-            # 简单的攻击检测逻辑（示例）
-            attack_patterns = ['select.*from', 'union select', '<script', 'javascript:', 'exec(', 'system(']
-            for pattern in attack_patterns:
-                if pattern.lower() in prediction_input.lower():
-                    is_attack = True
-                    confidence = 0.85
-                    break
+                prediction, confidence = self.predictor.predict({'raw_data': str(data)})
             
             return {
-                'prediction': 'Attack' if is_attack else 'Benign',
+                'prediction': 'Attack' if prediction == 1 else 'Benign',
                 'confidence': confidence,
                 'input_type': type(data).__name__,
                 'timestamp': '2024-01-01T00:00:00Z'  # 实际应用中应该使用真实时间
@@ -205,27 +186,15 @@ class DeepLearningImplementation(DeepLearningInterface):
             return {'error': '模型未加载'}
         
         try:
-            # 检查测试数据
-            test_size = 0
+            # 准备测试数据
             if isinstance(test_data, str):
                 if not os.path.exists(test_data):
                     return {'error': f'测试数据文件不存在: {test_data}'}
-                print(f"从文件加载测试数据: {test_data}")
-                test_size = 100  # 模拟数据大小
-            else:
-                test_size = len(test_data)
-                print(f"使用内存中的测试数据，共 {test_size} 条记录")
+                with open(test_data, 'r') as f:
+                    test_data = json.load(f)
             
-            # 模拟评估结果
-            # 实际评估应该调用Part3 deeplearning中的evaluator.py
-            evaluation_metrics = {
-                'accuracy': 0.91,
-                'precision': 0.89,
-                'recall': 0.93,
-                'f1_score': 0.91,
-                'auc_roc': 0.95,
-                'test_size': test_size
-            }
+            # 使用Part3 evaluator进行评估
+            evaluation_metrics = self.evaluator.evaluate(test_data)
             
             return evaluation_metrics
             
@@ -251,9 +220,11 @@ class DeepLearningImplementation(DeepLearningInterface):
             if model_dir and not os.path.exists(model_dir):
                 os.makedirs(model_dir)
             
-            # 模拟保存模型
-            # 实际保存应该调用Part3 deeplearning中的模型保存功能
-            print(f"模型已保存到: {path}")
+            # 使用Part3保存模型
+            if self.trainer.model:
+                import pickle
+                with open(path, 'wb') as f:
+                    pickle.dump(self.trainer.model, f)
             
             return True
             
@@ -278,9 +249,8 @@ class DeepLearningImplementation(DeepLearningInterface):
                 print(f"模型文件不存在: {path}")
                 return False
             
-            # 模拟加载模型
-            # 实际加载应该调用Part3 deeplearning中的模型加载功能
-            print(f"模型已从 {path} 加载")
+            # 使用Part3 predictor加载模型
+            self.predictor.load_model(path)
             
             # 更新配置
             self.config['model_file'] = path

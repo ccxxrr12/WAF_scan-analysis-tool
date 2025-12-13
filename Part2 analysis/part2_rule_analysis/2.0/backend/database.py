@@ -307,8 +307,8 @@ class RuleDatabase:
             inserted_count = 0
             updated_count = 0
             
-            # 用于跟踪本次批量插入中已处理的规则核心内容和对应的ID
-            processed_rules = {}
+            # 用于跟踪本次批量插入中已处理的规则ID
+            processed_rule_ids = set()
             
             for i, rule in enumerate(rules):
                 rule_info = rule.get('rule_info', {})
@@ -318,122 +318,63 @@ class RuleDatabase:
                 rule_id = rule_info.get('id')
                 raw_rule = raw_rules[i] if raw_rules and i < len(raw_rules) else None
                 
-                # 提取核心规则内容，用于比较
-                current_core = self.get_core_rule_content(rule_info)
-                
-                # 生成核心内容的哈希键，用于快速查找
-                # 将列表转换为元组，确保所有值都是可哈希的
-                hashable_core = {}
-                for key, value in current_core.items():
-                    if isinstance(value, list):
-                        hashable_core[key] = tuple(value)
-                    else:
-                        hashable_core[key] = value
-                core_hash = tuple(sorted(hashable_core.items()))
-                
                 # 处理id:unknown的情况
                 if not rule_id or rule_id == "Unknown":
-                    # 先检查本次批量处理中是否已经有相似规则
-                    if core_hash in processed_rules:
-                        # 找到相似规则，使用现有ID
-                        rule_id = processed_rules[core_hash]
-                        rule_info['id'] = rule_id
-                        logger.debug(f"批量处理中找到相似规则，使用现有ID: {rule_id}")
-                    else:
-                        # 搜索数据库中是否有相似规则
-                        variables_str = json.dumps(sorted(rule_info.get('variables', [])))
-                        operator = rule_info.get('operator', '')
-                        pattern = rule_info.get('pattern', '')
-                        is_chain = 1 if rule_info.get('is_chain', False) else 0
-                        
-                        cursor.execute('''
-                        SELECT id, rule_info FROM rules 
-                        WHERE variables = ? AND operator = ? AND pattern = ? AND is_chain = ?
-                        ''', (variables_str, operator, pattern, is_chain))
-                        
-                        existing_rule = cursor.fetchone()
-                        if existing_rule:
-                            # 找到相似规则，使用现有ID
-                            rule_id = existing_rule[0]
-                            rule_info['id'] = rule_id
-                            logger.debug(f"找到相似规则，使用现有ID: {rule_id}")
-                            # 将该规则添加到已处理列表
-                            processed_rules[core_hash] = rule_id
-                        else:
-                            # 没有找到相似规则，生成唯一ID
-                            import uuid
-                            rule_id = f"no_id_{uuid.uuid4().hex}"
-                            rule_info['id'] = rule_id
-                            logger.debug(f"生成新规则ID: {rule_id}")
+                    # 生成唯一ID
+                    import uuid
+                    rule_id = f"no_id_{uuid.uuid4().hex}"
+                    rule_info['id'] = rule_id
+                    logger.debug(f"生成新规则ID: {rule_id}")
                 
-                # 检查规则是否已存在（包括本次批量处理中已插入的规则）
-                existing_rule = None
-                if rule_id in processed_rules.values():
-                    # 本次批量处理中已插入该ID的规则
-                    existing_rule = True
-                else:
-                    # 检查数据库中是否存在该ID的规则
-                    cursor.execute('SELECT id, rule_info FROM rules WHERE id = ?', (rule_id,))
-                    existing_rule = cursor.fetchone()
-                    
+                # 检查规则是否已存在于本次批量处理中
+                if rule_id in processed_rule_ids:
+                    logger.debug(f"规则 {rule_id} 已在本次批量处理中处理过，跳过")
+                    continue
+                
+                # 检查数据库中是否存在该ID的规则
+                cursor.execute('SELECT id, rule_info FROM rules WHERE id = ?', (rule_id,))
+                existing_rule = cursor.fetchone()
+                
                 if existing_rule:
-                    # 规则已存在，比较核心内容
-                    if isinstance(existing_rule, tuple):
-                        # 从数据库中获取的规则
-                        existing_rule_info = json.loads(existing_rule[1])
-                        existing_core = self.get_core_rule_content(existing_rule_info)
-                    else:
-                        # 本次批量处理中已插入的规则
-                        existing_core = current_core
-                    
-                    if current_core != existing_core:
-                        # 核心内容发生变化，执行更新操作
-                        cursor.execute('''
-                        UPDATE rules SET 
-                            rule_info = ?, semantic_analysis = ?, dependency_analysis = ?, 
-                            parse_status = ?, raw_rule = ?, rule_type = ?, phase = ?, 
-                            variables = ?, operator = ?, pattern = ?, actions = ?, 
-                            tags = ?, message = ?, severity = ?, is_chain = ?, 
-                            attack_types = ?, protection_layer = ?, matching_method = ?, 
-                            scenario = ?, variable_dependencies = ?, 
-                            marker_dependencies = ?, include_dependencies = ?, 
-                            updated_at = CURRENT_TIMESTAMP
-                        WHERE id = ?
-                        ''', (
-                            json.dumps(rule_info),
-                            json.dumps(semantic_analysis),
-                            json.dumps(dependency_analysis),
-                            parse_status,
-                            raw_rule,
-                            rule_info.get('type'),
-                            rule_info.get('phase'),
-                            json.dumps(rule_info.get('variables', [])),
-                            rule_info.get('operator'),
-                            rule_info.get('pattern'),
-                            json.dumps(rule_info.get('actions', [])),
-                            json.dumps(rule_info.get('tags', [])),
-                            rule_info.get('message'),
-                            rule_info.get('severity'),
-                            1 if rule_info.get('is_chain') else 0,
-                            json.dumps(semantic_analysis.get('attack_types', [])),
-                            semantic_analysis.get('rule_classification', {}).get('protection_layer') if isinstance(semantic_analysis.get('rule_classification'), dict) else None,
-                            semantic_analysis.get('rule_classification', {}).get('matching_method') if isinstance(semantic_analysis.get('rule_classification'), dict) else None,
-                            semantic_analysis.get('rule_classification', {}).get('scenario') if isinstance(semantic_analysis.get('rule_classification'), dict) else None,
-                            json.dumps(dependency_analysis.get('variable_dependencies', [])),
-                            json.dumps(dependency_analysis.get('marker_dependencies', [])),
-                            json.dumps(dependency_analysis.get('include_dependencies', [])),
-                            rule_id
-                        ))
-                        updated_count += 1
-                        logger.debug(f"规则 {rule_id} 已更新")
-                        # 更新已处理规则列表
-                        processed_rules[core_hash] = rule_id
-                    else:
-                        # 核心内容未变化，跳过
-                        logger.debug(f"规则 {rule_id} 内容未变化，跳过")
-                        # 将该规则添加到已处理列表
-                        processed_rules[core_hash] = rule_id
-                        continue
+                    # 规则已存在，执行更新操作
+                    cursor.execute('''
+                    UPDATE rules SET 
+                        rule_info = ?, semantic_analysis = ?, dependency_analysis = ?, 
+                        parse_status = ?, raw_rule = ?, rule_type = ?, phase = ?, 
+                        variables = ?, operator = ?, pattern = ?, actions = ?, 
+                        tags = ?, message = ?, severity = ?, is_chain = ?, 
+                        attack_types = ?, protection_layer = ?, matching_method = ?, 
+                        scenario = ?, variable_dependencies = ?, 
+                        marker_dependencies = ?, include_dependencies = ?, 
+                        updated_at = CURRENT_TIMESTAMP
+                    WHERE id = ?
+                    ''', (
+                        json.dumps(rule_info),
+                        json.dumps(semantic_analysis),
+                        json.dumps(dependency_analysis),
+                        parse_status,
+                        raw_rule,
+                        rule_info.get('type'),
+                        rule_info.get('phase'),
+                        json.dumps(rule_info.get('variables', [])),
+                        rule_info.get('operator'),
+                        rule_info.get('pattern'),
+                        json.dumps(rule_info.get('actions', [])),
+                        json.dumps(rule_info.get('tags', [])),
+                        rule_info.get('message'),
+                        rule_info.get('severity'),
+                        1 if rule_info.get('is_chain') else 0,
+                        json.dumps(semantic_analysis.get('attack_types', [])),
+                        semantic_analysis.get('rule_classification', {}).get('protection_layer') if isinstance(semantic_analysis.get('rule_classification'), dict) else None,
+                        semantic_analysis.get('rule_classification', {}).get('matching_method') if isinstance(semantic_analysis.get('rule_classification'), dict) else None,
+                        semantic_analysis.get('rule_classification', {}).get('scenario') if isinstance(semantic_analysis.get('rule_classification'), dict) else None,
+                        json.dumps(dependency_analysis.get('variable_dependencies', [])),
+                        json.dumps(dependency_analysis.get('marker_dependencies', [])),
+                        json.dumps(dependency_analysis.get('include_dependencies', [])),
+                        rule_id
+                    ))
+                    updated_count += 1
+                    logger.debug(f"规则 {rule_id} 已更新")
                 else:
                     # 规则不存在，插入新规则
                     cursor.execute('''
@@ -471,8 +412,9 @@ class RuleDatabase:
                     ))
                     inserted_count += 1
                     logger.debug(f"规则 {rule_id} 已插入")
-                    # 将该规则添加到已处理列表
-                    processed_rules[core_hash] = rule_id
+                
+                # 将该规则ID添加到已处理列表
+                processed_rule_ids.add(rule_id)
             
             conn.commit()
             conn.close()
