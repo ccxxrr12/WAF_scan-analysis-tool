@@ -98,25 +98,36 @@ class Predictor:
         """
         # 提取特征
         features = self.data_processor.extract_features(http_request)
+        self.logger.info(f"提取的特征: {features}")
         
         # 获取WAF类型
         waf_type = None
         if waf_info and isinstance(waf_info, dict):
             waf_type = waf_info.get("waf_type", None)
+        self.logger.info(f"WAF类型: {waf_type}")
         
         # 选择模型
         model = self.select_model_by_waf(waf_type)
+        self.logger.info(f"选择的模型: {model}")
         
         if model is None:
             self.logger.error("没有可用的模型")
             return None, 0.0
         
-        # 转换特征为模型所需格式（这里简化处理）
-        # 实际应用中需要根据具体模型要求进行特征处理
+        # 转换特征为模型所需格式
         feature_vector = list(features.values())
+        
+        # 添加模型训练时使用的额外特征（rule_id和attack_type）
+        # 这些特征在训练时存在，但预测时需要手动添加默认值
+        feature_vector.append(0)  # 添加rule_id特征，默认值为0
+        feature_vector.append(0)  # 添加attack_type特征，默认值为0
+        
+        self.logger.info(f"特征向量: {feature_vector}")
+        self.logger.info(f"特征向量长度: {len(feature_vector)}")
         
         try:
             # 预测
+            self.logger.info("开始预测...")
             prediction = model.predict([feature_vector])[0]
             
             # 获取预测概率（如果模型支持）
@@ -125,10 +136,16 @@ class Predictor:
                 proba = model.predict_proba([feature_vector])[0]
                 confidence = max(proba)
             
+            # 将numpy类型转换为Python原生类型，以便FastAPI可以序列化
+            prediction = int(prediction) if hasattr(prediction, 'dtype') else prediction
+            confidence = float(confidence) if hasattr(confidence, 'dtype') else confidence
+            
             self.logger.info(f"预测完成，结果: {prediction}, 置信度: {confidence:.4f}")
             return prediction, confidence
         except Exception as e:
             self.logger.error(f"预测过程中出现错误: {e}")
+            import traceback
+            self.logger.error(f"错误堆栈: {traceback.format_exc()}")
             return None, 0.0
     
     def batch_predict(self, http_requests, waf_info_list=None):

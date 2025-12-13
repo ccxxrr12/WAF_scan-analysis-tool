@@ -18,12 +18,12 @@ export const useModelStore = defineStore('model', () => {
   const requestModelList = async () => {
     try {
       const res = await getModelList();
-      modelList.value = res.data;
+      modelList.value = res?.data || [{ id: '1', modelName: 'Default', remark: 'Default Model' }];
     }
     catch (error) {
       console.error('requestModelList错误', error);
       // Fallback: Provide a default model since we don't actually use this functionality
-      modelList.value = [{ id: '1', modelName: 'Default', remark: 'Default Model' }];
+      modelList.value = [{ id: 1, modelName: 'Default', remark: 'Default Model' }];
     }
   };
 

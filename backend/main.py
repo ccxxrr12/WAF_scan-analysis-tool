@@ -84,6 +84,33 @@ async def ai_detect(request: AIDetectRequest):
     result = part3_ai_detect(request.url, request.request_content)
     return result
 
+# 获取可用模型列表
+@app.get("/system/model/modelList")
+async def get_model_list():
+    """获取可用的WAF检测模型列表"""
+    try:
+        # 获取Part3的models目录
+        part3_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Part3 deeplearning')
+        model_dir = os.path.join(part3_path, "models")
+        
+        # 列出models目录下的所有模型文件
+        model_files = [f for f in os.listdir(model_dir) if f.endswith('.pkl')]
+        
+        # 构建模型列表
+        models = []
+        for model_file in model_files:
+            # 提取模型名称（去除扩展名）
+            model_name = model_file.replace('.pkl', '')
+            models.append({
+                "id": model_name,
+                "modelName": model_name,
+                "remark": f"WAF检测模型: {model_name}"
+            })
+        
+        return {"code": 200, "msg": "获取模型列表成功", "data": models}
+    except Exception as e:
+        return {"code": 500, "msg": f"获取模型列表失败: {str(e)}", "data": []}
+
 if __name__ == "__main__":
     uvicorn.run(
         app,

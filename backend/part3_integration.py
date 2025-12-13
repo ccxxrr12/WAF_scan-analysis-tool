@@ -42,7 +42,8 @@ def ai_detect(url: str, request_content: str, waf_info: dict = None) -> Dict[str
         # 尝试加载默认模型
         try:
             # 检查默认模型文件是否存在
-            model_dir = part3_path
+            part3_root = os.path.dirname(part3_path)
+            model_dir = os.path.join(part3_root, "models")
             modsecurity_model = os.path.join(model_dir, "modsecurity_model.pkl")
             generic_model = os.path.join(model_dir, "generic_model.pkl")
             
