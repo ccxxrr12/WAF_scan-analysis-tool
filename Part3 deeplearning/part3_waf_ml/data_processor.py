@@ -22,6 +22,8 @@ import re
 import numpy as np
 import pandas as pd
 from urllib.parse import urlparse, parse_qs
+from utils import setup_logger
+from config import LOG_CONFIG
 
 
 # WAF类型映射，将WAF名称映射到简化的类型
@@ -48,7 +50,8 @@ class DataProcessor:
         """
         初始化数据处理器
         """
-        pass
+        self.logger = setup_logger("DataProcessor", log_file=LOG_CONFIG['log_file'], level=LOG_CONFIG['log_level'])
+        self.logger.info("初始化数据处理器")
     
     def process_waf_fingerprint(self, fingerprint_data):
         """
@@ -322,13 +325,13 @@ class DataProcessor:
             # 尝试加载CSV格式数据
             if dataset_path.endswith('.csv'):
                 data = pd.read_csv(dataset_path)
-                print(f"成功加载CSV数据集: {dataset_path}")
+                self.logger.info(f"成功加载CSV数据集: {dataset_path}")
                 return data
             else:
-                print("目前仅支持CSV格式数据集")
+                self.logger.warning("目前仅支持CSV格式数据集")
                 return None
         except Exception as e:
-            print(f"加载数据集时出错: {e}")
+            self.logger.error(f"加载数据集时出错: {e}")
             return None
     
     def preprocess_data(self, raw_data):
@@ -344,7 +347,7 @@ class DataProcessor:
         try:
             # 检查输入数据
             if raw_data is None:
-                print("输入数据为空")
+                self.logger.warning("输入数据为空")
                 return None
                 
             # 如果是DataFrame，进行基本的预处理
@@ -364,14 +367,14 @@ class DataProcessor:
                             if not mode_value.empty:
                                 data[column].fillna(mode_value[0], inplace=True)
                 
-                print(f"数据预处理完成，原始数据 shape: {raw_data.shape}, 处理后数据 shape: {data.shape}")
+                self.logger.info(f"数据预处理完成，原始数据 shape: {raw_data.shape}, 处理后数据 shape: {data.shape}")
                 return data
             else:
-                print("目前仅支持pandas DataFrame格式的数据预处理")
+                self.logger.warning("目前仅支持pandas DataFrame格式的数据预处理")
                 return raw_data
                 
         except Exception as e:
-            print(f"数据预处理时出错: {e}")
+            self.logger.error(f"数据预处理时出错: {e}")
             return raw_data
 
 

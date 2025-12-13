@@ -32,6 +32,8 @@ from data_processor import DataProcessor
 from trainer import ModelTrainer
 from predictor import Predictor
 from models import ModelFactory
+from utils import setup_logger
+from config import LOG_CONFIG
 
 
 def parse_args():
@@ -99,11 +101,13 @@ def train_mode(args):
     Args:
         args: 命令行参数
     """
-    print("进入训练模式...")
+    # 初始化训练模式日志器
+    train_logger = setup_logger("TrainMode", log_file=LOG_CONFIG['log_file'], level=LOG_CONFIG['log_level'])
+    train_logger.info("进入训练模式...")
     
     # 检查必要参数
     if not args.data_path and not args.rules_data_path:
-        print("错误: 训练模式需要指定 --data-path 或 --rules-data-path 参数")
+        train_logger.error("训练模式需要指定 --data-path 或 --rules-data-path 参数")
         return
     
     # 初始化数据处理器
@@ -114,12 +118,12 @@ def train_mode(args):
     try:
         if args.rules_data_path:
             # 使用Part2规则数据生成训练数据
-            print(f"正在加载Part2规则数据: {args.rules_data_path}")
+            train_logger.info(f"正在加载Part2规则数据: {args.rules_data_path}")
             with open(args.rules_data_path, 'r', encoding='utf-8') as f:
                 rules_data = json.load(f)
             
             # 生成训练数据
-            print("正在根据规则数据生成训练样本...")
+            train_logger.info("正在根据规则数据生成训练样本...")
             training_data = data_processor.generate_training_data(rules_data)
             
             if training_data is not None:
@@ -128,30 +132,44 @@ def train_mode(args):
                 feature_columns = training_data.drop('label', axis=1)
                 X = feature_columns.values
                 y = label_column.values
-                print(f"生成训练数据完成，共 {len(X)} 个样本")
+                train_logger.info(f"生成训练数据完成，共 {len(X)} 个样本")
             else:
-                print("未能生成有效的训练数据")
+                train_logger.error("未能生成有效的训练数据")
                 return
         elif args.data_path:
-            # 假设数据是CSV格式，包含特征列和标签列
-            # 在实际应用中需要根据具体情况实现数据加载逻辑
-            print(f"正在加载数据: {args.data_path}")
-            # 示例数据加载（需要根据实际情况修改）
-            # data = pd.read_csv(args.data_path)
-            # X = data.drop('label', axis=1)
-            # y = data['label']
-            
-            # 为了演示，我们创建一些示例数据
-            print("创建示例训练数据...")
-            X = np.random.rand(100, 10)  # 100个样本，10个特征
-            y = np.random.randint(0, 2, 100)  # 二分类标签
+            # 从CSV文件加载数据
+            train_logger.info(f"正在加载数据: {args.data_path}")
+            try:
+                data = pd.read_csv(args.data_path)
+                
+                # 检查数据是否包含'label'列
+                if 'label' not in data.columns:
+                    train_logger.error("CSV文件中缺少'label'列")
+                    return
+                
+                # 分离特征和标签
+                label_column = data['label']
+                feature_columns = data.drop('label', axis=1)
+                X = feature_columns.values
+                y = label_column.values
+                
+                train_logger.info(f"数据加载完成，共 {len(X)} 个样本，{X.shape[1]} 个特征")
+            except FileNotFoundError:
+                train_logger.error(f"文件未找到: {args.data_path}")
+                return
+            except Exception as e:
+                train_logger.error(f"加载CSV数据时出错: {e}")
+                # 为了演示，创建示例数据作为备选
+                train_logger.info("创建示例训练数据...")
+                X = np.random.rand(100, 10)  # 100个样本，10个特征
+                y = np.random.randint(0, 2, 100)  # 二分类标签
         else:
-            print("未提供有效的数据路径")
+            train_logger.error("未提供有效的数据路径")
             return
         
-        print(f"数据形状: X={X.shape}, y={y.shape}")
+        train_logger.info(f"数据形状: X={X.shape}, y={y.shape}")
     except Exception as e:
-        print(f"加载数据时出错: {e}")
+        train_logger.error(f"加载数据时出错: {e}")
         return
     
     # 如果提供了WAF指纹信息，则处理它
@@ -160,9 +178,9 @@ def train_mode(args):
             with open(args.waf_info_path, 'r', encoding='utf-8') as f:
                 waf_info = json.load(f)
             processed_waf = data_processor.process_waf_fingerprint(waf_info)
-            print(f"处理WAF指纹信息: {processed_waf}")
+            train_logger.info(f"处理WAF指纹信息: {processed_waf}")
         except Exception as e:
-            print(f"处理WAF指纹信息时出错: {e}")
+            train_logger.error(f"处理WAF指纹信息时出错: {e}")
     
     # 初始化模型训练器
     trainer = ModelTrainer(args.model_type)
@@ -170,20 +188,20 @@ def train_mode(args):
     # 训练模型
     try:
         trainer.train_model(X, y)
-        print("模型训练完成")
+        train_logger.info("模型训练完成")
     except Exception as e:
-        print(f"模型训练时出错: {e}")
+        train_logger.error(f"模型训练时出错: {e}")
         return
     
     # 保存模型
     model_path = args.model_path or f"{args.waf_type}_model.pkl"
     try:
         trainer.save_model(model_path)
-        print(f"模型已保存到: {model_path}")
+        train_logger.info(f"模型已保存到: {model_path}")
     except Exception as e:
-        print(f"保存模型时出错: {e}")
+        train_logger.error(f"保存模型时出错: {e}")
     
-    print("训练模式完成")
+    train_logger.info("训练模式完成")
 
 
 def predict_mode(args):
@@ -193,7 +211,9 @@ def predict_mode(args):
     Args:
         args: 命令行参数
     """
-    print("进入预测模式...")
+    # 初始化预测模式日志器
+    predict_logger = setup_logger("PredictMode", log_file=LOG_CONFIG['log_file'], level=LOG_CONFIG['log_level'])
+    predict_logger.info("进入预测模式...")
     
     # 初始化预测器
     predictor = Predictor()
@@ -208,7 +228,7 @@ def predict_mode(args):
             predictor.load_model(model_path, "generic")
     else:
         # 尝试加载默认模型
-        print("未指定模型路径，尝试加载默认模型...")
+        predict_logger.info("未指定模型路径，尝试加载默认模型...")
         predictor.load_model("modsecurity_model.pkl", "modsecurity")
         predictor.load_model("generic_model.pkl", "generic")
     
@@ -218,9 +238,9 @@ def predict_mode(args):
         try:
             with open(args.waf_info_path, 'r', encoding='utf-8') as f:
                 waf_info = json.load(f)
-            print(f"加载WAF指纹信息: {waf_info}")
+            predict_logger.info(f"加载WAF指纹信息: {waf_info}")
         except Exception as e:
-            print(f"加载WAF指纹信息时出错: {e}")
+            predict_logger.error(f"加载WAF指纹信息时出错: {e}")
     
     # 创建示例HTTP请求进行预测
     # 实际应用中应该从文件或网络加载真实的HTTP请求
@@ -232,12 +252,12 @@ def predict_mode(args):
     # 进行预测
     try:
         prediction, confidence = predictor.predict(sample_request, waf_info)
-        print(f"预测结果: {prediction}")
-        print(f"置信度: {confidence}")
+        predict_logger.info(f"预测结果: {prediction}")
+        predict_logger.info(f"置信度: {confidence}")
     except Exception as e:
-        print(f"预测时出错: {e}")
+        predict_logger.error(f"预测时出错: {e}")
     
-    print("预测模式完成")
+    predict_logger.info("预测模式完成")
 
 
 def evaluate_mode(args):
@@ -247,11 +267,13 @@ def evaluate_mode(args):
     Args:
         args: 命令行参数
     """
-    print("进入评估模式...")
+    # 初始化评估模式日志器
+    eval_logger = setup_logger("EvaluateMode", log_file=LOG_CONFIG['log_file'], level=LOG_CONFIG['log_level'])
+    eval_logger.info("进入评估模式...")
     
     # 检查必要参数
     if not args.model_path or not args.data_path:
-        print("错误: 评估模式需要指定 --model-path 和 --data-path 参数")
+        eval_logger.error("评估模式需要指定 --model-path 和 --data-path 参数")
         return
     
     # 初始化数据处理器
@@ -259,13 +281,33 @@ def evaluate_mode(args):
     
     # 加载和预处理数据
     try:
-        print(f"正在加载测试数据: {args.data_path}")
-        # 示例数据加载（需要根据实际情况修改）
+        eval_logger.info(f"正在加载测试数据: {args.data_path}")
+        # 从CSV文件加载测试数据
+        data = pd.read_csv(args.data_path)
+        
+        # 检查数据是否包含'label'列
+        if 'label' not in data.columns:
+            eval_logger.error("CSV文件中缺少'label'列")
+            return
+        
+        # 分离特征和标签
+        label_column = data['label']
+        feature_columns = data.drop('label', axis=1)
+        X_test = feature_columns.values
+        y_test = label_column.values
+        
+        eval_logger.info(f"测试数据加载完成，共 {len(X_test)} 个样本，{X_test.shape[1]} 个特征")
+        eval_logger.info(f"测试数据形状: X_test={X_test.shape}, y_test={y_test.shape}")
+    except FileNotFoundError:
+        eval_logger.error(f"文件未找到: {args.data_path}")
+        return
+    except Exception as e:
+        eval_logger.error(f"加载测试数据时出错: {e}")
+        # 为了演示，创建示例测试数据
+        eval_logger.info("创建示例测试数据...")
         X_test = np.random.rand(50, 10)  # 50个测试样本，10个特征
         y_test = np.random.randint(0, 2, 50)  # 测试标签
-        print(f"测试数据形状: X_test={X_test.shape}, y_test={y_test.shape}")
-    except Exception as e:
-        print(f"加载测试数据时出错: {e}")
+        eval_logger.info(f"测试数据形状: X_test={X_test.shape}, y_test={y_test.shape}")
         return
     
     # 如果提供了WAF指纹信息，则处理它
@@ -274,9 +316,9 @@ def evaluate_mode(args):
             with open(args.waf_info_path, 'r', encoding='utf-8') as f:
                 waf_info = json.load(f)
             processed_waf = data_processor.process_waf_fingerprint(waf_info)
-            print(f"处理WAF指纹信息: {processed_waf}")
+            eval_logger.info(f"处理WAF指纹信息: {processed_waf}")
         except Exception as e:
-            print(f"处理WAF指纹信息时出错: {e}")
+            eval_logger.error(f"处理WAF指纹信息时出错: {e}")
     
     # 初始化模型训练器用于评估
     trainer = ModelTrainer(args.model_type)
@@ -286,32 +328,36 @@ def evaluate_mode(args):
         with open(args.model_path, 'rb') as f:
             trainer.model = ModelFactory.create_model(args.model_type)
             trainer.model.model = pickle.load(f)
-        print(f"成功加载模型: {args.model_path}")
+        eval_logger.info(f"成功加载模型: {args.model_path}")
     except Exception as e:
-        print(f"加载模型时出错: {e}")
+        eval_logger.error(f"加载模型时出错: {e}")
         return
     
     # 进行评估
     try:
         metrics = trainer.evaluate_model(X_test, y_test)
         if metrics:
-            print("模型评估结果:")
+            eval_logger.info("模型评估结果:")
             for metric, value in metrics.items():
-                print(f"  {metric}: {value:.4f}")
+                eval_logger.info(f"  {metric}: {value:.4f}")
         else:
-            print("评估失败")
+            eval_logger.error("评估失败")
     except Exception as e:
-        print(f"评估时出错: {e}")
+        eval_logger.error(f"评估时出错: {e}")
     
-    print("评估模式完成")
+    eval_logger.info("评估模式完成")
 
 
 def main():
     """
     主函数
     """
+    # 初始化主日志器
+    main_logger = setup_logger("Main", log_file=LOG_CONFIG['log_file'], level=LOG_CONFIG['log_level'])
+    
     # 解析命令行参数
     args = parse_args()
+    main_logger.info(f"启动程序，运行模式: {args.mode}")
     
     # 根据模式执行相应功能
     if args.mode == "train":
@@ -321,7 +367,7 @@ def main():
     elif args.mode == "evaluate":
         evaluate_mode(args)
     else:
-        print("未知模式")
+        main_logger.error("未知模式")
 
 
 if __name__ == "__main__":

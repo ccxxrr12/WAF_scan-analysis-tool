@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
+import os
 """
 配置文件
 
@@ -92,3 +94,16 @@ MODEL_PATHS = {
     "modsecurity": "modsecurity_model.pkl",
     "generic": "generic_model.pkl"
 }
+
+# 日志配置
+LOG_CONFIG = {
+    "log_dir": os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs"),
+    "log_file": "waf_ml.log",
+    "log_level": "INFO",
+    "max_bytes": 10*1024*1024,  # 10MB
+    "backup_count": 5
+}
+
+# 创建日志目录
+if not os.path.exists(LOG_CONFIG["log_dir"]):
+    os.makedirs(LOG_CONFIG["log_dir"])

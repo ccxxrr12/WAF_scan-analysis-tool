@@ -17,6 +17,8 @@
 import os
 import pickle
 from data_processor import DataProcessor
+from utils import setup_logger
+from config import LOG_CONFIG
 
 
 class Predictor:
@@ -31,6 +33,8 @@ class Predictor:
         self.data_processor = DataProcessor()
         self.models = {}  # 存储不同类型的模型
         self.default_model = None  # 默认模型
+        self.logger = setup_logger("Predictor", log_file=LOG_CONFIG['log_file'], level=LOG_CONFIG['log_level'])
+        self.logger.info("初始化预测器")
     
     def load_model(self, model_path, model_type="default"):
         """
@@ -50,11 +54,11 @@ class Predictor:
                 else:
                     self.models[model_type] = model
                     
-                print(f"成功加载{model_type}模型: {model_path}")
+                self.logger.info(f"成功加载{model_type}模型: {model_path}")
             except Exception as e:
-                print(f"加载模型失败: {e}")
+                self.logger.error(f"加载模型失败: {e}")
         else:
-            print(f"模型文件不存在: {model_path}")
+            self.logger.error(f"模型文件不存在: {model_path}")
     
     def select_model_by_waf(self, waf_type):
         """
@@ -104,7 +108,7 @@ class Predictor:
         model = self.select_model_by_waf(waf_type)
         
         if model is None:
-            print("没有可用的模型")
+            self.logger.error("没有可用的模型")
             return None, 0.0
         
         # 转换特征为模型所需格式（这里简化处理）
@@ -121,9 +125,10 @@ class Predictor:
                 proba = model.predict_proba([feature_vector])[0]
                 confidence = max(proba)
             
+            self.logger.info(f"预测完成，结果: {prediction}, 置信度: {confidence:.4f}")
             return prediction, confidence
         except Exception as e:
-            print(f"预测过程中出现错误: {e}")
+            self.logger.error(f"预测过程中出现错误: {e}")
             return None, 0.0
     
     def batch_predict(self, http_requests, waf_info_list=None):
