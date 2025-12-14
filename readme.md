@@ -1,189 +1,569 @@
-# WAF规则智能识别与分析工具
+# WAF扫描分析工具
 
-## 项目简介
+## 1. 项目概述
 
-本项目是一个综合性的WAF（Web应用防火墙）规则智能识别与分析工具，旨在帮助安全研究人员和开发人员更好地理解和分析各种WAF产品的防护机制。该项目由三个核心模块组成，分别负责WAF指纹识别、规则解析与分析以及基于机器学习的智能检测。
+### 1.1 项目简介
+WAF扫描分析工具是一个集WAF指纹识别、规则分析和智能检测于一体的综合性Web应用防火墙(WAF)分析系统。该工具能够帮助安全研究人员、网站管理员和开发者快速识别目标网站使用的WAF类型，分析WAF规则的有效性和冲突，并使用机器学习技术预测HTTP请求是否会被WAF拦截。
 
-通过这三个模块的协同工作，用户可以：
-- 快速识别目标网站使用的WAF产品及其版本
-- 深入分析WAF规则集的结构、语义和潜在冲突
-- 利用机器学习模型预测HTTP请求是否可能被特定WAF拦截
+### 1.2 项目目标
+- 提供高效准确的WAF指纹识别功能
+- 实现WAF规则的自动化分析和优化建议
+- 利用机器学习技术智能预测WAF拦截行为
+- 提供直观易用的Web界面，方便用户操作和查看结果
+- 支持多种WAF类型和规则格式
 
-该工具不仅适用于安全审计和渗透测试，也可用于WAF产品开发和规则优化。
+### 1.3 应用场景
+- 安全研究人员对目标网站进行WAF检测和分析
+- 网站管理员评估自身WAF配置的有效性
+- 开发者在部署应用前测试WAF规则的合理性
+- 安全厂商评估不同WAF产品的防护能力
 
-## 核心特性
+## 2. 项目结构
 
-- **多WAF支持**：支持识别包括Cloudflare、ModSecurity、AWS WAF、Imperva等主流WAF产品
-- **规则深度解析**：提供对ModSecurity等规则语法的完整解析和语义分析
-- **智能预测模型**：基于传统机器学习算法，预测HTTP请求的拦截可能性
-- **可视化分析**：生成规则依赖关系图、冲突分析图等多种可视化图表
-- **模块化设计**：三个核心模块可独立使用，也可协同工作
-
-**科目20：WAF规则智能识别与分析工具设计**
-
-### 目录结构
-
+### 2.1 目录结构
 ```
 WAF_scan-analysis-tool/
-├── Part1 waf_scanner/        # WAF指纹识别引擎
-│   ├── wafw00f/              # 核心代码目录
-│   │   ├── plugins/          # WAF插件目录
-│   │   └── lib/              # 库文件目录
-│   ├── README.md             # Part1说明文档
-│   └── Makefile              # 构建文件
-├── Part2 analysis/           # 规则解析与语法分析
-│   ├── part2_rule_analysis/  # 核心代码目录
-│   │   └── backend/          # 后端分析代码
-│   ├── README.md             # Part2说明文档
-│   └── rules.db              # 规则数据库
-├── Part3 deeplearning/       # 智能检测与机器学习集成
-│   ├── part3_waf_ml/         # 核心代码目录
-│   ├── models/               # 模型存储目录
-│   ├── README.md             # Part3说明文档
-│   └── requirements.txt      # 依赖包列表
-├── backend/                  # 系统集成后端
-├── UI/                       # 用户界面
-├── common/                   # 公共模块
-├── README.md                 # 项目总体说明文档
-└── test-api.js               # API测试文件
+├── Part1 waf_scanner/           # WAF指纹识别引擎
+│   ├── docs/                    # 文档目录
+│   ├── wafw00f/                 # 核心代码目录
+│   │   ├── lib/                 # 库文件目录
+│   │   ├── plugins/             # WAF插件目录
+│   │   ├── __init__.py          # Python包初始化文件
+│   │   ├── main.py              # 主程序文件
+│   │   ├── manager.py           # 插件管理器
+│   │   └── wafprio.py           # WAF优先级配置
+│   ├── .gitignore
+│   ├── CODE_OF_CONDUCT.md
+│   ├── CREDITS.txt
+│   ├── LICENSE
+│   ├── MANIFEST.in
+│   ├── Makefile
+│   ├── README.md
+│   └── setup.py
+├── Part2 analysis/              # WAF规则分析模块
+│   ├── lib/                     # 第三方库目录
+│   └── part2_rule_analysis/     # 规则分析核心模块
+│       ├── 1.0/                 # 旧版本（不推荐使用）
+│       └── 2.0/                 # 最新版本
+│           ├── backend/         # 后端分析代码
+│           ├── rules/           # 规则文件目录
+│           └── rules.db         # 规则数据库
+├── Part3 deeplearning/          # 智能检测与机器学习模块
+│   ├── models/                  # 模型文件目录
+│   ├── part3_waf_ml/            # 核心代码目录
+│   ├── Part3_智能检测与机器学习集成方案.md
+│   ├── Prompt_for_AI.md
+│   ├── http_request_example.json
+│   ├── malicious_http_request_example.json
+│   ├── module_dependencies_report.md
+│   ├── module_verification_report.md
+│   ├── readme.md
+│   ├── requirements.txt
+│   ├── self_check_report_20251213_191627.md
+│   ├── test_data.csv
+│   ├── 使用说明.md
+│   └── 开发进度.md
+├── UI/                          # 旧版UI
+├── UI_2.0_frontend/             # 2.0版本前端
+├── UI_3.0/                      # 最新版本前端
+│   └── ruoyi-element-ai/        # 基于Vue3.5+Element-Plus-X的前端项目
+├── backend/                     # 后端服务
+│   ├── main.py                  # 主程序入口
+│   ├── part1_integration.py     # Part1集成模块
+│   ├── part2_integration.py     # Part2集成模块
+│   ├── part3_integration.py     # Part3集成模块
+│   └── requirements.txt         # 依赖包列表
+└── .gitignore
 ```
 
-### 模块功能介绍
+### 2.2 模块关系
 
-| 模块 | 名称 | 功能描述 |
-|------|------|----------|
-| Part1 | WAF指纹识别引擎 | 被动或主动探测Web应用，判断其背后是否有WAF，并识别具体WAF产品 |
-| Part2 | 规则解析与语法分析 | 解析并理解WAF规则集，进行高级分析（如依赖、冲突检测）和可视化 |
-| Part3 | 智能检测与机器学习集成 | 利用机器学习模型智能判断HTTP请求是否会被WAF拦截 |
+WAF扫描分析工具采用前后端分离的架构设计，各模块之间通过API进行通信，形成一个完整的工作流：
 
-### 科目核心目标拆解
+1. **前端**：提供用户界面，接收用户输入并展示分析结果
+2. **后端服务**：整合Part1、Part2和Part3的功能，提供统一的API接口
+3. **Part1 waf_scanner**：负责WAF指纹识别
+4. **Part2 analysis**：负责WAF规则分析
+5. **Part3 deeplearning**：负责智能检测和机器学习预测
 
-该科目要求开发一个三合一的专业工具，本项目将其分解为：
-1.  **识别目标网站使用了哪种WAF**（指纹识别）。
-2.  **解析并理解该WAF的规则集**（规则分析）。
-3.  **智能地判断一个请求是否会被WAF拦截**（智能检测）。
+模块间的数据流如下：
+- 用户通过前端界面输入目标URL或上传WAF规则文件
+- 前端将请求发送到后端服务
+- 后端服务根据请求类型调用相应的模块（Part1、Part2或Part3）
+- 各模块执行相应的分析任务
+- 分析结果返回给后端服务
+- 后端服务将结果返回给前端展示
+
+## 3. 技术栈
+
+### 3.1 后端技术栈
+| 技术/框架 | 版本 | 用途 | 来源 |
+|----------|------|------|------|
+| Python | 3.7+ | 核心编程语言 | 系统内置 |
+| FastAPI | 最新 | Web框架，提供API接口 | backend/requirements.txt |
+| SQLite | 3.0+ | 数据库，存储规则分析结果 | 系统内置 |
+| scikit-learn | 最新 | 机器学习算法库 | Part3 deeplearning/requirements.txt |
+| XGBoost | 最新 | 梯度提升算法 | Part3 deeplearning/requirements.txt |
+| pandas | 最新 | 数据处理 | Part3 deeplearning/requirements.txt |
+| numpy | 最新 | 数值计算 | Part3 deeplearning/requirements.txt |
+
+### 3.2 前端技术栈
+| 技术/框架 | 版本 | 用途 | 来源 |
+|----------|------|------|------|
+| Vue | 3.5 | 前端框架 | UI_3.0/ruoyi-element-ai/package.json |
+| Element-Plus-X | 最新 | UI组件库 | UI_3.0/ruoyi-element-ai/package.json |
+| TypeScript | 5.8 | 编程语言 | UI_3.0/ruoyi-element-ai/package.json |
+| Vite | 5 | 构建工具 | UI_3.0/ruoyi-element-ai/package.json |
+| Pinia | 3 | 状态管理 | UI_3.0/ruoyi-element-ai/package.json |
+| VueRouter | 最新 | 路由管理 | UI_3.0/ruoyi-element-ai/package.json |
+| Hook-Fetch | 最新 | HTTP请求库 | UI_3.0/ruoyi-element-ai/package.json |
+
+### 3.3 其他技术
+| 技术/工具 | 用途 |
+|----------|------|
+| Git | 版本控制 |
+| ESLint | 代码质量检查 |
+| Stylelint | CSS代码检查 |
+| Husky | Git钩子工具 |
+| Commitlint | 提交信息规范检查 |
+
+## 4. 功能模块
+
+### 4.1 WAF指纹识别引擎（Part1）
+
+#### 4.1.1 功能概述
+WAF指纹识别引擎基于WAFW00F项目开发，能够识别超过200种不同类型的WAF产品。该模块通过向目标网站发送特定的HTTP请求，分析响应头、响应内容和状态码等特征，与内置的WAF指纹库进行匹配，从而确定目标网站使用的WAF类型。
+
+#### 4.1.2 核心功能
+- **多WAF支持**：支持识别超过200种WAF产品
+- **高效检测**：采用优先级机制，先检测市场占有率高的WAF产品
+- **多种检测方法**：结合正常请求和攻击载荷测试，提高检测准确性
+- **详细报告**：提供检测结果的详细说明，包括检测到的WAF类型、厂商信息和检测方法
+
+#### 4.1.3 工作原理
+1. 向目标网站发送正常的HTTP请求，获取基准响应
+2. 构造多种攻击载荷（XSS、SQL注入、文件包含等）进行测试
+3. 对比正常响应和攻击响应的差异，识别WAF特征
+4. 根据响应特征调用相应的WAF识别插件
+5. 汇总各插件的识别结果，输出最终判定
+
+### 4.2 WAF规则分析模块（Part2）
+
+#### 4.2.1 功能概述
+WAF规则分析模块主要用于ModSecurity规则的自动化分析，包括规则解析、语义分析、依赖分析和冲突分析。该模块能够帮助用户理解WAF规则的工作原理，发现规则之间的冲突和冗余，并提供优化建议。
+
+#### 4.2.2 核心功能
+
+1. **规则解析**
+   - 将ModSecurity规则文本解析为结构化JSON数据
+   - 支持多种编码格式（UTF-8、GBK等）
+   - 处理复杂的规则语法，包括链式规则
+
+2. **语义分析**
+   - 识别规则的检测变量（如REQUEST_URI、REQUEST_HEADERS等）
+   - 分析规则的操作符（如@rx、@contains等）
+   - 提取规则的动作（如deny、log、redirect等）
+   - 识别规则的严重程度和标签
+
+3. **依赖分析**
+   - 分析规则之间的执行依赖关系
+   - 确定规则的执行顺序
+   - 识别规则组和链式规则
+
+4. **冲突分析**
+   - 检测规则之间的冗余
+   - 识别规则冲突
+   - 发现规则优先级问题
+
+5. **结果存储**
+   - 将分析结果存储到SQLite数据库
+   - 支持结果的导入导出
+   - 提供结果查询接口
+
+6. **可视化**
+   - 生成规则处理流程图
+   - 生成攻击类型分布图
+   - 生成冲突分析图
+   - 生成依赖关系图
+
+### 4.3 智能检测与机器学习模块（Part3）
+
+#### 4.3.1 功能概述
+智能检测与机器学习模块利用传统机器学习算法，基于WAF规则数据和HTTP请求特征，训练模型来预测HTTP请求是否会被WAF拦截。该模块支持多种机器学习算法，并针对不同类型的WAF提供特化模型。
+
+#### 4.3.2 核心功能
+
+1. **数据处理**
+   - 从原始HTTP请求中提取特征
+   - 处理WAF指纹信息，标准化WAF类型
+   - 支持CSV格式数据集加载
+   - 数据预处理：去重和缺失值处理
+   - 基于规则数据自动生成训练样本
+
+2. **模型定义**
+   - 逻辑回归模型
+   - 随机森林模型
+   - XGBoost模型
+
+3. **模型训练**
+   - 支持多种训练模式
+   - 实现分层K折交叉验证
+   - 模型序列化和保存
+   - 支持增量训练
+
+4. **智能预测**
+   - 支持单个和批量HTTP请求预测
+   - 根据WAF类型自动选择最适合的模型
+   - 提供预测结果的置信度
+
+5. **模型评估**
+   - 计算准确率、精确率、召回率、F1分数和AUC等指标
+   - 支持模型性能对比
+
+### 4.4 前端界面（UI_3.0）
+
+#### 4.4.1 功能概述
+前端界面基于Vue3.5 + Element-Plus-X + TypeScript开发，提供了直观易用的用户界面，方便用户操作和查看分析结果。
+
+#### 4.4.2 核心功能
+- **WAF扫描**：输入目标URL，执行WAF指纹识别
+- **规则分析**：上传WAF规则文件，执行规则分析
+- **智能检测**：输入HTTP请求，使用机器学习模型预测WAF拦截行为
+- **结果展示**：展示扫描结果、规则分析报告和智能检测结果
+- **可视化**：展示规则处理流程图、攻击类型分布图和冲突分析图
+- **历史记录**：保存用户的分析历史，方便后续查看
+
+## 5. 安装与配置
+
+### 5.1 环境要求
+- **操作系统**：Windows/Linux/macOS
+- **Python版本**：3.7或更高版本
+- **Node.js版本**：16.0或更高版本
+- **包管理器**：npm或pnpm（推荐）
+
+### 5.2 后端安装
+
+1. **安装依赖**
+   ```bash
+   cd backend
+   pip install -r requirements.txt
+   ```
+
+2. **启动服务**
+   ```bash
+   python main.py
+   ```
+   服务将在 http://0.0.0.0:8000 启动
+
+### 5.3 前端安装
+
+1. **安装依赖**
+   ```bash
+   cd UI_3.0/ruoyi-element-ai
+   pnpm install
+   ```
+
+2. **开发模式**
+   ```bash
+   pnpm run dev
+   ```
+   前端将在 http://localhost:5173 启动
+
+3. **生产构建**
+   ```bash
+   pnpm build
+   ```
+   构建后的文件将输出到 dist 目录
+
+### 5.4 配置说明
+
+#### 5.4.1 后端配置
+后端配置主要通过环境变量和配置文件进行管理，关键配置项包括：
+- `PORT`：后端服务监听的端口，默认为8000
+- `CORS_ORIGINS`：允许的跨域来源，默认为*（生产环境应限制具体域名）
+- `DB_PATH`：SQLite数据库文件路径，默认为`Part2 analysis/part2_rule_analysis/2.0/backend/analysis_results/rules.db`
+
+#### 5.4.2 前端配置
+前端配置主要在`.env.development`和`.env.production`文件中进行管理，关键配置项包括：
+- `VITE_API_BASE_URL`：后端API的基础URL，默认为`http://localhost:8000`
+- `VITE_APP_TITLE`：应用标题，默认为"WAF扫描分析工具"
+
+## 6. 使用说明
+
+### 6.1 WAF扫描
+
+1. 在前端界面的"WAF扫描"页面，输入目标URL（例如：https://www.example.com）
+2. 点击"开始扫描"按钮
+3. 等待扫描完成，查看扫描结果
+4. 结果将显示目标网站使用的WAF类型、厂商信息和检测方法
+
+### 6.2 规则分析
+
+1. 在前端界面的"规则分析"页面，点击"上传文件"按钮
+2. 选择要分析的ModSecurity规则文件（支持.conf、.txt、.rules格式）
+3. 点击"开始分析"按钮
+4. 等待分析完成，查看分析结果
+5. 结果将显示规则的基本信息、语义分析、依赖关系和冲突情况
+6. 可以查看生成的可视化图表，包括规则处理流程图、攻击类型分布图和冲突分析图
+7. 可以下载详细的规则分析报告
+
+### 6.3 智能检测
+
+1. 在前端界面的"智能检测"页面，选择要使用的模型
+2. 输入或上传HTTP请求数据
+3. 点击"开始检测"按钮
+4. 等待检测完成，查看检测结果
+5. 结果将显示该HTTP请求是否会被WAF拦截，以及预测的置信度
+
+### 6.4 API使用
+
+WAF扫描分析工具提供了RESTful API，可以直接通过API调用各模块的功能。
+
+#### 6.4.1 WAF扫描API
+```
+POST /api/waf/scan
+请求体：{"url": "https://www.example.com"}
+响应：{"success": true, "data": {"waf_type": "Cloudflare", "vendor": "Cloudflare Inc.", "method": "Header matching"}}
+```
+
+#### 6.4.2 规则分析API
+```
+POST /api/waf/analyze-rules
+请求体：multipart/form-data，包含要上传的规则文件
+响应：{"success": true, "data": {"files": [...], "total_rules": 100}}
+```
+
+#### 6.4.3 智能检测API
+```
+POST /api/waf/ai-detect
+请求体：{"url": "https://www.example.com", "request_content": "GET /admin HTTP/1.1\r\nHost: www.example.com\r\n\r\n"}
+响应：{"success": true, "data": {"prediction": "blocked", "confidence": 0.95}}
+```
+
+## 7. 开发指南
+
+### 7.1 代码规范
+
+#### 7.1.1 Python代码规范
+- 遵循PEP 8代码风格指南
+- 使用类型注解提高代码可读性和可维护性
+- 函数和模块应有详细的文档字符串
+- 代码注释应清晰明了，解释代码的功能和逻辑
+
+#### 7.1.2 JavaScript/TypeScript代码规范
+- 遵循ESLint和Stylelint规则
+- 使用TypeScript类型注解
+- 组件和函数应有详细的文档注释
+- 代码风格统一，缩进为2个空格
+
+### 7.2 开发流程
+
+1. **克隆仓库**
+   ```bash
+   git clone https://github.com/your-username/WAF_scan-analysis-tool.git
+   ```
+
+2. **创建分支**
+   ```bash
+   git checkout -b feature/your-feature
+   ```
+
+3. **开发代码**
+   - 遵循代码规范
+   - 编写单元测试
+   - 更新文档
+
+4. **提交代码**
+   ```bash
+   git add .
+   git commit -m "feat: add new feature"
+   ```
+
+5. **推送分支**
+   ```bash
+   git push origin feature/your-feature
+   ```
+
+6. **创建Pull Request**
+   - 描述功能变更和实现细节
+   - 关联相关Issue
+   - 等待代码审查
+
+### 7.3 测试
+
+#### 7.3.1 Python测试
+- 使用pytest框架进行单元测试
+- 测试文件命名为`test_*.py`
+- 测试用例应覆盖主要功能和边缘情况
+
+#### 7.3.2 JavaScript/TypeScript测试
+- 使用Vitest框架进行单元测试
+- 测试文件命名为`*.test.ts`或`*.spec.ts`
+- 测试用例应覆盖组件和工具函数
+
+## 8. 部署说明
+
+### 8.1 开发环境部署
+按照5.2和5.3节的步骤安装和启动后端服务和前端应用即可。
+
+### 8.2 生产环境部署
+
+#### 8.2.1 后端部署
+1. 使用Docker容器化部署
+   ```dockerfile
+   FROM python:3.10-slim
+   WORKDIR /app
+   COPY backend/requirements.txt .
+   RUN pip install -r requirements.txt
+   COPY backend/ .
+   EXPOSE 8000
+   CMD ["python", "main.py"]
+   ```
+
+2. 使用Nginx或Apache作为反向代理
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+       
+       location / {
+           proxy_pass http://localhost:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       }
+   }
+   ```
+
+#### 8.2.2 前端部署
+1. 构建生产版本
+   ```bash
+   cd UI_3.0/ruoyi-element-ai
+   pnpm build
+   ```
+
+2. 使用Nginx或Apache部署静态文件
+   ```nginx
+   server {
+       listen 80;
+       server_name your-domain.com;
+       
+       location / {
+           root /path/to/dist;
+           index index.html;
+           try_files $uri $uri/ /index.html;
+       }
+       
+       location /api {
+           proxy_pass http://localhost:8000;
+           proxy_set_header Host $host;
+           proxy_set_header X-Real-IP $remote_addr;
+           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+       }
+   }
+   ```
+
+## 9. 维护与更新
+
+### 9.1 定期更新
+- 定期更新Part1的WAF插件库，支持新的WAF产品
+- 定期更新Part3的机器学习模型，提高预测准确性
+- 定期更新依赖库，修复安全漏洞和性能问题
+
+### 9.2 问题反馈
+- 通过GitHub Issues提交问题和建议
+- 参与项目讨论和开发
+- 贡献代码和文档
+
+### 9.3 版本管理
+项目采用语义化版本号管理，版本格式为X.Y.Z：
+- X：主版本号，重大功能变更或架构调整
+- Y：次版本号，新增功能或改进
+- Z：修订号，bug修复或小改进
+
+## 10. 安全注意事项
+
+1. **数据安全**
+   - 规则文件可能包含敏感信息，分析过程中请注意保护
+   - 建议在安全环境中运行分析程序
+   - 分析结果应妥善保存，避免泄露敏感数据
+
+2. **合规性**
+   - 使用该工具扫描目标网站时，请确保遵守相关法律法规
+   - 获得目标网站所有者的授权后再进行扫描和分析
+   - 不要将该工具用于非法用途
+
+3. **系统安全**
+   - 定期更新系统和依赖库，修复安全漏洞
+   - 使用强密码保护数据库和管理界面
+   - 配置适当的访问控制，限制API的访问范围
+
+## 11. 许可证
+
+本项目采用MIT许可证，详细信息请查看LICENSE文件。
+
+## 12. 贡献者
+
+- [项目团队成员1] - 负责Part1 waf_scanner开发
+- [项目团队成员2] - 负责Part2 analysis开发
+- [项目团队成员3] - 负责Part3 deeplearning开发
+- [项目团队成员4] - 负责前端UI开发
+- [项目团队成员5] - 负责后端服务开发
+
+## 13. 联系方式
+
+- 项目仓库：https://github.com/your-username/WAF_scan-analysis-tool
+- 问题反馈：https://github.com/your-username/WAF_scan-analysis-tool/issues
+- 邮箱：contact@example.com
+- 论坛：https://forum.example.com
+
+## 14. 致谢
+
+- 感谢WAFW00F项目提供的WAF指纹识别基础
+- 感谢所有为项目贡献代码和文档的开发者
+- 感谢所有测试和使用本项目的用户
+
+## 15. 附录
+
+### 15.1 常见问题解答
+
+#### Q1: 为什么扫描结果显示"未检测到WAF"？
+A1: 可能的原因包括：
+- 目标网站确实没有使用WAF
+- 目标WAF采用了高级的绕过技术
+- 目标WAF不在当前支持的WAF列表中
+- 网络连接问题导致扫描失败
+
+#### Q2: 如何添加新的WAF类型支持？
+A2: 在Part1 waf_scanner/wafw00f/plugins目录下创建新的插件文件，实现is_waf函数和相关检测逻辑。
+
+#### Q3: 为什么规则分析结果显示有冲突？
+A3: 规则冲突通常是由于两个或多个规则的匹配条件重叠，或者规则执行顺序导致的。建议根据分析结果调整规则的优先级或修改规则的匹配条件。
+
+### 15.2 术语表
+
+- **WAF**：Web Application Firewall，Web应用防火墙
+- **ModSecurity**：一个开源的WAF引擎
+- **指纹识别**：通过识别特定特征来确定WAF类型的过程
+- **规则分析**：对WAF规则的结构、语义和依赖关系进行分析的过程
+- **机器学习**：一种人工智能技术，通过训练模型来预测结果
+- **HTTP请求**：客户端向服务器发送的请求，包含URL、请求头和请求体等信息
+- **响应头**：服务器返回的HTTP响应中的头部信息
+- **状态码**：HTTP响应中表示请求处理结果的数字代码
+- **攻击载荷**：用于测试WAF防护能力的恶意请求内容
+
+### 15.3 参考文献
+
+1. WAFW00F项目：https://github.com/EnableSecurity/wafw00f
+2. ModSecurity官方文档：https://modsecurity.org/documentation.html
+3. FastAPI官方文档：https://fastapi.tiangolo.com/
+4. Vue.js官方文档：https://vuejs.org/
+5. Element Plus官方文档：https://element-plus.org/
+6. scikit-learn官方文档：https://scikit-learn.org/stable/
+7. XGBoost官方文档：https://xgboost.readthedocs.io/
 
 ---
 
-### 第一部分：WAF指纹识别引擎开发
-
-**目标**：被动或主动地探测一个Web应用，判断其背后是否有WAF，并识别出具体的WAF产品（如Cloudflare, AWS WAF, ModSecurity等）。
-
-#### 初步思路
-
-1.  **被动检测**
-    *   **原理**：许多WAF会在HTTP响应头、Cookie或错误页面中留下独特的"指纹"。
-    *   **实现**：
-        *   **指纹库构建**：收集主流WAF的独特标识。例如：
-            *   **Cloudflare**： `__cfduid` Cookie， `cf-ray` 响应头， `server: cloudflare` 头。
-            *   **AWS WAF**： `x-amz-id-2`, `x-amz-request-id` 头（当与AWS服务集成时）。
-            *   **Imperva (Incapsula)**： `visid_incap_` Cookie， `X-CDN: Incapsula` 头。
-            *   **ModSecurity**： 可能返回 `406 Not Acceptable` 状态码，或在响应体中包含特定字符串。
-        *   **检测引擎**：发送一个正常的HTTP请求（如GET /），然后检查响应头/体是否与指纹库中的条目匹配。这可以用简单的字符串匹配或正则表达式实现。
-
-2.  **主动探测**
-    *   **原理**：故意发送一些看似恶意或异常的HTTP请求，观察WAF的响应与正常Web服务器的差异。
-    *   **实现**：
-        *   **恶意载荷库**：构建一个包含常见攻击片段的载荷库，如 `' OR 1=1--` (SQLi), `<script>alert(1)</script>` (XSS)。
-        *   **差异分析**：
-            *   向目标发送一个正常请求，记录响应（状态码、响应体长度等）。
-            *   发送一个恶意载荷，再次记录响应。
-            *   **WAF存在指标**：
-                *   **状态码差异**：正常请求返回200，恶意请求返回403/406/501等。
-                *   **响应体差异**：出现特定的WAF拦截页面（如Cloudflare的挑战页面）。
-                *   **响应时间差异**：WAF的检测逻辑可能导致请求处理变慢。
-        *   **指纹精细识别**：不同的WAF对同一攻击的拦截页面和响应头不同，通过分析这些差异可以精确定位WAF类型。
-
-#### 相关库与资源
-
-*   **核心参考项目**:
-    *   **https://github.com/EnableSecurity/wafw00f  **业界标准**的WAF指纹识别工具。其源码是学习被动和主动探测方法的**  
-    *   **https://github.com/projectdiscovery/nuclei** 
-
-*   **辅助库**:
-    *   **Python HTTP库**： https://github.com/psf/requests 或性能更好的 https://github.com/encode/httpx，用于发送HTTP请求。
-
----
-
-### 第二部分：规则解析与语法分析
-
-**目标**：实现对ModSecurity等WAF规则文件的解析，理解其语法结构，并能进行高级分析（如依赖、冲突检测）和可视化。
-
-#### 初步思路
-
-1.  **语法解析器开发**
-    *   **原理**：这是一个典型的编译原理问题。我们需要为ModSecurity规则语言定义一套**语法规则**。
-    *   **实现路径**：
-        *   **路径A（快速实现）**：使用**正则表达式**。ModSecurity规则（如 `SecRule ARGS "@rx <script>" "id:1,block"`）有相对固定的模式，可以用正则提取出指令、变量、操作符和动作。
-        *   **路径B（标准方法）**：使用**解析器生成器**。
-            *   定义词法规则（识别关键字如 `SecRule`、字符串、逗号等）。
-            *   定义语法规则（BNF范式），描述一条规则由哪些部分按什么顺序构成。
-            *   使用工具如 **https://www.antlr.org/** 或 Python的 **https://github.com/dabeaz/ply** 生成解析器，用以生成一个可以遍历的**抽象语法树**。
-
-2.  **语义分析与高级功能**
-    *   **依赖关系检测**：规则可以通过 `chain` 动作链接。解析器需要能识别出这些链式规则，并将其视为一个逻辑整体。
-    *   **冲突检查**：检查是否有两条规则ID相同，或是否存在逻辑上可能矛盾的规则。
-    *   **可视化（AST）**：将解析后的规则结构用树形图展示。可以使用 **https://graphviz.org/** 的Python接口（https://github.com/pydot/pydot）来生成规则逻辑的流程图。
-
-#### 相关库与资源
-
-*   **核心参考项目**:
-    *   https://github.com/coreruleset/coreruleset ModSecurity的官方规则集。(**测试数据源**)
-    *   https://github.com/SpiderLabs/ModSecurity  官方引擎源码
-
-*   **解析器开发工具**:
-    *   https://github.com/dabeaz/ply Python Lex-Yacc，纯Python实现的解析器生成工具
-    *   https://github.com/antlr/antlr4 功能更强大的解析器生成器，支持多种目标语言
-
-*   **可视化工具**:
-    *   https://github.com/pydot/pydot Graphviz的Python接口，用于创建图形。
-    *   https://github.com/matplotlib/matplotlib 绘图库
-
----
-
-### 第三部分：智能检测与机器学习集成
-
-**目标**：收集WAF的拦截样本，训练一个AI模型，使其能够直接判断一个HTTP请求是否"看起来"会被WAF拦截。
-
-#### 初步思路
-
-1.  **数据集构建**
-    *   **数据收集**：使用模块一（WAF探测引擎）和模块二（规则解析器）。
-        *   **方法一（基于规则）**：解析CRS规则，自动生成大量能触发每条规则的恶意请求和正常的请求。
-        *   **方法二（基于流量）**：对一个受WAF保护的网站进行扫描和攻击，捕获所有请求和响应，人工或基于状态码标记哪些被拦截。
-    *   **数据标注**：每个HTTP请求样本都需要一个标签，例如 `0`（放行）或 `1`（拦截），或者更细粒度的标签（如SQLi拦截、XSS拦截）。
-    *   **特征工程**：如下预处理内容
-        *   **URL和参数特征**：URL长度、参数个数、参数值的长度、是否包含特殊字符（如 `'`, `<`, `&`）等。
-        *   **请求头特征**：User-Agent是否非常见、Content-Type是否异常、头部的数量等。
-        *   **Payload文本特征**：将整个请求体或参数值视为文本，使用NLP技术提取特征（如词袋模型、n-gram）。或者直接使用预训练模型进行词嵌入。
-
-2.  **模型选择与训练**
-    *   **基线模型**：先从简单的模型开始，如逻辑回归、随机森林，以评估特征的有效性。
-    *   **深度学习模型**：
-        *   **文本分类模型**：将HTTP请求视为一段文本，使用CNN或RNN（LSTM）进行分类。
-        *   **结构化数据模型**：若用手工提取特征，可以使用全连接神经网络或梯度提升树（如XGBoost）。
-    *   **训练**：将数据集分为训练集、验证集和测试集，使用验证集调整超参数，最终在测试集上评估准确率、召回率等性能指标。
-
-#### 相关库与资源
-
-*   **机器学习框架**:
-    *   https://github.com/scikit-learn/scikit-learn 传统机器学习模型
-    *   https://github.com/xgboost/xgboost 梯度提升库。
-    *   https://github.com/pytorch/pytorch 或 https://github.com/tensorflow/tensorflow 深度学习框架。
-
-*   **NLP与文本处理**:
-    *   https://github.com/keras-team/keras 深度学习的高级API，可以快速搭建CNN/LSTM文本分类模型。
-    *   https://github.com/explosion/spaCy 工业级NLP库，用于文本处理。
-
-### 总结与项目架构
-
-作为一个较庞大的项目，本组采用**模块化开发**，三个部分相对独立地进行。
-
-1.  **模块&&分工**：
-    *   **模块一**：实现指纹识别引擎，打造工具的第一个可用功能。
-        * 陈学睿 
-    *   **模块二**：攻克规则解析器，实现规则可视化。
-        * 贺俊杰 许嘉俊 王陶阳 李钰凯
-    *   **模块三**：收集数据，训练和集成机器学习模型。
-        * 陈学睿 贺俊杰
-2.  **最终形态**：一个命令行程序或Web界面工具，用户输入一个URL，工具能自动识别WAF、解析其规则（如果可能）、并利用AI模型预测攻击载荷的绕过概率。
+**文档更新日期**：2025年12月14日
+**文档版本**：1.0
+**作者**：项目开发团队

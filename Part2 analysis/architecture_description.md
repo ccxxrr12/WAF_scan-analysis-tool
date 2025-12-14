@@ -271,7 +271,7 @@ conn.close()
 ## 11. 维护说明
 
 - 主要维护人员：项目开发团队
-- 代码仓库：https://github.com/your-repo/WAF_scan-analysis-tool
+- 代码仓库：https://github.com/your-username/WAF_scan-analysis-tool
 - 问题反馈：通过GitHub Issues提交
 - 更新频率：根据需求不定期更新
 

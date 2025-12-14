@@ -1,6 +1,7 @@
 import os
 import sys
 import tempfile
+import json
 from datetime import datetime
 
 # 添加Part2分析模块到Python路径
@@ -12,7 +13,9 @@ sys.path.insert(0, os.path.join(part2_path, 'backend', 'msc_pyparser-master'))
 from msc_pyparser import MSCParser
 from semantic_analyzer import SemanticAnalyzer
 from dependency_analyzer import DependencyAnalyzer
+from conflict_analyzer import ConflictAnalyzer
 from database import RuleDatabase
+from visualizer import RuleFlowVisualizer, AttackTypeVisualizer, ConflictVisualizer
 
 def parse_rule_details(rule):
     """Extract detailed information from a parsed SecRule"""

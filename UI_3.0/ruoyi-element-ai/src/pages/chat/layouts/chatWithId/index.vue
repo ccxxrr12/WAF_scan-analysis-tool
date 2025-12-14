@@ -256,57 +256,43 @@ async function handleRuleAnalysis(files: any[]) {
     // 提取实际的File对象
     const actualFiles = files.map(fileItem => fileItem.file);
     
-    // 调用规则分析API，发送所有文件
-    const result = await analyzeRules(actualFiles as File[]);
+    // 获取会话ID
+    const sessionId = route.params?.id || 'default';
+    
+    // 调用规则分析API，发送所有文件和会话ID
+    const result = await analyzeRules(actualFiles as File[], String(sessionId));
     console.log('规则分析结果:', result);
     
     if (result.success) {
       const data = result.data || {};
       const analyzedFiles = data.files || [];
       
+      // 1. 规则分析总结
       allResults += `### 规则分析总结\n`;
       allResults += `总规则数: ${data.total_rules || 0}\n`;
       allResults += `分析文件数: ${analyzedFiles.length}\n\n`;
       
-      // 遍历所有分析结果
+      // 2. 每个文件的基本信息
       for (const fileResult of analyzedFiles) {
-        allResults += `#### 规则文件: ${fileResult.filename}\n`;
+        allResults += `规则文件: ${fileResult.filename}\n`;
         allResults += `规则数量: ${fileResult.rule_count || 0}\n`;
-        allResults += `处理时间: ${new Date(fileResult.processed_time || Date.now()).toLocaleString()}\n\n`;
-        
-        // 显示前5条规则的简要信息
-        if (fileResult.rules && fileResult.rules.length > 0) {
-          allResults += `##### 规则详情（前5条）:\n`;
-          const displayRules = fileResult.rules.slice(0, 5);
-          for (const rule of displayRules) {
-            const ruleInfo = rule.rule_info;
-            allResults += `- **ID**: ${ruleInfo.id}\n`;
-            allResults += `  **Phase**: ${ruleInfo.phase}\n`;
-            allResults += `  **Variables**: ${ruleInfo.variables.join(', ')}\n`;
-            allResults += `  **Operator**: ${ruleInfo.operator}\n`;
-            allResults += `  **Message**: ${ruleInfo.message}\n`;
-            allResults += `  **Severity**: ${ruleInfo.severity}\n`;
-            
-            // 语义分析结果
-            if (rule.semantic_analysis) {
-              allResults += `  **语义分析**: ${JSON.stringify(rule.semantic_analysis, null, 2)}\n`;
-            }
-            
-            // 依赖分析结果
-            if (rule.dependency_analysis) {
-              allResults += `  **依赖分析**: ${JSON.stringify(rule.dependency_analysis, null, 2)}\n`;
-            }
-            
-            allResults += `\n`;
-          }
-          
-          if (fileResult.rules.length > 5) {
-            allResults += `... 还有 ${fileResult.rules.length - 5} 条规则未显示\n\n`;
-          }
-        }
+        allResults += `处理时间: ${new Date(fileResult.processed_time || Date.now()).toLocaleString('zh-CN')}\n\n`;
       }
+      
+      // 3. 添加可视化图像展示
+      allResults += `规则可视化分析\n`;
+      allResults += `规则处理流程\n`;
+      allResults += `<iframe src="/api/waf/visualizations/rule_processing_flow?sessionId=${sessionId}" width="100%" height="400px" frameborder="0" style="margin: 10px 0;" title="规则处理流程"></iframe>\n\n`;
+      allResults += `攻击类型分布\n`;
+      allResults += `<iframe src="/api/waf/visualizations/attack_type_distribution?sessionId=${sessionId}" width="100%" height="400px" frameborder="0" style="margin: 10px 0;" title="攻击类型分布"></iframe>\n\n`;
+      allResults += `冲突分析\n`;
+      allResults += `<iframe src="/api/waf/visualizations/conflict_analysis?sessionId=${sessionId}" width="100%" height="400px" frameborder="0" style="margin: 10px 0;" title="冲突分析"></iframe>\n\n`;
+      
+      // 4. 添加详细报告下载链接
+      allResults += `\n详细报告\n`;
+      allResults += `[下载详细规则报告 (Markdown格式)](/api/waf/reports/detailed_rules_report?sessionId=${sessionId})\n\n`;
     } else {
-      allResults += `### 规则分析失败\n`;
+      allResults += `规则分析失败\n`;
       allResults += `错误信息：${result.error || '未知错误'}\n\n`;
     }
     
@@ -326,7 +312,9 @@ async function handleRuleAnalysis(files: any[]) {
 // 处理WAF扫描
 async function handleWafScan(url: string) {
   try {
-    const response = await scanWaf({ url });
+    // 获取会话ID
+    const sessionId = route.params?.id || 'default';
+    const response = await scanWaf({ url }, String(sessionId));
     console.log('WAF扫描响应:', response);
     
     // Get the correct result structure based on hook-fetch behavior
@@ -368,7 +356,9 @@ async function handleAIDetect(chatContent: string) {
     const url = lines[0].trim();
     const requestContent = lines.slice(1).join('\n').trim();
     
-    const responseResult = await aiDetect({ url, request_content: requestContent });
+    // 获取会话ID
+    const sessionId = route.params?.id || 'default';
+    const responseResult = await aiDetect({ url, request_content: requestContent }, String(sessionId));
     console.log('AI检测响应:', responseResult);
     
     // Get the correct result structure based on hook-fetch behavior

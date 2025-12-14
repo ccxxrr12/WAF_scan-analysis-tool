@@ -61,7 +61,7 @@ function onAfterLeave() {
           <div class="left-section">
             <div class="logo-wrap">
               <img :src="logoPng" class="logo-img">
-              <span class="logo-text">WAF智能扫描分析工具</span>
+              <span class="logo-text">小墨WAF智能分析</span>
             </div>
             <div class="ad-banner">
               <SvgIcon name="p-bangong" class-name="animate-up-down" />

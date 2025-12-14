@@ -1,0 +1,3478 @@
+[
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921012",
+      "921180"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921012 和 921180 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921012",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921180",
+      "actions": [
+        "msg",
+        "id",
+        "setvar",
+        "logdata",
+        "block",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "1"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921014",
+      "921180"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921014 和 921180 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921014",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    },
+    "rule2": {
+      "id": "921180",
+      "actions": [
+        "msg",
+        "id",
+        "setvar",
+        "logdata",
+        "block",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "1"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921016",
+      "921180"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921016 和 921180 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921016",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    },
+    "rule2": {
+      "id": "921180",
+      "actions": [
+        "msg",
+        "id",
+        "setvar",
+        "logdata",
+        "block",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "1"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921180",
+      "921018"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921180 和 921018 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921180",
+      "actions": [
+        "msg",
+        "id",
+        "setvar",
+        "logdata",
+        "block",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921018",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921170"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921170 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921210"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921210 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921170"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921120 和 921170 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921210"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921120 和 921210 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921120 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921170"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921130 和 921170 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921210"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921130 和 921210 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921130 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921150",
+      "921170"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921150 和 921170 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921150",
+      "921210"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921150 和 921210 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921150",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921150 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921200",
+      "921170"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921200 和 921170 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    },
+    "rule2": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921200",
+      "921210"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921200 和 921210 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    },
+    "rule2": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921200",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921200 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921170",
+      "921210"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921170 和 921210 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    },
+    "rule2": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921170",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921170 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921170",
+      "actions": [
+        "id",
+        "setvar",
+        "pass",
+        "ver",
+        "phase",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "."
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921140",
+      "921230"
+    ],
+    "conflict_field": "variable: REQUEST_HEADERS, phase: 1",
+    "reason": "规则 921140 和 921230 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921140",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921230",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "0"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921421",
+      "921230"
+    ],
+    "conflict_field": "variable: REQUEST_HEADERS, phase: 1",
+    "reason": "规则 921421 和 921230 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921421",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^\\s\\x0b,;]+[\\s\\x0b,;].*?(?:application/(?:.+\\+)?json|(?:application/(?:soap\\+)?|text/)xml)"
+    },
+    "rule2": {
+      "id": "921230",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "0"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921422",
+      "921230"
+    ],
+    "conflict_field": "variable: REQUEST_HEADERS, phase: 1",
+    "reason": "规则 921422 和 921230 可能会匹配相同的请求",
+    "suggestion": [
+      "监控规则的触发频率",
+      "考虑添加规则注释，说明规则的预期用途",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为",
+      "考虑添加测试用例，验证规则的预期行为"
+    ],
+    "severity": "low",
+    "rule1": {
+      "id": "921422",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^\\s\\x0b,;]+[\\s\\x0b,;].*?\\b(?:((?:tex|multipar)t|application)|((?:audi|vide)o|image|cs[sv]|(?:vn|relate)d|p(?:df|lain)|json|(?:soa|cs)p|x(?:ml|-www-form-urlencoded)|form-data|x-amf|(?:octe|repor)t|stream)|([\\+/]))\\b"
+    },
+    "rule2": {
+      "id": "921230",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "0"
+    }
+  },
+  {
+    "conflict_type": "coverage_conflict",
+    "rule_ids": [
+      "921110",
+      "921170"
+    ],
+    "conflict_field": "phase: 2",
+    "reason": "高优先级规则 921110 可能覆盖低优先级规则 921170",
+    "suggestion": [
+      "验证规则的执行顺序是否合理",
+      "考虑添加更具体的标签或注释",
+      "检查规则的severity设置是否准确",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "severity": "CRITICAL",
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921170",
+      "severity": "",
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "coverage_conflict",
+    "rule_ids": [
+      "921120",
+      "921170"
+    ],
+    "conflict_field": "phase: 2",
+    "reason": "高优先级规则 921120 可能覆盖低优先级规则 921170",
+    "suggestion": [
+      "验证规则的执行顺序是否合理",
+      "考虑添加更具体的标签或注释",
+      "检查规则的severity设置是否准确",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "severity": "CRITICAL",
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921170",
+      "severity": "",
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "coverage_conflict",
+    "rule_ids": [
+      "921130",
+      "921170"
+    ],
+    "conflict_field": "phase: 2",
+    "reason": "高优先级规则 921130 可能覆盖低优先级规则 921170",
+    "suggestion": [
+      "验证规则的执行顺序是否合理",
+      "考虑添加更具体的标签或注释",
+      "检查规则的severity设置是否准确",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "severity": "CRITICAL",
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921170",
+      "severity": "",
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "coverage_conflict",
+    "rule_ids": [
+      "921150",
+      "921170"
+    ],
+    "conflict_field": "phase: 2",
+    "reason": "高优先级规则 921150 可能覆盖低优先级规则 921170",
+    "suggestion": [
+      "验证规则的执行顺序是否合理",
+      "考虑添加更具体的标签或注释",
+      "检查规则的severity设置是否准确",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921150",
+      "severity": "CRITICAL",
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921170",
+      "severity": "",
+      "pattern": "."
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921011",
+      "921013"
+    ],
+    "conflict_field": "variable: TX, phase: 1",
+    "reason": "规则 921011 和 921013 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921011",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921013",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921011",
+      "921015"
+    ],
+    "conflict_field": "variable: TX, phase: 1",
+    "reason": "规则 921011 和 921015 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921011",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921015",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921011",
+      "921017"
+    ],
+    "conflict_field": "variable: TX, phase: 1",
+    "reason": "规则 921011 和 921017 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921011",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921017",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921013",
+      "921015"
+    ],
+    "conflict_field": "variable: TX, phase: 1",
+    "reason": "规则 921013 和 921015 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921013",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    },
+    "rule2": {
+      "id": "921015",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921013",
+      "921017"
+    ],
+    "conflict_field": "variable: TX, phase: 1",
+    "reason": "规则 921013 和 921017 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921013",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    },
+    "rule2": {
+      "id": "921017",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921015",
+      "921017"
+    ],
+    "conflict_field": "variable: TX, phase: 1",
+    "reason": "规则 921015 和 921017 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921015",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    },
+    "rule2": {
+      "id": "921017",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921012",
+      "921014"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921012 和 921014 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921012",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921014",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921012",
+      "921016"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921012 和 921016 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921012",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921016",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921012",
+      "921018"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921012 和 921018 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921012",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "1"
+    },
+    "rule2": {
+      "id": "921018",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921014",
+      "921016"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921014 和 921016 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921014",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    },
+    "rule2": {
+      "id": "921016",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921014",
+      "921018"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921014 和 921018 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921014",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "2"
+    },
+    "rule2": {
+      "id": "921018",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921016",
+      "921018"
+    ],
+    "conflict_field": "variable: TX, phase: 2",
+    "reason": "规则 921016 和 921018 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921016",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "3"
+    },
+    "rule2": {
+      "id": "921018",
+      "actions": [
+        "id",
+        "pass",
+        "ver",
+        "phase",
+        "skipAfter",
+        "nolog",
+        "tag"
+      ],
+      "pattern": "4"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921120"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921120 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921130"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921150"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921150 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921110 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921130"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921120 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921150"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921120 和 921150 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921120 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921150"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921130 和 921150 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921130 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921150",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921150 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921150",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921210",
+      "921220"
+    ],
+    "conflict_field": "variable: ARGS_NAMES, phase: 2",
+    "reason": "规则 921210 和 921220 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921210",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(][^\\]]+$|][^\\]]+\\[)"
+    },
+    "rule2": {
+      "id": "921220",
+      "actions": [
+        "msg",
+        "log",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "\\["
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921120"
+    ],
+    "conflict_field": "variable: ARGS, phase: 2",
+    "reason": "规则 921110 和 921120 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921130"
+    ],
+    "conflict_field": "variable: ARGS, phase: 2",
+    "reason": "规则 921110 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS, phase: 2",
+    "reason": "规则 921110 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921130"
+    ],
+    "conflict_field": "variable: ARGS, phase: 2",
+    "reason": "规则 921120 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS, phase: 2",
+    "reason": "规则 921120 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921200"
+    ],
+    "conflict_field": "variable: ARGS, phase: 2",
+    "reason": "规则 921130 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921120"
+    ],
+    "conflict_field": "variable: XML, phase: 2",
+    "reason": "规则 921110 和 921120 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921130"
+    ],
+    "conflict_field": "variable: XML, phase: 2",
+    "reason": "规则 921110 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921110",
+      "921200"
+    ],
+    "conflict_field": "variable: XML, phase: 2",
+    "reason": "规则 921110 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921110",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:get|post|head|options|connect|put|delete|trace|track|patch|propfind|propatch|mkcol|copy|move|lock|unlock)\\s+[^\\s]+\\s+http/\\d"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921130"
+    ],
+    "conflict_field": "variable: XML, phase: 2",
+    "reason": "规则 921120 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921200"
+    ],
+    "conflict_field": "variable: XML, phase: 2",
+    "reason": "规则 921120 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921200"
+    ],
+    "conflict_field": "variable: XML, phase: 2",
+    "reason": "规则 921130 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921130"
+    ],
+    "conflict_field": "variable: REQUEST_COOKIES, phase: 2",
+    "reason": "规则 921120 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921200"
+    ],
+    "conflict_field": "variable: REQUEST_COOKIES, phase: 2",
+    "reason": "规则 921120 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921200"
+    ],
+    "conflict_field": "variable: REQUEST_COOKIES, phase: 2",
+    "reason": "规则 921130 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921130"
+    ],
+    "conflict_field": "variable: REQUEST_COOKIES_NAMES, phase: 2",
+    "reason": "规则 921120 和 921130 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921120",
+      "921200"
+    ],
+    "conflict_field": "variable: REQUEST_COOKIES_NAMES, phase: 2",
+    "reason": "规则 921120 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921120",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\r\\n]\\W*?(?:content-(?:type|length)|set-cookie|location):\\s*\\w"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921130",
+      "921200"
+    ],
+    "conflict_field": "variable: REQUEST_COOKIES_NAMES, phase: 2",
+    "reason": "规则 921130 和 921200 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921130",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "(?:\\bhttp/\\d|<(?:html|meta)\\b)"
+    },
+    "rule2": {
+      "id": "921200",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^:\\(\\)\\&\\|\\!\\<\\>\\~]*\\)\\s*(?:\\((?:[^,\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=|\\s*[&!|]\\s*(?:\\)|\\()?\\s*)|\\)\\s*\\(\\s*[\\&\\|\\!]\\s*|[&!|]\\s*\\([^\\(\\)\\=\\&\\|\\!\\<\\>\\~]+[><~]?=[^:\\(\\)\\&\\|\\!\\<\\>\\~]*)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921140",
+      "921421"
+    ],
+    "conflict_field": "variable: REQUEST_HEADERS, phase: 1",
+    "reason": "规则 921140 和 921421 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921140",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921421",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^\\s\\x0b,;]+[\\s\\x0b,;].*?(?:application/(?:.+\\+)?json|(?:application/(?:soap\\+)?|text/)xml)"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921140",
+      "921422"
+    ],
+    "conflict_field": "variable: REQUEST_HEADERS, phase: 1",
+    "reason": "规则 921140 和 921422 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921140",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    },
+    "rule2": {
+      "id": "921422",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^\\s\\x0b,;]+[\\s\\x0b,;].*?\\b(?:((?:tex|multipar)t|application)|((?:audi|vide)o|image|cs[sv]|(?:vn|relate)d|p(?:df|lain)|json|(?:soa|cs)p|x(?:ml|-www-form-urlencoded)|form-data|x-amf|(?:octe|repor)t|stream)|([\\+/]))\\b"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921421",
+      "921422"
+    ],
+    "conflict_field": "variable: REQUEST_HEADERS, phase: 1",
+    "reason": "规则 921421 和 921422 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921421",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^\\s\\x0b,;]+[\\s\\x0b,;].*?(?:application/(?:.+\\+)?json|(?:application/(?:soap\\+)?|text/)xml)"
+    },
+    "rule2": {
+      "id": "921422",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "^[^\\s\\x0b,;]+[\\s\\x0b,;].*?\\b(?:((?:tex|multipar)t|application)|((?:audi|vide)o|image|cs[sv]|(?:vn|relate)d|p(?:df|lain)|json|(?:soa|cs)p|x(?:ml|-www-form-urlencoded)|form-data|x-amf|(?:octe|repor)t|stream)|([\\+/]))\\b"
+    }
+  },
+  {
+    "conflict_type": "overlap_conflict",
+    "rule_ids": [
+      "921160",
+      "921151"
+    ],
+    "conflict_field": "variable: ARGS_GET, phase: 1",
+    "reason": "规则 921160 和 921151 可能会匹配相同的请求",
+    "suggestion": [
+      "验证规则的动作设置是否一致",
+      "考虑添加更具体的变量修饰符",
+      "检查规则的phase设置是否合理",
+      "参考ModSecurity官方文档，了解规则语法和最佳实践",
+      "使用ModSecurity的调试模式验证规则行为"
+    ],
+    "severity": "medium",
+    "rule1": {
+      "id": "921160",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]+(?:\\s|location|refresh|(?:set-)?cookie|(?:x-)?(?:forwarded-(?:for|host|server)|host|via|remote-ip|remote-addr|originating-IP))\\s*:"
+    },
+    "rule2": {
+      "id": "921151",
+      "actions": [
+        "msg",
+        "t",
+        "id",
+        "setvar",
+        "block",
+        "logdata",
+        "ver",
+        "capture",
+        "severity",
+        "phase",
+        "tag"
+      ],
+      "pattern": "[\\n\\r]"
+    }
+  }
+]

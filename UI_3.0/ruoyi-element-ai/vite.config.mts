@@ -7,7 +7,7 @@ import plugins from './.build/plugins';
 export default defineConfig((cnf) => {
   const { mode } = cnf;
   const env = loadEnv(mode, process.cwd());
-  const { VITE_APP_ENV } = env;
+  const { VITE_APP_ENV, VITE_API_URL } = env;
   return {
     base: VITE_APP_ENV === 'production' ? '/' : '/',
     plugins: plugins(cnf),
@@ -21,6 +21,16 @@ export default defineConfig((cnf) => {
       preprocessorOptions: {
         scss: {
           additionalData: '@use "@/styles/var.scss" as *;',
+        },
+      },
+    },
+    // 添加API代理配置
+    server: {
+      proxy: {
+        '/api': {
+          target: VITE_API_URL,
+          changeOrigin: true,
+          secure: false,
         },
       },
     },

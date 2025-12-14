@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores';
 const greeting = useTimeGreeting();
 const userStore = useUserStore();
 
-const username = computed(() => userStore.userInfo?.username ?? '我是 SHERRY最严厉的父亲');
+const username = computed(() => userStore.userInfo?.username ?? '我是 小墨');
 
 // 可以根据需要修改问候语格式
 const greetingText = computed(() => `${greeting}好，欢迎使用 ${username.value}`);
