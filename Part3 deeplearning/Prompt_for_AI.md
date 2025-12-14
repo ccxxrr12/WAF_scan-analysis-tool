@@ -217,6 +217,7 @@ Part3采用模块化设计，主要包括以下组件：
 - `--output-path`: 输出路径
 - `--waf-type`: WAF类型，可选 modsecurity/generic，用于训练模式
 - `--rules-data-path`: Part2规则数据路径（JSON格式）
+- `--request-data-path`: HTTP请求数据路径（JSON格式），用于预测模式
 
 ## 7. 与其它模块的集成
 
@@ -244,6 +245,7 @@ Part3采用模块化设计，主要包括以下组件：
 - 需要Part1提供的WAF指纹数据（JSON格式）
 - 需要Part2提供的规则解析数据（JSON格式）
 - 支持CSV格式的传统数据集
+- 需要用户提供HTTP请求数据（JSON格式），用于预测模式
 
 ### 8.3 代码规范
 - 遵循PEP8 Python代码规范

