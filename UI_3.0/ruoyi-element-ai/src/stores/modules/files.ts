@@ -1,6 +1,7 @@
 import type { FilesCardProps } from 'vue-element-plus-x/types/FilesCard';
 // 对话聊天的文件上传列表
 import { defineStore } from 'pinia';
+import { ref } from 'vue';
 
 export const useFilesStore = defineStore('files', () => {
   const filesList = ref<FilesCardProps & { file: File }[]>([]);
@@ -15,9 +16,15 @@ export const useFilesStore = defineStore('files', () => {
     filesList.value.splice(index, 1);
   };
 
+  // 清空文件列表
+  const clearFiles = () => {
+    filesList.value = [];
+  };
+
   return {
     filesList,
     setFilesList,
     deleteFileByIndex,
+    clearFiles,
   };
 });

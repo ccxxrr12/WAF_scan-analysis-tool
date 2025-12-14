@@ -27,6 +27,7 @@ function wafResponsePlugin(): HookFetchPlugin<BaseResponse> {
       // Remove authorization header since we don't use JWT authentication
       config.headers = new Headers(config.headers);
       config.headers.delete('authorization');
+      // 不要覆盖multipart/form-data请求的Content-Type
       return config;
     },
     async afterResponse(response) {
@@ -34,6 +35,12 @@ function wafResponsePlugin(): HookFetchPlugin<BaseResponse> {
       let parsedResult;
       try {
         if (response.result instanceof Response) {
+          // 检查响应是否为文件上传请求的响应
+          const contentType = response.result.headers.get('Content-Type');
+          if (contentType && contentType.includes('multipart/form-data')) {
+            // 对于文件上传请求，直接返回响应
+            return response;
+          }
           parsedResult = await response.result.json();
         } else {
           parsedResult = response.result;

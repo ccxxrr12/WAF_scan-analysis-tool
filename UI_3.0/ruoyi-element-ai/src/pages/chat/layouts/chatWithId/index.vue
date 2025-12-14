@@ -8,7 +8,7 @@ import type { ThinkingStatus } from 'vue-element-plus-x/types/Thinking';
 import { useHookFetch } from 'hook-fetch/vue';
 import { Sender } from 'vue-element-plus-x';
 import { useRoute } from 'vue-router';
-import { send, scanWaf, analyzeRules, aiDetect } from '@/api';
+import { send, scanWaf, aiDetect, analyzeRules } from '@/api';
 import FilesSelect from '@/components/FilesSelect/index.vue';
 import ModelSelect from '@/components/ModelSelect/index.vue';
 
@@ -146,11 +146,16 @@ function handleDataChunk(chunk: AnyObject) {
   }
 }
 
-// 监听文件列表变化，实现上传后自动分析
+// 监听文件列表变化，实现上传后解除发送禁用
 watch(
   () => filesStore.filesList.length,
   async (newLength, oldLength) => {
     if (newLength > oldLength) {
+      // 有文件上传，解除发送禁用（通过添加一个空格字符）
+      if (!inputValue.value.trim()) {
+        inputValue.value = ' ';
+      }
+      
       // 检查是否有新上传的规则文件
       const uploadedFiles = filesStore.filesList;
       const ruleFiles = uploadedFiles.filter(file => 
@@ -159,41 +164,22 @@ watch(
         (file as any).name.endsWith('.rules')
       );
       
-      if (ruleFiles.length > 0) {
-        // 确保是新上传的规则文件
-        const newRuleFiles = ruleFiles.slice(oldLength);
-        if (newRuleFiles.length > 0) {
-          // 添加系统消息，提示开始分析
-          addMessage('', false);
-          
-          // 滚动到底部
-          bubbleListRef.value?.scrollToBottom();
-          
-          // 处理新上传的规则文件
-          for (const ruleFile of newRuleFiles) {
-            await handleRuleAnalysis(ruleFile);
-          }
-          
-          // 处理完成后清空文件列表，避免重复处理
-          filesStore.setFilesList([]);
-        }
-      }
+    }
+    else if (newLength === 0 && inputValue.value === ' ') {
+      // 没有文件上传且输入值是我们添加的空格，则清空输入值
+      inputValue.value = '';
     }
   }
 );
 
 async function startSSE(chatContent: string) {
   try {
-    // 检查是否有上传的规则文件
+    // 检查是否有上传的文件
     const uploadedFiles = filesStore.filesList;
-    const ruleFiles = uploadedFiles.filter(file => 
-      (file as any).name.endsWith('.conf') || 
-      (file as any).name.endsWith('.txt') || 
-      (file as any).name.endsWith('.rules')
-    );
+    const hasFiles = uploadedFiles.length > 0;
     
-    // 允许发送空消息，如果有上传的规则文件
-    if (ruleFiles.length > 0 || chatContent.trim()) {
+    // 只允许发送非空消息或有上传文件
+    if (chatContent.trim() || hasFiles) {
       // 添加用户输入的消息
       inputValue.value = '';
       addMessage(chatContent, true);
@@ -201,46 +187,50 @@ async function startSSE(chatContent: string) {
 
       // 这里有必要调用一下 BubbleList 组件的滚动到底部 手动触发 自动滚动
       bubbleListRef.value?.scrollToBottom();
+
+      // 检查是否有规则文件需要分析
+      const ruleFiles = uploadedFiles.filter(file => 
+        (file as any).name.endsWith('.conf') || 
+        (file as any).name.endsWith('.txt') || 
+        (file as any).name.endsWith('.rules')
+      );
       
       if (ruleFiles.length > 0) {
-        // 上传了规则文件，调用规则分析API处理所有规则文件
-        for (const ruleFile of ruleFiles) {
-          await handleRuleAnalysis(ruleFile);
-        }
-        // 处理完成后清空文件列表，避免重复处理
-        filesStore.setFilesList([]);
-        return;
-      }
-
-      // 智能判断输入类型
-      const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
-      const isUrlOnly = urlPattern.test(chatContent) && chatContent.split('\n').length === 1;
-      
-      if (isUrlOnly) {
-        // 仅输入URL，调用Part1 WAF扫描API
-        await handleWafScan(chatContent);
-      } else if (chatContent.includes('http') && chatContent.includes('\n')) {
-        // 包含URL和请求内容，调用Part3深度学习API
-        await handleAIDetect(chatContent);
+        // 调用规则分析API
+        await handleRuleAnalysis(ruleFiles);
       } else {
-        // 其他情况，使用原有AI聊天API
-        for await (const chunk of stream({
-          messages: bubbleItems.value
-            .filter((item: any) => item.role === 'user')
-            .map((item: any) => ({
-              role: item.role,
-              content: item.content,
-            })),
-          sessionId: route.params?.id !== 'not_login' ? String(route.params?.id) : undefined,
-          userId: userStore.userInfo?.userId,
-          model: modelStore.currentModelInfo.modelName ?? '',
-        })) {
-          handleDataChunk(chunk.result as AnyObject);
+        // 智能判断输入类型
+        const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([\/\w .-]*)*\/?$/;
+        const isUrlOnly = urlPattern.test(chatContent) && chatContent.split('\n').length === 1;
+        
+        if (isUrlOnly) {
+          // 仅输入URL，调用Part1 WAF扫描API
+          await handleWafScan(chatContent);
+        } else if (chatContent.includes('http') && chatContent.includes('\n')) {
+          // 包含URL和请求内容，调用Part3深度学习API
+          await handleAIDetect(chatContent);
+        } else {
+          // 其他情况，使用原有AI聊天API
+          for await (const chunk of stream({
+            messages: bubbleItems.value
+              .filter((item: any) => item.role === 'user')
+              .map((item: any) => ({
+                role: item.role,
+                content: item.content,
+              })),
+            sessionId: route.params?.id !== 'not_login' ? String(route.params?.id) : undefined,
+            userId: userStore.userInfo?.userId,
+            model: modelStore.currentModelInfo.modelName ?? '',
+          })) {
+            handleDataChunk(chunk.result as AnyObject);
+          }
         }
       }
+      
+      // 清空已上传的文件
+      filesStore.clearFiles();
     }
-  }
-  catch (err) {
+  } catch (err) {
     console.error('发送消息失败:', err);
     // 确保有消息项来更新
     if (bubbleItems.value.length > 0) {
@@ -249,13 +239,87 @@ async function startSSE(chatContent: string) {
       lastItem.loading = false;
       lastItem.thinkingStatus = 'end';
     }
-  }
-  finally {
+  } finally {
     console.log('数据接收完毕');
     // 停止打字器状态
     if (bubbleItems.value.length) {
       bubbleItems.value[bubbleItems.value.length - 1].typing = false;
     }
+  }
+}
+
+// 处理规则分析
+async function handleRuleAnalysis(files: any[]) {
+  try {
+    let allResults = '';
+    
+    // 提取实际的File对象
+    const actualFiles = files.map(fileItem => fileItem.file);
+    
+    // 调用规则分析API，发送所有文件
+    const result = await analyzeRules(actualFiles as File[]);
+    console.log('规则分析结果:', result);
+    
+    if (result.success) {
+      const data = result.data || {};
+      const analyzedFiles = data.files || [];
+      
+      allResults += `### 规则分析总结\n`;
+      allResults += `总规则数: ${data.total_rules || 0}\n`;
+      allResults += `分析文件数: ${analyzedFiles.length}\n\n`;
+      
+      // 遍历所有分析结果
+      for (const fileResult of analyzedFiles) {
+        allResults += `#### 规则文件: ${fileResult.filename}\n`;
+        allResults += `规则数量: ${fileResult.rule_count || 0}\n`;
+        allResults += `处理时间: ${new Date(fileResult.processed_time || Date.now()).toLocaleString()}\n\n`;
+        
+        // 显示前5条规则的简要信息
+        if (fileResult.rules && fileResult.rules.length > 0) {
+          allResults += `##### 规则详情（前5条）:\n`;
+          const displayRules = fileResult.rules.slice(0, 5);
+          for (const rule of displayRules) {
+            const ruleInfo = rule.rule_info;
+            allResults += `- **ID**: ${ruleInfo.id}\n`;
+            allResults += `  **Phase**: ${ruleInfo.phase}\n`;
+            allResults += `  **Variables**: ${ruleInfo.variables.join(', ')}\n`;
+            allResults += `  **Operator**: ${ruleInfo.operator}\n`;
+            allResults += `  **Message**: ${ruleInfo.message}\n`;
+            allResults += `  **Severity**: ${ruleInfo.severity}\n`;
+            
+            // 语义分析结果
+            if (rule.semantic_analysis) {
+              allResults += `  **语义分析**: ${JSON.stringify(rule.semantic_analysis, null, 2)}\n`;
+            }
+            
+            // 依赖分析结果
+            if (rule.dependency_analysis) {
+              allResults += `  **依赖分析**: ${JSON.stringify(rule.dependency_analysis, null, 2)}\n`;
+            }
+            
+            allResults += `\n`;
+          }
+          
+          if (fileResult.rules.length > 5) {
+            allResults += `... 还有 ${fileResult.rules.length - 5} 条规则未显示\n\n`;
+          }
+        }
+      }
+    } else {
+      allResults += `### 规则分析失败\n`;
+      allResults += `错误信息：${result.error || '未知错误'}\n\n`;
+    }
+    
+    // 更新聊天消息
+    bubbleItems.value[bubbleItems.value.length - 1].content = allResults;
+    // 更新消息状态
+    bubbleItems.value[bubbleItems.value.length - 1].loading = false;
+    bubbleItems.value[bubbleItems.value.length - 1].thinkingStatus = 'end';
+  } catch (error) {
+    console.error('规则分析失败:', error);
+    bubbleItems.value[bubbleItems.value.length - 1].content = `规则分析失败：${error instanceof Error ? error.message : '未知错误'}`;
+    bubbleItems.value[bubbleItems.value.length - 1].loading = false;
+    bubbleItems.value[bubbleItems.value.length - 1].thinkingStatus = 'end';
   }
 }
 
@@ -293,121 +357,6 @@ async function handleWafScan(url: string) {
     bubbleItems.value[bubbleItems.value.length - 1].content = `WAF扫描失败：${error instanceof Error ? error.message : '未知错误'}`;
     bubbleItems.value[bubbleItems.value.length - 1].loading = false;
     bubbleItems.value[bubbleItems.value.length - 1].thinkingStatus = 'end';
-  }
-}
-
-// 处理规则分析
-async function handleRuleAnalysis(file: FilesCardProps & { file?: File }) {
-  try {
-    // 确保我们有正确的文件对象
-    let fileObj: File;
-    if ('file' in file && file.file instanceof File) {
-      // 如果已经有File对象，直接使用
-      fileObj = file.file;
-    } else {
-      // 否则从URL获取文件内容
-      if (!file.url) {
-        throw new Error('文件URL不存在');
-      }
-      const response = await fetch(file.url);
-      const blob = await response.blob();
-      fileObj = new File([blob], (file as any).name || 'unknown.txt', { type: blob.type });
-    }
-    
-    console.log('正在分析规则文件:', fileObj.name);
-    
-    // 调用规则分析API
-    console.log('开始调用规则分析API...');
-    let responseResult;
-    try {
-      responseResult = await analyzeRules(fileObj);
-      console.log('规则分析API调用成功:', responseResult);
-    } catch (error) {
-      console.error('规则分析API调用失败:', error);
-      // 处理API调用失败的情况
-      const errorMsg = error instanceof Error ? error.message : String(error);
-      bubbleItems.value[bubbleItems.value.length - 1].content = `规则分析失败：${errorMsg}`;
-      return;
-    }
-    
-    // 直接使用responseResult，因为hook-fetch会返回处理后的结果
-    let result = responseResult;
-    
-    console.log('提取的规则分析结果:', result);
-    
-    // 检查结果格式
-    if (result?.success === true && result?.data) {
-      const analysis = result.data;
-      let content = `规则分析结果：\n\n`;
-      content += `文件名：${analysis.filename || fileObj.name}\n`;
-      content += `规则总数：${analysis.rule_count || 0}\n`;
-      content += `冲突规则数：${analysis.conflict_count || 0}\n\n`;
-      
-      // 规则详情
-      if (analysis.rules && analysis.rules.length > 0) {
-        content += `## 规则详情\n\n`;
-        // 只显示前10条规则，避免内容过长
-        const displayRules = analysis.rules.slice(0, 10);
-        displayRules.forEach((rule: any, index: number) => {
-          content += `${index + 1}. **规则ID**: ${rule.id || '未知'}\n`;
-          content += `   **描述**: ${rule.description || '无描述'}\n`;
-          if (rule.action) {
-            content += `   **动作**: ${rule.action}\n`;
-          }
-          if (rule.operator) {
-            content += `   **操作符**: ${rule.operator}\n`;
-          }
-          if (rule.targets && rule.targets.length > 0) {
-            content += `   **目标**: ${rule.targets.join(', ')}\n`;
-          }
-          content += `\n`;
-        });
-        if (analysis.rules.length > 10) {
-          content += `... 还有 ${analysis.rules.length - 10} 条规则未显示\n\n`;
-        }
-      }
-      
-      // 冲突详情
-      if (analysis.conflicts && analysis.conflicts.length > 0) {
-        content += `## 冲突详情\n\n`;
-        analysis.conflicts.forEach((conflict: any, index: number) => {
-          content += `${index + 1}. **冲突类型**: ${conflict.type || '未知'}\n`;
-          content += `   **规则1 ID**: ${conflict.rule1_id || '未知'}\n`;
-          content += `   **规则2 ID**: ${conflict.rule2_id || '未知'}\n`;
-          if (conflict.description) {
-            content += `   **描述**: ${conflict.description}\n`;
-          }
-          content += `\n`;
-        });
-      } else {
-        content += `## 冲突详情\n\n未检测到规则冲突\n\n`;
-      }
-      
-      // 总结
-      content += `## 总结\n\n`;
-      content += `成功分析了 ${analysis.rule_count || 0} 条规则\n`;
-      content += `检测到 ${analysis.conflict_count || 0} 个规则冲突\n`;
-      content += `文件处理状态：成功\n`;
-      
-      bubbleItems.value[bubbleItems.value.length - 1].content = content;
-    } else {
-      // 处理失败情况
-      const errorMsg = result?.error || result?.msg || '无法获取结果';
-      bubbleItems.value[bubbleItems.value.length - 1].content = `规则分析失败：${errorMsg}`;
-    }
-  } catch (error) {
-    console.error('规则分析失败:', error);
-    const errorMsg = error instanceof Error ? error.message : String(error);
-    // 友好处理常见错误
-    const friendlyMsg = errorMsg.includes('Fail Request') ? '规则分析服务请求失败，请稍后重试' : errorMsg;
-    bubbleItems.value[bubbleItems.value.length - 1].content = `规则分析失败：${friendlyMsg}`;
-  } finally {
-    // 确保更新消息状态
-    if (bubbleItems.value.length > 0) {
-      const lastItem = bubbleItems.value[bubbleItems.value.length - 1];
-      lastItem.loading = false;
-      lastItem.thinkingStatus = 'end';
-    }
   }
 }
 

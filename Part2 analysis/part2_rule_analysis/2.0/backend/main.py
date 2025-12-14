@@ -70,8 +70,10 @@ def parse_rule_details(rule):
 
 def parse_detailed_rules(rules_dir, output_file):
     """Parse ModSecurity rules with detailed rule information"""
-    # Get all .conf files in the rules directory
-    conf_files = glob.glob(os.path.join(rules_dir, '*.conf'))
+    # Get all rule files in the rules directory (.conf, .txt, .rules)
+    conf_files = glob.glob(os.path.join(rules_dir, '*.conf')) + \
+                glob.glob(os.path.join(rules_dir, '*.txt')) + \
+                glob.glob(os.path.join(rules_dir, '*.rules'))
     conf_files.sort()
     
     with open(output_file, 'w', encoding='utf-8') as f:
@@ -281,8 +283,10 @@ def main():
 
 def create_json_output(rules_dir, output_file):
     """Create JSON output with structured rule data"""
-    # Get all .conf files in the rules directory
-    conf_files = glob.glob(os.path.join(rules_dir, '*.conf'))
+    # Get all rule files in the rules directory (.conf, .txt, .rules)
+    conf_files = glob.glob(os.path.join(rules_dir, '*.conf')) + \
+                glob.glob(os.path.join(rules_dir, '*.txt')) + \
+                glob.glob(os.path.join(rules_dir, '*.rules'))
     conf_files.sort()
     
     # Initialize analyzers

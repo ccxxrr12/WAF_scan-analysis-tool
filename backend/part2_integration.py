@@ -1,139 +1,184 @@
-import sys
 import os
+import sys
 import tempfile
-import json
-from typing import Dict, Any
+from datetime import datetime
 
-# 获取Part2目录的绝对路径
-part2_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Part2 analysis', 'part2_rule_analysis', '2.0', 'backend')
+# 添加Part2分析模块到Python路径
+part2_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'Part2 analysis', 'part2_rule_analysis', '2.0')
+sys.path.insert(0, part2_path)
+sys.path.insert(0, os.path.join(part2_path, 'backend'))
+sys.path.insert(0, os.path.join(part2_path, 'backend', 'msc_pyparser-master'))
 
-# 定义全局变量，将在函数内部动态导入
-parse_detailed_rules = None
-create_json_output = None
-ConflictAnalyzer = None
+from msc_pyparser import MSCParser
+from semantic_analyzer import SemanticAnalyzer
+from dependency_analyzer import DependencyAnalyzer
+from database import RuleDatabase
 
-# 动态导入Part2模块的函数
-def _import_part2_modules():
-    """动态导入Part2模块，避免与当前目录下的main.py冲突"""
-    global parse_detailed_rules, create_json_output, ConflictAnalyzer
+def parse_rule_details(rule):
+    """Extract detailed information from a parsed SecRule"""
+    rule_info = {
+        'id': "Unknown",
+        'phase': "Unknown",
+        'variables': [],
+        'operator': "",
+        'pattern': "",
+        'actions': [],
+        'tags': [],
+        'message': "",
+        'severity': "",
+        'is_chain': rule.get('chained', False)
+    }
     
-    # 保存原始sys.path
-    original_path = sys.path.copy()
+    # Extract variables
+    for v in rule['variables']:
+        var_str = v['variable']
+        if v['variable_part']:
+            var_str += f":{v['variable_part']}"
+        rule_info['variables'].append(var_str)
     
+    # Extract operator and pattern
+    operator = rule['operator']
+    if rule['operator_negated']:
+        operator = f"!{operator}"
+    rule_info['operator'] = operator
+    rule_info['pattern'] = rule['operator_argument']
+    
+    # Extract actions and action-specific details
+    for action in rule.get('actions', []):
+        act_name = action['act_name']
+        act_arg = action['act_arg']
+        
+        # Add to actions list
+        rule_info['actions'].append(f"{act_name}:{act_arg}" if act_arg else act_name)
+        
+        # Extract specific action values
+        if act_name == 'id':
+            rule_info['id'] = act_arg
+        elif act_name == 'phase':
+            rule_info['phase'] = act_arg
+        elif act_name == 'msg':
+            rule_info['message'] = act_arg
+        elif act_name == 'severity':
+            rule_info['severity'] = act_arg
+        elif act_name == 'tag':
+            rule_info['tags'].append(act_arg)
+    
+    return rule_info
+
+def analyze_rules_file(file_content, file_name, db_path):
+    """分析规则文件并插入到数据库"""
     try:
-        # 临时添加Part2目录到Python路径，并确保它在最前面
-        sys.path = [part2_path] + original_path
+        # 初始化数据库连接
+        db = RuleDatabase(db_path=db_path, auto_backup=False)
         
-        # 清除可能存在的模块缓存
-        if 'main' in sys.modules:
-            del sys.modules['main']
-        if 'conflict_analyzer' in sys.modules:
-            del sys.modules['conflict_analyzer']
+        # 初始化分析器
+        semantic_analyzer = SemanticAnalyzer()
+        dependency_analyzer = DependencyAnalyzer()
         
-        # 从Part2目录导入模块
-        import main as part2_main
-        import conflict_analyzer as part2_conflict
+        # 解析规则文件
+        parser = MSCParser()
+        parser.parser.parse(file_content)
         
-        # 获取所需的函数和类
-        parse_detailed_rules = part2_main.parse_detailed_rules
-        create_json_output = part2_main.create_json_output
-        ConflictAnalyzer = part2_conflict.ConflictAnalyzer
+        # 获取所有SecRule
+        secrules = [item for item in parser.configlines if item['type'] == 'SecRule']
         
-        return True
-    except Exception as e:
-        print(f"导入Part2模块时出错: {e}")
-        # 如果导入失败，使用默认实现
-        parse_detailed_rules = lambda *args, **kwargs: None
-        create_json_output = lambda *args, **kwargs: []
-        
-        class DefaultConflictAnalyzer:
-            def batch_analyze(self, rules):
-                return []
-        
-        ConflictAnalyzer = DefaultConflictAnalyzer
-        return False
-    finally:
-        # 恢复原始sys.path
-        sys.path = original_path
-
-# 初始化导入
-_import_part2_modules()
-
-def analyze_rules_file(file_content: bytes, filename: str) -> Dict[str, Any]:
-    """
-    分析上传的WAF规则文件
-    
-    Args:
-        file_content: 文件内容的字节流
-        filename: 文件名
-        
-    Returns:
-        包含规则分析结果的字典
-    """
-    try:
-        # 检查文件扩展名，支持.conf、.txt和.rules格式
-        if not (filename.endswith('.conf') or filename.endswith('.txt') or filename.endswith('.rules')):
+        if not secrules:
             return {
                 "success": False,
-                "error": "只支持.conf、.txt和.rules格式的规则文件"
+                "error": "文件中未找到任何SecRule规则"
             }
         
-        # 创建临时目录和文件
-        with tempfile.TemporaryDirectory() as temp_dir:
-            # 创建规则文件
-            rule_file_path = os.path.join(temp_dir, filename)
-            with open(rule_file_path, 'wb') as f:
-                f.write(file_content)
+        # 分析规则
+        analyzed_rules = []
+        raw_rules = []
+        
+        for i, rule in enumerate(secrules):
+            # 提取规则详情
+            rule_info = parse_rule_details(rule)
             
-            # 创建结果目录
-            results_dir = os.path.join(temp_dir, 'results')
-            os.makedirs(results_dir, exist_ok=True)
-            
-            # 生成报告文件路径
-            output_file = os.path.join(results_dir, "detailed_rules_report.md")
-            json_output_file = os.path.join(results_dir, "detailed_rules_report.json")
-            
-            # 调用Part2的分析函数
-            # 首先分析规则文件
-            parse_detailed_rules(temp_dir, output_file)
-            
-            # 创建JSON输出
-            all_rules = create_json_output(temp_dir, json_output_file)
-            
-            # 执行冲突分析
-            conflicts = []
-            if all_rules:
-                conflict_analyzer = ConflictAnalyzer()
-                conflicts = conflict_analyzer.batch_analyze(all_rules)
-            
-            # 构建最终结果
-            final_result = {
-                "filename": filename,
-                "rule_count": len(all_rules),
-                "conflict_count": len(conflicts),
-                "rules": all_rules,
-                "conflicts": conflicts
+            # 创建完整规则对象
+            full_rule = {
+                'rule_info': rule_info,
+                'file_name': file_name,
+                'rule_index': i
             }
             
-            return {
-                "success": True,
-                "data": final_result
-            }
+            # 语义分析
+            semantic_result = semantic_analyzer.analyze(full_rule)
+            full_rule['semantic_analysis'] = semantic_result
             
+            # 依赖分析
+            dependency_result = dependency_analyzer.analyze(full_rule, str(rule))
+            full_rule['dependency_analysis'] = dependency_result
+            
+            analyzed_rules.append(full_rule)
+            raw_rules.append(str(rule))
+        
+        # 批量插入或更新规则到数据库
+        db.batch_insert(analyzed_rules, "success", raw_rules)
+        
+        # 构造响应
+        response = {
+            "success": True,
+            "message": f"规则分析成功",
+            "data": {
+                "filename": file_name,
+                "rule_count": len(analyzed_rules),
+                "processed_time": datetime.now().isoformat(),
+                "rules": analyzed_rules
+            }
+        }
+        
+        return response
+        
     except Exception as e:
         return {
             "success": False,
-            "error": str(e)
+            "error": f"规则分析失败: {str(e)}"
         }
+    finally:
+        # RuleDatabase类没有close方法，不需要关闭连接
+        pass
 
-# 测试函数
-if __name__ == "__main__":
-    # 测试代码
-    test_file_path = os.path.join(part2_path, '..', 'rules', 'restricted-files.data')
-    if os.path.exists(test_file_path):
-        with open(test_file_path, 'rb') as f:
-            content = f.read()
-        result = analyze_rules_file(content, 'test.conf')
-        print(f"规则分析结果: {json.dumps(result, indent=2, ensure_ascii=False)}")
-    else:
-        print("测试文件不存在")
+def get_rules_count(db_path):
+    """获取数据库中的规则总数"""
+    try:
+        db = RuleDatabase(db_path=db_path, auto_backup=False)
+        all_rules = db.get_all_rules()
+        return {
+            "success": True,
+            "data": {
+                "total_rules": len(all_rules),
+                "db_path": db_path
+            }
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"获取规则总数失败: {str(e)}"
+        }
+    finally:
+        # RuleDatabase类没有close方法，不需要关闭连接
+        pass
+
+def insert_rule(rule_data, db_path):
+    """插入或更新单条规则"""
+    try:
+        db = RuleDatabase(db_path=db_path, auto_backup=False)
+        result = db.insert(rule_data, "success", rule_data.get('raw_rule'))
+        return {
+            "success": True,
+            "message": "规则插入/更新成功" if result else "规则已存在且内容未变化",
+            "data": {
+                "rule_id": rule_data['rule_info'].get('id', 'Unknown'),
+                "action": "updated" if result else "unchanged"
+            }
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"插入规则失败: {str(e)}"
+        }
+    finally:
+        # RuleDatabase类没有close方法，不需要关闭连接
+        pass

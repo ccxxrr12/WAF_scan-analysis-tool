@@ -49,12 +49,40 @@ export interface AIDetectResponse {
 // 规则分析响应类型
 export interface AnalyzeRulesResponse {
   success: boolean;
+  message?: string;
   data?: {
     filename: string;
     rule_count: number;
-    conflict_count: number;
-    rules: Array<any>;
-    conflicts: Array<any>;
+    processed_time: string;
+    rules: Array<{
+      rule_info: {
+        id: string;
+        phase: string;
+        variables: string[];
+        operator: string;
+        pattern: string;
+        actions: string[];
+        tags: string[];
+        message: string;
+        severity: string;
+        is_chain: boolean;
+      };
+      file_name: string;
+      rule_index: number;
+      semantic_analysis: {
+        type: string;
+        description: string;
+        risk_level: string;
+        details: any;
+      };
+      dependency_analysis: {
+        type: string;
+        dependencies: string[];
+        description: string;
+      };
+    }>;
   };
   error?: string;
 }
+
+
