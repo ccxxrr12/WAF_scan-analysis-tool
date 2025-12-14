@@ -1,3 +1,6 @@
-url_length,param_count,param_value_length,special_char_count,is_get,is_post,is_put,is_delete,response_status,is_4xx,is_5xx,request_body_length,header_count,has_sql_keywords,has_xss_keywords,has_lfi_keywords,label
-15,0,0,0,1,0,0,0,200,0,0,0,2,0,0,0,0
-50,2,20,3,1,0,0,0,200,0,0,0,3,1,0,0,1
+url_length,param_count,param_value_length,special_char_count,is_get,is_post,is_put,is_delete,response_status,is_4xx,is_5xx,request_body_length,header_count,has_sql_keywords,has_xss_keywords,has_lfi_keywords,rule_id,attack_type,label
+15,0,0,0,1,0,0,0,200,0,0,0,2,0,0,0,0,0,0
+50,2,20,3,1,0,0,0,403,1,0,0,3,1,0,0,100,1,1
+100,1,50,10,0,1,0,0,403,1,0,20,4,1,1,0,200,2,1
+30,0,0,1,1,0,0,0,200,0,0,0,2,0,0,0,0,0,0
+75,3,30,5,0,1,0,0,403,1,0,10,3,1,1,1,150,3,1
