@@ -1,5 +1,41 @@
 # Part3: 智能检测与机器学习集成
 
+## 目录结构
+
+```
+Part3 deeplearning/
+├── part3_waf_ml/             # 核心代码目录
+│   ├── models/               # 模型文件目录
+│   ├── __init__.py           # Python包初始化文件
+│   ├── config.py             # 配置文件
+│   ├── data_processor.py     # 数据处理模块
+│   ├── evaluator.py          # 模型评估模块
+│   ├── main.py               # 程序主入口
+│   ├── models.py             # 模型定义模块
+│   ├── predictor.py          # 预测器模块
+│   ├── trainer.py            # 模型训练器模块
+│   └── utils.py              # 工具模块
+├── models/                   # 训练好的模型存储目录
+├── README.md                 # 项目说明文件
+├── requirements.txt          # 依赖包列表
+├── 使用说明.md               # 使用说明文档
+├── 开发进度.md               # 开发进度文档
+└── Prompt_for_AI.md          # AI提示文档
+```
+
+## 模块功能介绍
+
+| 模块名称 | 功能描述 | 主要文件 |
+|---------|---------|---------|
+| 主程序 | 程序入口，解析命令行参数并调度各模块 | main.py |
+| 数据处理 | 处理输入数据，提取特征以及处理WAF指纹信息 | data_processor.py |
+| 模型定义 | 定义各种机器学习模型的实现 | models.py |
+| 模型训练器 | 负责模型的训练、评估和保存 | trainer.py |
+| 预测器 | 使用训练好的模型进行预测 | predictor.py |
+| 模型评估 | 评估训练好的模型性能 | evaluator.py |
+| 工具模块 | 提供通用工具函数 | utils.py |
+| 配置模块 | 包含各种配置参数 | config.py |
+
 ## 简介
 
 Part3是基于传统机器学习的智能检测模块，旨在预测HTTP请求是否可能被WAF拦截。该模块通过集成多种机器学习算法，实现对WAF拦截行为的智能预测。
@@ -147,30 +183,3 @@ python main.py --mode evaluate --model-path modsecurity_model.pkl --data-path te
 - 逻辑回归 (logistic_regression)
 - 随机森林 (random_forest)
 - XGBoost (xgboost)
-
-## 与其它模块的集成
-
-### 与Part1的集成
-- 利用Part1提供的WAF指纹信息选择最适合的预测模型
-- 根据识别出的WAF类型调整特征提取策略
-
-### 与Part2的集成
-- 利用Part2规则解析结果生成高质量的训练数据
-- 基于规则语义分析结果进行分类训练
-- 使用规则依赖关系提取高级特征
-
-## 当前开发状态
-
-### 已完成模块
-- 配置模块
-- 数据处理模块（包括Part2规则数据支持）
-- 模型定义模块
-- 模型训练器模块
-- 预测器模块
-- 模型评估模块（基础功能）
-- 工具模块
-- 主程序模块
-
-### 待完善模块
-- 模型评估模块（可视化功能）
-- 模型训练器（超参数调优功能）
